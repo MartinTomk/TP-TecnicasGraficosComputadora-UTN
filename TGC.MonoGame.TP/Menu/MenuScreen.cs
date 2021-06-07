@@ -58,9 +58,9 @@ namespace TGC.MonoGame.TP.Menu
             _currentState = new States.MenuScreen(this, graphics, Content);
 
 
-            //menuMusic = Content.Load<Song>("Music/Limit 70");
-            //MediaPlayer.IsRepeating = true;
-            //MediaPlayer.Play(menuMusic);
+            menuMusic = Content.Load<Song>("Music/PirateOst.mp3");
+            MediaPlayer.IsRepeating = true;
+            MediaPlayer.Play(menuMusic);
         }
 
         /// <summary>

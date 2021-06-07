@@ -1713,6 +1713,18 @@
 /processorParam:TextureFormat=Compressed
 /build:Models/tgc-logo/tgc-logo.fbx
 
+#begin Music/Basic Spin Out C.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Music/Basic Spin Out C.mp3
+
+#begin Music/PirateOst.mp3.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Music/PirateOst.mp3.mp3
+
 #begin Textures/Botes/Barquito_BaseColor.tga
 /importer:TextureImporter
 /processor:TextureProcessor

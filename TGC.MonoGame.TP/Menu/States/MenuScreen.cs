@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Media;
 using System;
 using System.Collections.Generic;
 
@@ -38,7 +39,6 @@ namespace TGC.MonoGame.TP.Menu.States
             //Title = _content.Load<Texture2D>("Background/Titulo");
             BGInstructions = _content.Load<Texture2D>("Textures/Menu/MenuBG");
             BGControls = _content.Load<Texture2D>("Textures/Menu/controlesBG");
-
 
             buttonTexture = _content.Load<Texture2D>("Textures/Menu/Boton");
             buttonFont = _content.Load<SpriteFont>("Fonts/Font");
