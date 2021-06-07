@@ -1,4 +1,5 @@
-﻿using System;
+﻿using TGC.MonoGame.TP.Menu;
+using System;
 
 namespace TGC.MonoGame.TP
 {
@@ -7,7 +8,7 @@ namespace TGC.MonoGame.TP
         [STAThread]
         static void Main()
         {
-            using (var game = new TGCGame())
+            using (var game = new MenuScreen())
                 game.Run();
         }
     }

@@ -90,6 +90,7 @@ float3 createWave(float steepness, float numWaves, float2 waveDir, float waveAmp
     return wave;
 }
 
+
 VertexShaderOutput MainVS(in VertexShaderInput input)
 {
     // Clear the output
@@ -115,17 +116,19 @@ VertexShaderOutput MainVS(in VertexShaderInput input)
     float3 waterTangent2 = normalize(float3(0, worldPosition.z, 1));
 
     input.Normal.xyz = normalize(cross(waterTangent2, waterTangent1));
-    
-    float4 viewPosition = mul(worldPosition, View);
 
+    //input.Normal.xyz = (-worldPosition.x, 1.0 - worldPosition.y, -worldPosition.z);
+    
+    output.WorldPosition = worldPosition;
+
+    //output.Normal = input.Normal;
     output.Normal = mul(input.Normal, InverseTransposeWorld);
-    //float4x4 matWorldViewProj = World * View * Projection;
+
+    float4 viewPosition = mul(worldPosition, View);
     output.Position = mul(viewPosition, Projection);
     output.TextureCoordinates = input.TextureCoordinates;
     output.Color = input.Color;
-    output.WorldPosition = mul(input.Position, World);;
-
-
+    
     return output;
 }
 
@@ -143,7 +146,6 @@ float4 MainPS(VertexShaderOutput input) : COLOR
     
     float3 color = diffuseColor;
 
-    /*
     float crestaBase = saturate(input.WorldPosition.y * 0.008) + 0.22;
     color += float3(1, 1, 1) * float3(crestaBase, crestaBase, crestaBase);
     
@@ -152,7 +154,6 @@ float4 MainPS(VertexShaderOutput input) : COLOR
         color += float3(.1, .1, .1) * float3(n, n, n);
         //color += float4(1, 1, 1, 1) * float4(n, n, n, 1);
     }
-    */
 
     float3 ambientLight = KAmbient * ambientColor;
 
@@ -165,8 +166,8 @@ float4 MainPS(VertexShaderOutput input) : COLOR
     float3 specularLight = sign(NdotL) * KSpecular * specularColor * pow(saturate(NdotH), shininess);
 
     // Final calculation
-    //float4 finalColor = float4(saturate(ambientLight + diffuseLight) + specularLight, 1) * alturaY;
-    float4 finalColor = float4(diffuseLight, 1) * alturaY;
+    float4 finalColor = float4(saturate(ambientLight + diffuseLight) + specularLight, 1) * alturaY;
+    //float4 finalColor = float4(diffuseLight, 1) * alturaY;
     
     return finalColor;
 }
