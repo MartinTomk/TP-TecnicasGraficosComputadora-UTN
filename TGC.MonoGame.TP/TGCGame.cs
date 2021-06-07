@@ -2,6 +2,8 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Media;
+using Microsoft.Xna.Framework.Audio;
 using TGC.MonoGame.TP.Cameras;
 using TGC.MonoGame.TP.Skydome;
 using TGC.MonoGame.TP.Geometries;
@@ -105,6 +107,7 @@ namespace TGC.MonoGame.TP
         private Matrix Projection { get; set; }
 
         private float CameraArm;
+        private float OffSetCam = 150;
         public Camera shotCam;
         public Camera CurrentCamera => shotCam;
       
@@ -133,13 +136,17 @@ namespace TGC.MonoGame.TP
         private CubePrimitive lightBox2;
         private float Timer { get; set; }
 
-
-
+        //Sonido
+        private Song Song { get; set; }
+        private SoundEffect Waves { get; set; }
+        private SoundEffect ShipShoot { get; set; }
+        private SoundEffectInstance Instance { get; set; }
+        private SoundEffectInstance ShootInstance { get; set; }
         // pal debuggin
         SpriteBatch spriteBatch;
         SpriteFont font;
 
-
+        public bool firstTime = true;
 
         /// <summary>
         ///     Se llama una sola vez, al principio cuando se ejecuta el ejemplo.
@@ -200,7 +207,7 @@ namespace TGC.MonoGame.TP
 
             ModelWater = Content.Load<Model>(ContentFolder3D + "Island/waterAltaGeo");
             WaterEffect = Content.Load<Effect>(ContentFolderEffects + "WaterShader");
-            WaterTexture = Content.Load<Texture2D>(ContentFolderTextures + "Island/Water01Diffuse");
+            WaterTexture = Content.Load<Texture2D>(ContentFolderTextures + "Water/WaterTexture2");
 
             ModelCasa = Content.Load<Model>(ContentFolder3D + "Island/CasaGeo");
 
@@ -292,9 +299,11 @@ namespace TGC.MonoGame.TP
             lightBox2 = new CubePrimitive(GraphicsDevice, 25, Color.White);
 
             font = Content.Load<SpriteFont>("Fonts/Font");
-
-
-
+            //Musica
+            Song = Content.Load<Song>(ContentFolderMusic + "PirateOst.mp3");
+            Waves = Content.Load<SoundEffect>(ContentFolderSounds + "Waves");
+            ShipShoot = Content.Load<SoundEffect>(ContentFolderSounds + "CannonShot");
+            ShootInstance = ShipShoot.CreateInstance();
             base.LoadContent();
         }
 
@@ -317,12 +326,12 @@ namespace TGC.MonoGame.TP
             shotCam.Update(gameTime);
 
 
-            shotCam.Position = PlayerBoat.Position + new Vector3(0, CameraArm, 0);
-
+            shotCam.Position = PlayerBoat.Position + new Vector3(0, CameraArm, OffSetCam);
+            
 
             //Iluminacion 
-            var posicionY = (float)Math.Cos(Timer/5) * 1500;
-            var posicionZ = (float) Math.Sin(Timer/5)* 1500f;
+            var posicionY = (float)Math.Cos(Timer/20) * 1500;
+            var posicionZ = (float) Math.Sin(Timer/20)* 1500f;
             var lightPosition = new Vector3(1000f,posicionY, posicionZ);
             Timer += (float) gameTime.ElapsedGameTime.TotalSeconds;
             var lightPosition2 = new Vector3(1000f,posicionY * -1f,posicionZ * -1);
@@ -330,6 +339,15 @@ namespace TGC.MonoGame.TP
             LightBoxWorld2 = Matrix.CreateTranslation(lightPosition2);
             LightEffect.Parameters["lightPosition"].SetValue(lightPosition);
             LightEffect.Parameters["eyePosition"].SetValue(shotCam.Position);
+            //Sonido
+            if (firstTime)
+            {
+                // Play that can be manipulated after the fact
+                Instance = Waves.CreateInstance();
+                Instance.IsLooped = true;
+                Instance.Play();
+                firstTime = false;
+            }
 
             base.Update(gameTime);
 
@@ -497,7 +515,30 @@ namespace TGC.MonoGame.TP
             {
                 RotateLeft(PlayerControlledShip.RotationSpeed * elapsedTime);
             }
-
+            if (keyboardState.IsKeyDown(Keys.P) && MediaPlayer.State == MediaState.Stopped)
+            {
+                MediaPlayer.Play(Song);
+            }
+            if (keyboardState.IsKeyDown(Keys.P) && MediaPlayer.State == MediaState.Playing)
+            {
+                MediaPlayer.Pause();
+            }
+            if (keyboardState.IsKeyDown(Keys.P) && MediaPlayer.State == MediaState.Paused)
+            {
+                MediaPlayer.Play(Song);
+            }
+            if (keyboardState.IsKeyDown(Keys.M) && MediaPlayer.State == MediaState.Playing)
+            {
+                MediaPlayer.Volume += (float)0.02;
+            }
+            if (keyboardState.IsKeyDown(Keys.N) && MediaPlayer.State == MediaState.Playing)
+            {
+                MediaPlayer.Volume -= (float)0.02;
+            }
+            if (keyboardState.IsKeyDown(Keys.Space) && ShootInstance.State != SoundState.Playing)
+            {
+               ShootInstance.Play();
+            }
 
         }
 

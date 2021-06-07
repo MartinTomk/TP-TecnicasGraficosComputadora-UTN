@@ -137,7 +137,7 @@ float4 MainPS(VertexShaderOutput input) : COLOR
     //if (input.WorldPosition.y * 0.01 > - 1)
     //    color += float4(1,1,1,1) * float4(0, (1 - frac(Time * 0.1)) * frac(Time * 0.1)  *saturate(input.WorldPosition.y + 10) * noise(input.WorldPosition.z * 0.1) * noise(input.WorldPosition.x), 0,1) ;
     // Color and texture are combined in this example, 80% the color of the texture and 20% that of the vertex
-    return color;
+    return textureColor*0.5 + color*0.5;
 }
 
 technique BasicColorDrawing

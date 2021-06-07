@@ -55,7 +55,7 @@ float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
 {
     float4 textureColor = float4(tex2D(SkyDomeSampler, input.TextureCoordinate).rgb, 1);
     
-    float fade = clamp(cos(Time * 0.3) + 0.5, 0.15, 1);
+    float fade = clamp(cos(Time/20) + 0.5, 0.15, 1);
     textureColor = textureColor * float4(fade, fade, fade, 1);
 
     return textureColor;
