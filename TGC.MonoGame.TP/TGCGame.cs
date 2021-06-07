@@ -120,12 +120,15 @@ namespace TGC.MonoGame.TP
 
         private BoundingSphere[] IslandColliders;
 
+        
+
         BoundingBox TestBox;
 
         // Iluminacion
         private Effect LightEffect{ get; set; }
         private Matrix LightBoxWorld { get; set; } = Matrix.Identity;
         private Matrix LightBoxWorld2 { get; set; } = Matrix.Identity;
+
         private CubePrimitive lightBox;
         private CubePrimitive lightBox2;
         private float Timer { get; set; }
@@ -199,6 +202,14 @@ namespace TGC.MonoGame.TP
             ModelWater = Content.Load<Model>(ContentFolder3D + "Island/waterAltaGeo");
             WaterEffect = Content.Load<Effect>(ContentFolderEffects + "WaterShader");
             WaterTexture = Content.Load<Texture2D>(ContentFolderTextures + "Island/TexturesCom_WaterPlain0012_1_seamless_S");
+            WaterEffect.Parameters["ambientColor"]?.SetValue(new Vector3(0f, 0.1f, 0.27f));
+            WaterEffect.Parameters["diffuseColor"]?.SetValue(new Vector3(0f, 0.25f, 0.48f));
+            WaterEffect.Parameters["specularColor"]?.SetValue(new Vector3(0.95f, 0.95f, 0.95f));
+            WaterEffect.Parameters["KAmbient"]?.SetValue(10f);
+            WaterEffect.Parameters["KDiffuse"]?.SetValue(10f);
+            WaterEffect.Parameters["KSpecular"]?.SetValue(50f);
+            WaterEffect.Parameters["shininess"]?.SetValue(10f);
+
 
             ModelCasa = Content.Load<Model>(ContentFolder3D + "Island/CasaGeo");
 
@@ -283,6 +294,8 @@ namespace TGC.MonoGame.TP
             LightEffect.Parameters["KDiffuse"].SetValue(1f);
             LightEffect.Parameters["KSpecular"].SetValue(0.08f);
             LightEffect.Parameters["shininess"].SetValue(2.0f);
+
+
             lightBox = new CubePrimitive(GraphicsDevice, 70, Color.Yellow);
             lightBox2 = new CubePrimitive(GraphicsDevice, 25, Color.White);
 
@@ -312,8 +325,8 @@ namespace TGC.MonoGame.TP
 
 
             //Iluminacion 
-            var posicionY = (float)Math.Cos(Timer/5) * 1500;
-            var posicionZ = (float) Math.Sin(Timer/5)* 1500f;
+            var posicionY = (float) MathF.Cos(Timer/5) * 1500;
+            var posicionZ = (float) MathF.Sin(Timer/5)* 1500f;
             var lightPosition = new Vector3(1000f,posicionY, posicionZ);
             Timer += (float) gameTime.ElapsedGameTime.TotalSeconds;
             var lightPosition2 = new Vector3(1000f,posicionY * -1f,posicionZ * -1);
@@ -321,6 +334,9 @@ namespace TGC.MonoGame.TP
             LightBoxWorld2 = Matrix.CreateTranslation(lightPosition2);
             LightEffect.Parameters["lightPosition"].SetValue(lightPosition);
             LightEffect.Parameters["eyePosition"].SetValue(shotCam.Position);
+
+            WaterEffect.Parameters["lightPosition"]?.SetValue(lightPosition);
+            WaterEffect.Parameters["eyePosition"]?.SetValue(shotCam.Position);
 
             base.Update(gameTime);
 
@@ -365,19 +381,16 @@ namespace TGC.MonoGame.TP
             DrawModelLight(ModelPalm5, Matrix.CreateScale(0.09f) * Matrix.CreateTranslation(580, 0, -150), LightEffect);
             DrawModelLight(ModelPalm5, Matrix.CreateScale(0.09f) * Matrix.CreateRotationY(4f) * Matrix.CreateTranslation(-650, 30, -100), LightEffect);
 
-
-
-            WaterEffect.Parameters["ModelTexture"]?.SetValue(WaterTexture);
+            WaterEffect.Parameters["baseTexture"]?.SetValue(WaterTexture);
             WaterEffect.Parameters["Time"]?.SetValue(time);
             for (int i = -8; i < 8; i++)
-            {   
                 for (int j = -8; j < 8; j++)
                 {
-                    DrawModel(ModelWater, Matrix.CreateScale(10f, 0f, 10f) * Matrix.CreateTranslation(i * 200, 0, j * 200), WaterEffect);
+                    Matrix MatrixWater = Matrix.Identity * Matrix.CreateScale(10f, 0f, 10f) * Matrix.CreateTranslation(i * 200, 0, j * 200);
+                    WaterEffect.Parameters["InverseTransposeWorld"]?.SetValue(Matrix.Transpose(Matrix.Invert(MatrixWater)));
+                    DrawModel(ModelWater, MatrixWater, WaterEffect);
                 }
-            }
             //DrawModel(ModelWater, Matrix.CreateScale(10f, 0f, 10f), WaterEffect);
-
 
             /// Dibujo Botes
 
@@ -386,6 +399,7 @@ namespace TGC.MonoGame.TP
             Cruiser.Draw();
             Barquito.Draw();
             PlayerBoat.Draw();
+            
             //Iluminacion
             lightBox.Draw(LightBoxWorld, shotCam.View, shotCam.Projection);
             lightBox2.Draw(LightBoxWorld2, shotCam.View, shotCam.Projection);
@@ -394,18 +408,6 @@ namespace TGC.MonoGame.TP
             /// Skydome
             Skydome.Draw(shotCam.View, shotCam.Projection, shotCam.Position);
             SkyDomeEffect.Parameters["Time"].SetValue(time);
-
-
-            //var elapsedTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
-            //string timeString = elapsedTime.ToString();
-
-            //spriteBatch.Begin();
-            //// Finds the center of the string in coordinates inside the text rectangle
-            //Vector2 textMiddlePoint = font.MeasureString("MonoGame Font Test") / 2;
-            //// Places text in center of the screen
-            //Vector2 position = new Vector2(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
-            //spriteBatch.DrawString(font, timeString, position, Color.White, 0, textMiddlePoint, 1.0f, SpriteEffects.None, 0.5f);
-            //spriteBatch.End();
 
             base.Draw(gameTime);
         }

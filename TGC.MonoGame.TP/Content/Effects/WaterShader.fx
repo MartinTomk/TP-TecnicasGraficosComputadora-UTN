@@ -7,30 +7,46 @@
 #define PS_SHADERMODEL ps_4_0_level_9_1
 #endif
 
-float4x4 World;
 float4x4 View;
 float4x4 Projection;
+float4x4 World;
+float4x4 InverseTransposeWorld;
+float3 eyePosition; // Camera position
+float3 lightPosition;
+
+float KAmbient;
+float3 ambientColor; // Light's Ambient Color
+
+float KDiffuse;
+float3 diffuseColor; // Light's Diffuse Color
+
+float KSpecular;
+float3 specularColor; // Light's Specular Color
+float shininess;
+
 float Time = 0;
 
 struct VertexShaderInput
 {
     float4 Position : POSITION0;
     float4 Color : COLOR0;
-    float2 TextureCoordinate : TEXCOORD0;
+    float4 Normal : NORMAL;
+    float2 TextureCoordinates : TEXCOORD0;
 };
 
 struct VertexShaderOutput
 {
     float4 Position : SV_POSITION;
     float4 Color : COLOR0;
-    float2 TextureCoordinate : TEXCOORD1;
-    float4 WorldPosition : TEXCOORD2;
+    float2 TextureCoordinates : TEXCOORD0;
+    float4 WorldPosition : TEXCOORD1;
+    float4 Normal : TEXCOORD2;
 };
 
-texture ModelTexture;
+texture baseTexture;
 sampler2D textureSampler = sampler_state
 {
-    Texture = (ModelTexture);
+    Texture = (baseTexture);
     MagFilter = Linear;
     MinFilter = Linear;
     AddressU = Mirror;
@@ -93,43 +109,66 @@ VertexShaderOutput MainVS(in VertexShaderInput input)
     float3 wave6 = createWave(4, 5, float2(-0.5, -0.3), 0.5, 8, 0.2, 4, worldPosition);
     float3 wave7 = createWave(8, 5, float2(-0.8, 0.4), 0.3, 5, 0.3, 6, worldPosition);
 
-
     worldPosition.xyz += (wave1 + wave2 + wave3 + wave4 + wave5 + wave6 * 0.4 + wave7 * 0.6) / 6;
 
+    float3 waterTangent1 = normalize(float3(1, worldPosition.x, 0));
+    float3 waterTangent2 = normalize(float3(0, worldPosition.z, 1));
 
-
-    output.WorldPosition = worldPosition;
-
-    // World space to View space
+    input.Normal.xyz = normalize(cross(waterTangent2, waterTangent1));
+    
     float4 viewPosition = mul(worldPosition, View);
-    // View space to Projection space
+
+    output.Normal = mul(input.Normal, InverseTransposeWorld);
+    //float4x4 matWorldViewProj = World * View * Projection;
     output.Position = mul(viewPosition, Projection);
-    // Propagate texture coordinates
-    output.TextureCoordinate = input.TextureCoordinate;
-    // Propagate color by vertex
+    output.TextureCoordinates = input.TextureCoordinates;
     output.Color = input.Color;
+    output.WorldPosition = mul(input.Position, World);;
+
+
     return output;
 }
 
 float4 MainPS(VertexShaderOutput input) : COLOR
 {
+    float alturaY = clamp(lightPosition.y / 1500, 0.5, 1);
+
+    // Base vectors
+    float3 lightDirection = normalize(lightPosition - input.WorldPosition.xyz);
+    float3 viewDirection = normalize(eyePosition - input.WorldPosition.xyz);
+    float3 halfVector = normalize(lightDirection + viewDirection);
+
     // Get the texture texel textureSampler is the sampler, Texcoord is the interpolated coordinates
-    float4 textureColor = tex2D(textureSampler, input.TextureCoordinate);
-    textureColor.a = 1;
+    float4 texelColor = tex2D(textureSampler, input.TextureCoordinates);
+    
+    float3 color = diffuseColor;
 
-    float4 color = float4(0, 0.2, 0.4, 1);
-
+    /*
     float crestaBase = saturate(input.WorldPosition.y * 0.008) + 0.22;
-    color += float4(1, 1, 1, 1) * float4(crestaBase, crestaBase, crestaBase, 1);
+    color += float3(1, 1, 1) * float3(crestaBase, crestaBase, crestaBase);
     
     if (input.WorldPosition.y * 0.2 > -1) {
-        float n = input.WorldPosition.y * 0.5 * noise(input.WorldPosition.x * 0.01) * noise(input.WorldPosition.z * 0.01) * textureColor.r;
-        color += float4(.1, .1, .1, 1) * float4(n, n, n, 1);
+        float n = input.WorldPosition.y * 0.5 * noise(input.WorldPosition.x * 0.01) * noise(input.WorldPosition.z * 0.01) * texelColor.r;
+        color += float3(.1, .1, .1) * float3(n, n, n);
         //color += float4(1, 1, 1, 1) * float4(n, n, n, 1);
     }
+    */
 
-    return color;
-    //return textureColor * 0.2 + color * 0.8;
+    float3 ambientLight = KAmbient * ambientColor;
+
+    // Calculate the diffuse light
+    float NdotL = saturate(dot(input.Normal.xyz, lightDirection));
+    float3 diffuseLight = KDiffuse * color * NdotL;
+
+    // Calculate the specular light
+    float NdotH = dot(input.Normal.xyz, halfVector);
+    float3 specularLight = sign(NdotL) * KSpecular * specularColor * pow(saturate(NdotH), shininess);
+
+    // Final calculation
+    //float4 finalColor = float4(saturate(ambientLight + diffuseLight) + specularLight, 1) * alturaY;
+    float4 finalColor = float4(diffuseLight, 1) * alturaY;
+    
+    return finalColor;
 }
 
 technique BasicColorDrawing
