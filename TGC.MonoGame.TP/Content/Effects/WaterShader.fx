@@ -26,6 +26,7 @@ float shininess;
 
 float Time = 0;
 
+
 struct VertexShaderInput
 {
     float4 Position : POSITION0;
@@ -90,6 +91,16 @@ float3 createWave(float steepness, float numWaves, float2 waveDir, float waveAmp
     return wave;
 }
 
+/*
+float3 getNormal(float3 p, float eps) {
+    float3 n;
+    n.y = map_detailed(p);
+    n.x = map_detailed(vec3(p.x + eps, p.y, p.z)) - n.y;
+    n.z = map_detailed(vec3(p.x, p.y, p.z + eps)) - n.y;
+    n.y = eps;
+    return normalize(n);
+}
+*/
 
 VertexShaderOutput MainVS(in VertexShaderInput input)
 {
@@ -110,12 +121,38 @@ VertexShaderOutput MainVS(in VertexShaderInput input)
     float3 wave6 = createWave(4, 5, float2(-0.5, -0.3), 0.5, 8, 0.2, 4, worldPosition);
     float3 wave7 = createWave(8, 5, float2(-0.8, 0.4), 0.3, 5, 0.3, 6, worldPosition);
 
-    worldPosition.xyz += (wave1 + wave2 + wave3 + wave4 + wave5 + wave6 * 0.4 + wave7 * 0.6) / 6;
+    // NORMALES //
 
-    float3 waterTangent1 = normalize(float3(1, worldPosition.x, 0));
-    float3 waterTangent2 = normalize(float3(0, worldPosition.z, 1));
+    float EPSILON = 0.001;
+    float3 dxWave1 = createWave(4, 5, float2(0.5 + EPSILON, 0.3), 40, 160, 3, 10, worldPosition);
+    float3 dzWave1 = createWave(4, 5, float2(0.5, 0.3 + EPSILON), 40, 160, 3, 10, worldPosition);
+    float3 dxWave2 = createWave(8, 5, float2(0.8 + EPSILON, -0.4), 12, 120, 1.2, 20, worldPosition);
+    float3 dzWave2 = createWave(8, 5, float2(0.8, -0.4 + EPSILON), 12, 120, 1.2, 20, worldPosition);
+    float3 dxWave3 = createWave(4, 5, float2(0.3 + EPSILON, 0.2), 2, 90, 5, 25, worldPosition);
+    float3 dzWave3 = createWave(4, 5, float2(0.3, 0.2 + EPSILON), 2, 90, 5, 25, worldPosition);
+    float3 dxWave4 = createWave(2, 5, float2(0.4 + EPSILON, 0.25), 2, 60, 15, 15, worldPosition);
+    float3 dzWave4 = createWave(2, 5, float2(0.4, 0.25 + EPSILON), 2, 60, 15, 15, worldPosition);
+    float3 dxWave5 = createWave(6, 5, float2(0.1 + EPSILON, 0.8), 20, 250, 2, 40, worldPosition);
+    float3 dzWave5 = createWave(6, 5, float2(0.1, 0.8 + EPSILON), 20, 250, 2, 40, worldPosition);
+    float3 dxWave6 = createWave(4, 5, float2(-0.5 + EPSILON, -0.3), 0.5, 8, 0.2, 4, worldPosition);
+    float3 dzWave6 = createWave(4, 5, float2(-0.5, -0.3 + EPSILON), 0.5, 8, 0.2, 4, worldPosition);
+    float3 dxWave7 = createWave(8, 5, float2(-0.8 + EPSILON, 0.4), 0.3, 5, 0.3, 6, worldPosition);
+    float3 dzWave7 = createWave(8, 5, float2(-0.8, 0.4 + EPSILON), 0.3, 5, 0.3, 6, worldPosition);
 
-    input.Normal.xyz = normalize(cross(waterTangent2, waterTangent1));
+
+    worldPosition.xyz += (wave1 + wave2 + wave3 + wave4 + wave5 + wave6 * 0.4 + wave7 * 0.6) / 7;
+
+    float3 normalVector = float3(0,0,0);
+    normalVector.x = (dxWave1.x + dxWave2.x + dxWave3.x + dxWave4.x + dxWave5.x + dxWave6.x * 0.4 + dxWave7.x * 0.6) / 7;
+    normalVector.y = (wave1.y + wave2.y + wave3.y + wave4.y + wave5.y + wave6.y * 0.4 + wave7.y * 0.6) / 7;
+    normalVector.z = (dxWave1.z + dxWave2.z + dxWave3.z + dxWave4.z + dxWave5.z + dxWave6.z * 0.4 + dxWave7.z * 0.6) / 7;
+
+    //worldPosition.xyz += wave1;
+
+    //float3 waterTangent1 = normalize(float3(1, dxWave1.x, 0));
+    //float3 waterTangent2 = normalize(float3(0, dzWave1.z, 1));
+
+    input.Normal.xyz = normalize(normalVector);
 
     //input.Normal.xyz = (-worldPosition.x, 1.0 - worldPosition.y, -worldPosition.z);
     
@@ -166,7 +203,7 @@ float4 MainPS(VertexShaderOutput input) : COLOR
     float3 specularLight = sign(NdotL) * KSpecular * specularColor * pow(saturate(NdotH), shininess);
 
     // Final calculation
-    float4 finalColor = float4(saturate(ambientLight + diffuseLight) + specularLight, 1) * alturaY;
+    float4 finalColor = float4(saturate(ambientLight + diffuseLight + color) + specularLight, 1) * alturaY;
     //float4 finalColor = float4(diffuseLight, 1) * alturaY;
     
     return finalColor;

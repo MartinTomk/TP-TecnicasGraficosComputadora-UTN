@@ -121,8 +121,6 @@ namespace TGC.MonoGame.TP
 
         private BoundingSphere[] IslandColliders;
 
-        
-
         BoundingBox TestBox;
 
         // Iluminacion
@@ -206,8 +204,8 @@ namespace TGC.MonoGame.TP
             WaterEffect.Parameters["ambientColor"]?.SetValue(new Vector3(0f, 0.1f, 0.27f));
             WaterEffect.Parameters["diffuseColor"]?.SetValue(new Vector3(0f, 0.25f, 0.48f));
             WaterEffect.Parameters["specularColor"]?.SetValue(new Vector3(0.95f, 0.95f, 0.95f));
-            WaterEffect.Parameters["KAmbient"]?.SetValue(0.4f);
-            WaterEffect.Parameters["KDiffuse"]?.SetValue(1f);
+            WaterEffect.Parameters["KAmbient"]?.SetValue(0.2f);
+            WaterEffect.Parameters["KDiffuse"]?.SetValue(4f);
             WaterEffect.Parameters["KSpecular"]?.SetValue(0.08f);
             WaterEffect.Parameters["shininess"]?.SetValue(1f);
 
