@@ -54,6 +54,18 @@ sampler2D textureSampler = sampler_state
     AddressV = Mirror;
 };
 
+//Textura para Normals
+texture normalTexture;
+sampler2D normalSampler = sampler_state
+{
+    Texture = (normalTexture);
+    ADDRESSU = WRAP;
+    ADDRESSV = WRAP;
+    MINFILTER = LINEAR;
+    MAGFILTER = LINEAR;
+    MIPFILTER = LINEAR;
+};
+
 // 2D Random
 float random(in float2 st) {
     return frac(sin(dot(st.xy, float2(12.9898, 78.233))) * 43758.5453123);
@@ -91,16 +103,22 @@ float3 createWave(float steepness, float numWaves, float2 waveDir, float waveAmp
     return wave;
 }
 
-/*
-float3 getNormal(float3 p, float eps) {
-    float3 n;
-    n.y = map_detailed(p);
-    n.x = map_detailed(vec3(p.x + eps, p.y, p.z)) - n.y;
-    n.z = map_detailed(vec3(p.x, p.y, p.z + eps)) - n.y;
-    n.y = eps;
-    return normalize(n);
+float3 getNormalFromMap(float2 textureCoordinates, float3 worldPosition, float3 worldNormal)
+{
+    float3 tangentNormal = tex2D(normalSampler, textureCoordinates).xyz * 2.0 - 1.0;
+
+    float3 Q1 = ddx(worldPosition);
+    float3 Q2 = ddy(worldPosition);
+    float2 st1 = ddx(textureCoordinates);
+    float2 st2 = ddy(textureCoordinates);
+
+    worldNormal = normalize(worldNormal.xyz);
+    float3 T = normalize(Q1 * st2.y - Q2 * st1.y);
+    float3 B = -normalize(cross(worldNormal, T));
+    float3x3 TBN = float3x3(T, B, worldNormal);
+
+    return normalize(mul(tangentNormal, TBN));
 }
-*/
 
 VertexShaderOutput MainVS(in VertexShaderInput input)
 {
@@ -122,44 +140,34 @@ VertexShaderOutput MainVS(in VertexShaderInput input)
     float3 wave7 = createWave(8, 5, float2(-0.8, 0.4), 0.3, 5, 0.3, 6, worldPosition);
 
     // NORMALES //
-
     float EPSILON = 0.001;
-    float3 dxWave1 = createWave(4, 5, float2(0.5 + EPSILON, 0.3), 40, 160, 3, 10, worldPosition);
-    float3 dzWave1 = createWave(4, 5, float2(0.5, 0.3 + EPSILON), 40, 160, 3, 10, worldPosition);
-    float3 dxWave2 = createWave(8, 5, float2(0.8 + EPSILON, -0.4), 12, 120, 1.2, 20, worldPosition);
-    float3 dzWave2 = createWave(8, 5, float2(0.8, -0.4 + EPSILON), 12, 120, 1.2, 20, worldPosition);
-    float3 dxWave3 = createWave(4, 5, float2(0.3 + EPSILON, 0.2), 2, 90, 5, 25, worldPosition);
-    float3 dzWave3 = createWave(4, 5, float2(0.3, 0.2 + EPSILON), 2, 90, 5, 25, worldPosition);
-    float3 dxWave4 = createWave(2, 5, float2(0.4 + EPSILON, 0.25), 2, 60, 15, 15, worldPosition);
-    float3 dzWave4 = createWave(2, 5, float2(0.4, 0.25 + EPSILON), 2, 60, 15, 15, worldPosition);
-    float3 dxWave5 = createWave(6, 5, float2(0.1 + EPSILON, 0.8), 20, 250, 2, 40, worldPosition);
-    float3 dzWave5 = createWave(6, 5, float2(0.1, 0.8 + EPSILON), 20, 250, 2, 40, worldPosition);
-    float3 dxWave6 = createWave(4, 5, float2(-0.5 + EPSILON, -0.3), 0.5, 8, 0.2, 4, worldPosition);
-    float3 dzWave6 = createWave(4, 5, float2(-0.5, -0.3 + EPSILON), 0.5, 8, 0.2, 4, worldPosition);
-    float3 dxWave7 = createWave(8, 5, float2(-0.8 + EPSILON, 0.4), 0.3, 5, 0.3, 6, worldPosition);
-    float3 dzWave7 = createWave(8, 5, float2(-0.8, 0.4 + EPSILON), 0.3, 5, 0.3, 6, worldPosition);
-
+    float3 dxWave1 = createWave(4, 5, float2(0.5, 0.3), 40, 160, 3, 10, float4(worldPosition.x + EPSILON, worldPosition.yz, 1));
+    float3 dzWave1 = createWave(4, 5, float2(0.5, 0.3), 40, 160, 3, 10, float4(worldPosition.xy, worldPosition.z + EPSILON, 1));
+    float3 dxWave2 = createWave(8, 5, float2(0.8, -0.4), 12, 120, 1.2, 20, float4(worldPosition.x + EPSILON, worldPosition.yz, 1));
+    float3 dzWave2 = createWave(8, 5, float2(0.8, -0.4), 12, 120, 1.2, 20, float4(worldPosition.xy, worldPosition.z + EPSILON, 1));
+    float3 dxWave3 = createWave(4, 5, float2(0.3, 0.2), 2, 90, 5, 25, float4(worldPosition.x + EPSILON, worldPosition.yz, 1));
+    float3 dzWave3 = createWave(4, 5, float2(0.3, 0.2), 2, 90, 5, 25, float4(worldPosition.xy, worldPosition.z + EPSILON, 1));
+    float3 dxWave4 = createWave(2, 5, float2(0.4, 0.25), 2, 60, 15, 15, float4(worldPosition.x + EPSILON, worldPosition.yz, 1));
+    float3 dzWave4 = createWave(2, 5, float2(0.4, 0.25), 2, 60, 15, 15, float4(worldPosition.xy, worldPosition.z + EPSILON, 1));
+    float3 dxWave5 = createWave(6, 5, float2(0.1, 0.8), 20, 250, 2, 40, float4(worldPosition.x + EPSILON, worldPosition.yz, 1));
+    float3 dzWave5 = createWave(6, 5, float2(0.1, 0.8), 20, 250, 2, 40, float4(worldPosition.xy, worldPosition.z + EPSILON, 1));
+    float3 dxWave6 = createWave(4, 5, float2(-0.5, -0.3), 0.5, 8, 0.2, 4, float4(worldPosition.x + EPSILON, worldPosition.yz, 1));
+    float3 dzWave6 = createWave(4, 5, float2(-0.5, -0.3), 0.5, 8, 0.2, 4, float4(worldPosition.xy, worldPosition.z + EPSILON, 1));
+    float3 dxWave7 = createWave(8, 5, float2(-0.8, 0.4), 0.3, 5, 0.3, 6, float4(worldPosition.x + EPSILON, worldPosition.yz, 1));
+    float3 dzWave7 = createWave(8, 5, float2(-0.8, 0.4), 0.3, 5, 0.3, 6, float4(worldPosition.xy, worldPosition.z + EPSILON, 1));
 
     worldPosition.xyz += (wave1 + wave2 + wave3 + wave4 + wave5 + wave6 * 0.4 + wave7 * 0.6) / 7;
 
     float3 normalVector = float3(0,0,0);
     normalVector.x = (dxWave1.x + dxWave2.x + dxWave3.x + dxWave4.x + dxWave5.x + dxWave6.x * 0.4 + dxWave7.x * 0.6) / 7;
-    normalVector.y = (wave1.y + wave2.y + wave3.y + wave4.y + wave5.y + wave6.y * 0.4 + wave7.y * 0.6) / 7;
     normalVector.z = (dxWave1.z + dxWave2.z + dxWave3.z + dxWave4.z + dxWave5.z + dxWave6.z * 0.4 + dxWave7.z * 0.6) / 7;
 
-    //worldPosition.xyz += wave1;
-
-    //float3 waterTangent1 = normalize(float3(1, dxWave1.x, 0));
-    //float3 waterTangent2 = normalize(float3(0, dzWave1.z, 1));
-
-    input.Normal.xyz = normalize(normalVector);
-
-    //input.Normal.xyz = (-worldPosition.x, 1.0 - worldPosition.y, -worldPosition.z);
+    float3 waterTangent1 = normalize(float3(1, normalVector.x, 0));
+    float3 waterTangent2 = normalize(float3(0, normalVector.z, 1));
+    input.Normal.xyz = normalize(cross(waterTangent2, waterTangent1));
     
     output.WorldPosition = worldPosition;
-
-    //output.Normal = input.Normal;
-    output.Normal = mul(input.Normal, InverseTransposeWorld);
+    output.Normal = input.Normal;
 
     float4 viewPosition = mul(worldPosition, View);
     output.Position = mul(viewPosition, Projection);
@@ -173,6 +181,9 @@ float4 MainPS(VertexShaderOutput input) : COLOR
 {
     float alturaY = clamp(lightPosition.y / 1500, 0.5, 1);
 
+    float3 worldNormal = input.Normal;
+    float3 normal = getNormalFromMap(input.TextureCoordinates, input.WorldPosition.xyz, worldNormal);
+
     // Base vectors
     float3 lightDirection = normalize(lightPosition - input.WorldPosition.xyz);
     float3 viewDirection = normalize(eyePosition - input.WorldPosition.xyz);
@@ -180,31 +191,29 @@ float4 MainPS(VertexShaderOutput input) : COLOR
 
     // Get the texture texel textureSampler is the sampler, Texcoord is the interpolated coordinates
     float4 texelColor = tex2D(textureSampler, input.TextureCoordinates);
-    
-    float3 color = diffuseColor;
-
-    float crestaBase = saturate(input.WorldPosition.y * 0.008) + 0.22;
-    color += float3(1, 1, 1) * float3(crestaBase, crestaBase, crestaBase);
-    
-    if (input.WorldPosition.y * 0.2 > -1) {
-        float n = input.WorldPosition.y * 0.5 * noise(input.WorldPosition.x * 0.01) * noise(input.WorldPosition.z * 0.01) * texelColor.r;
-        color += float3(.1, .1, .1) * float3(n, n, n);
-        //color += float4(1, 1, 1, 1) * float4(n, n, n, 1);
-    }
 
     float3 ambientLight = KAmbient * ambientColor;
 
     // Calculate the diffuse light
-    float NdotL = saturate(dot(input.Normal.xyz, lightDirection));
-    float3 diffuseLight = KDiffuse * color * NdotL;
+    float NdotL = saturate(dot(input.Normal.xyz + normal, lightDirection));
+    float3 diffuseLight = KDiffuse * NdotL;
+
+    float3 baseColor = saturate(ambientLight + diffuseLight);
+
+    float crestaBase = saturate(input.WorldPosition.y * 0.008) + 0.22;
+    baseColor += float3(1, 1, 1) * float3(crestaBase, crestaBase, crestaBase);
+    
+    if (input.WorldPosition.y * 0.2 > -1) {
+        float n = input.WorldPosition.y * 0.5 * noise(input.WorldPosition.x * 0.01) * noise(input.WorldPosition.z * 0.01) * texelColor.r;
+        baseColor += float3(.1, .1, .1) * float3(n, n, n);
+    }
 
     // Calculate the specular light
     float NdotH = dot(input.Normal.xyz, halfVector);
     float3 specularLight = sign(NdotL) * KSpecular * specularColor * pow(saturate(NdotH), shininess);
 
     // Final calculation
-    float4 finalColor = float4(saturate(ambientLight + diffuseLight + color) + specularLight, 1) * alturaY;
-    //float4 finalColor = float4(diffuseLight, 1) * alturaY;
+    float4 finalColor = float4(baseColor + specularLight, 1) * alturaY;
     
     return finalColor;
 }

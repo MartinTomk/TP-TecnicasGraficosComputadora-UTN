@@ -67,6 +67,7 @@ namespace TGC.MonoGame.TP
         public Texture2D IslandTexture;
         public Texture2D IslandMiscTexture;
         public Texture2D WaterTexture;
+        public Texture2D WaterNormalTexture;
 
         Matrix MatrixIsland1;
         Matrix MatrixIsland2;
@@ -201,13 +202,14 @@ namespace TGC.MonoGame.TP
             ModelWater = Content.Load<Model>(ContentFolder3D + "Island/waterAltaGeo");
             WaterEffect = Content.Load<Effect>(ContentFolderEffects + "WaterShader");
             WaterTexture = Content.Load<Texture2D>(ContentFolderTextures + "Island/TexturesCom_WaterPlain0012_1_seamless_S");
-            WaterEffect.Parameters["ambientColor"]?.SetValue(new Vector3(0f, 0.1f, 0.27f));
+            WaterNormalTexture = Content.Load<Texture2D>(ContentFolderTextures + "Island/normalAgua");
+            WaterEffect.Parameters["ambientColor"]?.SetValue(new Vector3(0f, 0.17f, 0.37f));
             WaterEffect.Parameters["diffuseColor"]?.SetValue(new Vector3(0f, 0.25f, 0.48f));
             WaterEffect.Parameters["specularColor"]?.SetValue(new Vector3(0.95f, 0.95f, 0.95f));
-            WaterEffect.Parameters["KAmbient"]?.SetValue(0.2f);
-            WaterEffect.Parameters["KDiffuse"]?.SetValue(4f);
-            WaterEffect.Parameters["KSpecular"]?.SetValue(0.08f);
-            WaterEffect.Parameters["shininess"]?.SetValue(1f);
+            WaterEffect.Parameters["KAmbient"]?.SetValue(0.6f);
+            WaterEffect.Parameters["KDiffuse"]?.SetValue(0.8f);
+            WaterEffect.Parameters["KSpecular"]?.SetValue(0.12f);
+            WaterEffect.Parameters["shininess"]?.SetValue(15f);
 
 
             ModelCasa = Content.Load<Model>(ContentFolder3D + "Island/CasaGeo");
@@ -381,12 +383,13 @@ namespace TGC.MonoGame.TP
             DrawModelLight(ModelPalm5, Matrix.CreateScale(0.09f) * Matrix.CreateRotationY(4f) * Matrix.CreateTranslation(-650, 30, -100), LightEffect);
 
             WaterEffect.Parameters["baseTexture"]?.SetValue(WaterTexture);
+            WaterEffect.Parameters["normalTexture"]?.SetValue(WaterNormalTexture);
             WaterEffect.Parameters["Time"]?.SetValue(time);
             for (int i = -8; i < 8; i++)
                 for (int j = -8; j < 8; j++)
                 {
                     Matrix MatrixWater = Matrix.Identity * Matrix.CreateScale(10f, 0f, 10f) * Matrix.CreateTranslation(i * 200, 0, j * 200);
-                    WaterEffect.Parameters["InverseTransposeWorld"].SetValue(Matrix.Transpose(Matrix.Invert(MatrixWater)));
+                    WaterEffect.Parameters["InverseTransposeWorld"]?.SetValue(Matrix.Transpose(Matrix.Invert(MatrixWater)));
                     DrawModel(ModelWater, MatrixWater, WaterEffect);
                 }
             //DrawModel(ModelWater, Matrix.CreateScale(10f, 0f, 10f), WaterEffect);
@@ -465,7 +468,6 @@ namespace TGC.MonoGame.TP
         {
             // Libero los recursos.
             Content.Unload();
-
             base.UnloadContent();
         }
 

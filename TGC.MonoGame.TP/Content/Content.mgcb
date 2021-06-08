@@ -1929,6 +1929,18 @@
 /processorParam:TextureFormat=Color
 /build:Textures/Botes/T_Transport_M_Transport_Details_OcclusionRoughnessMetallic.TGA
 
+#begin Textures/Island/normalAgua.jpeg
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Textures/Island/normalAgua.jpeg
+
 #begin Textures/Island/TexturesCom_WaterPlain0008_1_seamless_S.jpg
 /importer:TextureImporter
 /processor:TextureProcessor
