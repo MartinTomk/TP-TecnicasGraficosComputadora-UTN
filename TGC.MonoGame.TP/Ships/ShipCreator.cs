@@ -2,12 +2,14 @@ using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using TGC.MonoGame.TP.Geometries;
 
 namespace TGC.MonoGame.TP.Ships
 {
     public class Ship
     {
         private TGCGame Game;
+        
         private float time;
 
         private Model ShipModel { get; set; }
@@ -21,12 +23,13 @@ namespace TGC.MonoGame.TP.Ships
 
         public string TextureName;
         public Vector3 Position { get; set; }
-        public Vector3 Rotation { get; set; }
+        public Vector3 ModelRotation { get; set; }
+
+        public Vector3 FrontDirection { get; set; }
         public Vector3 wavesRotation { get; set; }
         public Vector3 Scale { get; set; }
         public float Speed { get; set; }
-
-        public Vector3 FrontDirection;
+        public float Length { get; set; }
 
         public float RotationRadians;
 
@@ -43,22 +46,26 @@ namespace TGC.MonoGame.TP.Ships
         public BoundingSphere BoatBox { get; set; }
         //public BoundingBox BoatBox { get; set; }
 
-        public Ship(TGCGame game, Vector3 pos, Vector3 rot, Vector3 scale, float speed, string modelName, string effect, string textureName)
+        public SpherePrimitive DebugSphere;
+        public Vector3 ProaPos { get; set; }
+        public Vector3 PopaPos { get; set; }
+
+        public Ship(TGCGame game, Vector3 pos, Vector3 rot, Vector3 scale, float speed, float length, string modelName, string effect, string textureName)
         {
             Game = game;
             Position = pos;
-            Rotation = rot;
+            ModelRotation = rot;
+            RotationRadians = rot.Y;
             Scale = scale;
             Speed = speed;
+            Length = length;
             ModelName = modelName;
             EffectName = effect;
             TextureName = textureName;
-            MovementSpeed = 100.0f;
+            MovementSpeed = speed;
             RotationSpeed = 0.5f;
-            FrontDirection = Vector3.Forward;
-            RotationRadians = 0;
 
-            BoatMatrix = Matrix.Identity * Matrix.CreateScale(scale) * Matrix.CreateRotationY(rot.Y) * Matrix.CreateTranslation(pos);
+            //BoatMatrix = Matrix.Identity * Matrix.CreateScale(scale) * Matrix.CreateRotationY(rot.Y) * Matrix.CreateTranslation(pos);
         }
         public void LoadContent()
         {
@@ -68,6 +75,8 @@ namespace TGC.MonoGame.TP.Ships
 
             //BoatBox = new BoundingBox(Vector3.Transform(-Vector3.One * 0.5f, BoatMatrix), Vector3.Transform(Vector3.One * 0.5f, BoatMatrix));
             BoatBox = new BoundingSphere(Position, 50);
+
+            DebugSphere = new SpherePrimitive(Game.GraphicsDevice, 10);
         }
 
 
@@ -75,6 +84,8 @@ namespace TGC.MonoGame.TP.Ships
         {
             ShipEffect.Parameters["ModelTexture"].SetValue(ShipTexture);
             DrawModel(ShipModel, BoatMatrix, ShipEffect);
+            DebugSphere.Draw(Matrix.Identity * Matrix.CreateTranslation(ProaPos), Game.CurrentCamera.View, Game.CurrentCamera.Projection);
+            DebugSphere.Draw(Matrix.Identity * Matrix.CreateTranslation(PopaPos), Game.CurrentCamera.View, Game.CurrentCamera.Projection);
         }
 
         private void DrawModel(Model geometry, Matrix transform, Effect effect)
@@ -97,10 +108,17 @@ namespace TGC.MonoGame.TP.Ships
             // Esto es el tiempo total transcurrido en el tiempo, siempre se incrementa
             time += Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds);
 
-            float WavePosY = GetWaterPositionY(Position.X, Position.Z);
+            
+            float InclinationRadians = GetBoatInclination();
+            // ProaPos y PopaPos se settean en GetBoatInclination()
+            float WavePosY = (ProaPos.Y + PopaPos.Y) / 2;
+            //float WavePosY = GetWaterPositionY(time, Position.X, Position.Z);
+
+            Vector3 InclinationAxis = Vector3.Cross(Vector3.Up, FrontDirection);
             Position = new Vector3(Position.X, WavePosY, Position.Z);
-            BoatMatrix = Matrix.CreateScale(Scale) * Matrix.CreateRotationY(Rotation.Y) * Matrix.CreateTranslation(Position);
-            FrontDirection = -new Vector3((float)Math.Sin(RotationRadians), 0.0f, (float)Math.Cos(RotationRadians));
+            BoatMatrix = Matrix.CreateScale(Scale) * Matrix.CreateRotationY(ModelRotation.Y) * Matrix.CreateRotationY(RotationRadians) * Matrix.CreateFromAxisAngle(InclinationAxis, InclinationRadians) * Matrix.CreateTranslation(Position);
+            
+            FrontDirection = new Vector3((float)Math.Cos(-RotationRadians), 0.0f, (float)Math.Sin(-RotationRadians));
             //BoatBox = new BoundingBox(Vector3.Transform(-Vector3.One * 0.5f, BoatMatrix), Vector3.Transform(Vector3.One * 0.5f, BoatMatrix));
             BoatBox = new BoundingSphere(Position, 50);
         }
@@ -110,43 +128,57 @@ namespace TGC.MonoGame.TP.Ships
             return val - MathF.Floor(val);
         }
 
-        public float GetWaterPositionY(float xPosition, float zPosition)
+        public Vector3 createWave(float time, float steepness, float numWaves, Vector2 waveDir, float waveAmplitude, float waveLength, float peak, float speed, float xPos, float zPos)
         {
-            float fade = MathF.Min(MathF.Cos(time * 0.3f) + 0.5f, 1f);
-            fade = MathF.Max(fade, 0.15f);
+            Vector3 wave = new Vector3(0.0f, 0.0f, 0.0f);
 
+            float spaceMult = (float)(2 * 3.14159265359 / waveLength);
+            float timeMult = (float)(speed * 2 * 3.14159265359 / waveLength);
 
-            float speed = 0.05f;
-            float offset = 10f;
-            float radius = 3f;
-            var worldPosition = Position;
+            Vector2 posXZ = new Vector2(xPos, zPos);
+            wave.X = waveAmplitude * steepness * waveDir.X * MathF.Cos(Vector2.Dot(posXZ, waveDir) * spaceMult + time * timeMult);
+            wave.Y = 2 * waveAmplitude * MathF.Pow((MathF.Sin(Vector2.Dot(posXZ, waveDir) * spaceMult + time * timeMult) + 1) / 2, peak);
+            wave.Z = waveAmplitude * steepness * waveDir.Y * MathF.Cos(Vector2.Dot(posXZ, waveDir) * spaceMult + time * timeMult);
+            return wave;
+        }
+        
+        public float GetWaterPositionY(float time, float xPos, float zPos)
+        {
+            Vector3 worldPosition = Position;
 
-            var posY = 0.4 * MathF.Cos(((float)(xPosition * 0.0075f) * .5f + time * speed) * offset) * radius * 0.5f;
-            posY += (1 - frac(time * 0.1f)) * frac(time * 0.1f) * 0.1f * MathF.Cos((-(float)(zPosition * 0.0075f) + time * speed * 1.3f) * offset) * radius;
+            //createWave(float steepness, float numWaves, float2 waveDir, float waveAmplitude, float waveLength, float peak, float speed, float4 position) {
 
-            posY *= 3f + (1 - fade) * 12f;
+            Vector3 wave1 = createWave(time, 4, 5, new Vector2( 0.5f, 0.3f), 40, 160, 3, 10, xPos, zPos);
+            Vector3 wave2 = createWave(time, 8, 5, new Vector2(0.8f, -0.4f), 12, 120, 1.2f, 20, xPos, zPos);
+            Vector3 wave3 = createWave(time, 4, 5, new Vector2(0.3f, 0.2f), 2, 90, 5, 25, xPos, zPos);
+            Vector3 wave4 = createWave(time, 2, 5, new Vector2(0.4f, 0.25f), 2, 60, 15, 15, xPos, zPos);
+            Vector3 wave5 = createWave(time, 6, 5, new Vector2(0.1f, 0.8f), 20, 250, 2, 40, xPos, zPos);
 
+            Vector3 wave6 = createWave(time, 4, 5, new Vector2(-0.5f, -0.3f), 0.5f, 8, 0.2f, 4, xPos, zPos);
+            Vector3 wave7 = createWave(time, 8, 5, new Vector2(-0.8f, 0.4f), 0.3f, 5, 0.3f, 6, xPos, zPos);
 
+            worldPosition = (wave1 + wave2 + wave3 + wave4 + wave5 + wave6 * 0.4f + wave7 * 0.6f) / 6;
+            return (float)worldPosition.Y;
+        }
 
-            worldPosition = new Vector3(xPosition, (float)(posY) * 2, zPosition);
+        private float GetBoatInclination()
+        {
+            float xPosProa = Position.X + FrontDirection.X * Length / 2;
+            float zPosProa = Position.Z + FrontDirection.Z * Length / 2;
+            float xPosPopa = Position.X - FrontDirection.X * Length / 2;
+            float zPosPopa = Position.Z - FrontDirection.Z * Length / 2;
+            float WavePosYProa = GetWaterPositionY(time, xPosProa, zPosProa);
+            float WavePosYPopa = GetWaterPositionY(time, xPosPopa, zPosPopa);
+            ProaPos = new Vector3(xPosProa, WavePosYProa, zPosProa);
+            PopaPos = new Vector3(xPosPopa, WavePosYPopa, zPosPopa);
 
-            Position = worldPosition;
-
-            var wavetan1 = Vector3.Normalize(new Vector3(1f,
-                0.4f * MathF.Cos(((float)(xPosition) * .5f + time * speed) * offset) * radius * 0.5f
-                , 0f));
-
-            var wavetan2 = Vector3.Normalize(new Vector3(0,
-                (1 - frac(time * 0.1f)) * frac(time * 0.1f) * 0.1f * MathF.Cos((-(float)(zPosition) + time * speed * 1.3f) * offset) * radius,
-                1));
-
-            var waterNormal = Vector3.Normalize(Vector3.Cross(wavetan2, wavetan1));
-
-            wavesRotation = Rotation - Vector3.Dot(Rotation, waterNormal) * waterNormal;
-
-            waterMatrix = Matrix.CreateLookAt(Vector3.Zero, wavesRotation, waterNormal);
-
-            return (float)posY;
+            Vector3 Inclination = new Vector3(xPosProa, WavePosYProa, zPosProa) - new Vector3(xPosPopa, WavePosYPopa, zPosPopa);
+            Inclination.Normalize();
+            // Angulo entre los vectores rotacion y inclinacion
+            double DotProductInclinationRotation = (double)Vector3.Dot(Inclination, FrontDirection);
+            float InclinationRadians = (float)Math.Acos(DotProductInclinationRotation);
+            if (WavePosYProa > WavePosYPopa) InclinationRadians *= -1;
+            return InclinationRadians;
         }
     }
 }

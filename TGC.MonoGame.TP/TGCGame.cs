@@ -8,7 +8,6 @@ using TGC.MonoGame.TP.Geometries;
 using TGC.MonoGame.TP.Ships;
 
 
-
 namespace TGC.MonoGame.TP
 {
     /// <summary>
@@ -69,7 +68,6 @@ namespace TGC.MonoGame.TP
         public Texture2D IslandMiscTexture;
         public Texture2D WaterTexture;
 
-
         Matrix MatrixIsland1;
         Matrix MatrixIsland2;
         Matrix MatrixIsland3;
@@ -117,13 +115,11 @@ namespace TGC.MonoGame.TP
         public Texture2D SkyDomeTexture;
 
         private Ship[] Ships;
-        float IslandScaleCollisionTest;
         BoundingSphere IslandSphere;
-
 
         private BoundingSphere[] IslandColliders;
 
-        BoundingBox TestBox;
+        //BoundingBox TestBox;
 
         // Iluminacion
         private Effect LightEffect{ get; set; }
@@ -163,7 +159,7 @@ namespace TGC.MonoGame.TP
             Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, GraphicsDevice.Viewport.AspectRatio, 1, 50);
             var screenSize = new Point(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height / 2);
 
-            CameraArm = 100.0f;
+            CameraArm = 150.0f;
             shotCam = new BoatCamera(GraphicsDevice.Viewport.AspectRatio, new Vector3(0, CameraArm, 600), screenSize);
 
             Graphics.PreferredBackBufferWidth = 1280;
@@ -172,8 +168,8 @@ namespace TGC.MonoGame.TP
 
             spriteBatch = new SpriteBatch(Graphics.GraphicsDevice);
 
-            IslandScaleCollisionTest = 0.2f;
             IslandSphere = new BoundingSphere(Vector3.Zero, 400);
+
             base.Initialize();
             //Colliders.
         }
@@ -200,7 +196,7 @@ namespace TGC.MonoGame.TP
 
             ModelWater = Content.Load<Model>(ContentFolder3D + "Island/waterAltaGeo");
             WaterEffect = Content.Load<Effect>(ContentFolderEffects + "WaterShader");
-            WaterTexture = Content.Load<Texture2D>(ContentFolderTextures + "Island/Water01Diffuse");
+            WaterTexture = Content.Load<Texture2D>(ContentFolderTextures + "Island/TexturesCom_WaterPlain0012_1_seamless_S");
 
             ModelCasa = Content.Load<Model>(ContentFolder3D + "Island/CasaGeo");
 
@@ -215,7 +211,6 @@ namespace TGC.MonoGame.TP
             ModelRock3 = Content.Load<Model>(ContentFolder3D + "Island/Roca3Geo");
             //ModelRock4 = Content.Load<Model>(ContentFolder3D + "Island/Roca4Geo");
             ModelRock5 = Content.Load<Model>(ContentFolder3D + "Island/Roca5Geo");
-
 
             MatrixIsland1 = Matrix.CreateScale(0.07f) * Matrix.CreateTranslation(300, 0, 800f);
             MatrixIsland2 = Matrix.CreateScale(0.2f);
@@ -236,23 +231,25 @@ namespace TGC.MonoGame.TP
 
             //// BOTES ////
 
-            SM = new Ship(this, new Vector3(-100f, 0.01f, 400f), new Vector3(0f, MathHelper.PiOver2, 0f), new Vector3(0.04f, 0.04f, 0.04f), 0.5f, "Botes/SMGeo", "BasicShader", "Botes/SM_T_Boat_M_Boat_BaseColor");
+            SM = new Ship(this, new Vector3(-100f, 0.01f, 400f), new Vector3(0f, 0f, 0f), new Vector3(0.04f, 0.04f, 0.04f), 100.0f, 30.0f, "Botes/SMGeo", "BasicShader", "Botes/SM_T_Boat_M_Boat_BaseColor");
             SM.LoadContent();
 
-            Patrol = new Ship(this, new Vector3(-300f, 0.01f, 500f), new Vector3(0f, MathHelper.PiOver2, 0f), new Vector3(0.07f, 0.07f, 0.07f), 0.5f, "Botes/PatrolGeo", "BasicShader", "Botes/T_Patrol_Ship_1K_BaseColor");
+            Patrol = new Ship(this, new Vector3(-300f, 0.01f, 500f), new Vector3(0f, 0f, 0f), new Vector3(0.07f, 0.07f, 0.07f), 100.0f, 350.0f, "Botes/PatrolGeo", "BasicShader", "Botes/T_Patrol_Ship_1K_BaseColor");
             Patrol.LoadContent();
 
-            Cruiser = new Ship(this, new Vector3(-100f, 0.01f, 900f), new Vector3(0f, MathHelper.PiOver2, 0f), new Vector3(0.03f, 0.03f, 0.03f), 0.5f, "Botes/CruiserGeo", "BasicShader", "Botes/T_Cruiser_M_Cruiser_BaseColor");
+            Cruiser = new Ship(this, new Vector3(-100f, 0.01f, 900f), new Vector3(0f, 0.0f, 0f), new Vector3(0.03f, 0.03f, 0.03f), 100.0f, 350.0f, "Botes/CruiserGeo", "BasicShader", "Botes/T_Cruiser_M_Cruiser_BaseColor");
             Cruiser.LoadContent();
 
-            Barquito = new Ship(this, new Vector3(-200f, 0.01f, 700f), new Vector3(0f, MathHelper.PiOver2, 0f), new Vector3(0.05f, 0.05f, 0.05f), 0.5f, "Botes/BarquitoGeo", "BasicShader", "Botes/Barquito_BaseColor");
+            Barquito = new Ship(this, new Vector3(-200f, 0.01f, 700f), new Vector3(0f, 0.0f, 0f), new Vector3(0.05f, 0.05f, 0.05f), 300.0f, 20.0f, "Botes/BarquitoGeo", "BasicShader", "Botes/Barquito_BaseColor");
             Barquito.LoadContent();
 
-            PlayerBoat = new Ship(this, new Vector3(0f, 0.01f, 600f), new Vector3(0f, 0f, 0f), new Vector3(0.1f, 0.1f, 0.1f), 0.5f, "ShipB/Source/Ship", "BasicShader", "Botes/Battleship_lambert1_AlbedoTransparency.tga");
+            //PlayerBoat = new Ship(this, new Vector3(0f, 0.01f, 600f), new Vector3(0f, 0f, 0f), new Vector3(0.03f, 0.03f, 0.03f), 100.0f, 350.0f, "Botes/CruiserGeo", "BasicShader", "Botes/T_Cruiser_M_Cruiser_BaseColor");
+            PlayerBoat = new Ship(this, new Vector3(0f, 0.01f, 600f), new Vector3(0f, MathHelper.PiOver2, 0f), new Vector3(0.1f, 0.1f, 0.1f), 100.0f, 200.0f, "ShipB/Source/Ship", "BasicShader", "Botes/Battleship_lambert1_AlbedoTransparency.tga");
             PlayerBoat.playerMode = true;
             PlayerBoat.LoadContent();
 
             PlayerControlledShip = PlayerBoat;
+            //PlayerControlledShip = Barquito;
 
             Ships = new Ship[]
             {
@@ -264,9 +261,7 @@ namespace TGC.MonoGame.TP
             {
                 new BoundingSphere(MatrixIsland1.Translation, 100), new BoundingSphere(MatrixIsland2.Translation, 300), new BoundingSphere(MatrixIsland3.Translation, radius),
                 new BoundingSphere(MatrixIsland4.Translation, radius), new BoundingSphere(MatrixIsland5.Translation, radius), 
-
                 new BoundingSphere(MatrixCasa.Translation, radius), 
-
                 new BoundingSphere(MatrixRock1.Translation, radius), new BoundingSphere(MatrixRock2.Translation, radius), new BoundingSphere(MatrixRock3.Translation, radius), 
                 new BoundingSphere(MatrixRock4.Translation, radius), new BoundingSphere(MatrixRock5.Translation, radius), new BoundingSphere(MatrixRock6.Translation, radius), 
                 new BoundingSphere(MatrixRock7.Translation, radius), 
@@ -293,8 +288,6 @@ namespace TGC.MonoGame.TP
 
             font = Content.Load<SpriteFont>("Fonts/Font");
 
-
-
             base.LoadContent();
         }
 
@@ -315,8 +308,6 @@ namespace TGC.MonoGame.TP
             Barquito.Update(gameTime);
             PlayerBoat.Update(gameTime);
             shotCam.Update(gameTime);
-
-
             shotCam.Position = PlayerBoat.Position + new Vector3(0, CameraArm, 0);
 
 
@@ -449,7 +440,6 @@ namespace TGC.MonoGame.TP
                 light.Parameters["WorldViewProjection"].SetValue(transform * shotCam.View * shotCam.Projection);
                     foreach (var meshPart in modelMesh.MeshParts) {
                         meshPart.Effect = light;
-
                 }
                 // Once we set these matrices we draw
                 modelMesh.Draw();
@@ -530,7 +520,7 @@ namespace TGC.MonoGame.TP
         }
         private void RotateRight(float amount)
         {
-            PlayerControlledShip.Rotation = new Vector3(PlayerControlledShip.Rotation.X, PlayerControlledShip.Rotation.Y + amount, PlayerControlledShip.Rotation.Z);
+            //PlayerControlledShip.Rotation = new Vector3(PlayerControlledShip.Rotation.X, PlayerControlledShip.Rotation.Y + amount, PlayerControlledShip.Rotation.Z);
             PlayerControlledShip.RotationRadians += amount;
         }
         private void RotateLeft(float amount)
