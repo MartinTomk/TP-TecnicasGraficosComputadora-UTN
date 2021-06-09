@@ -1787,6 +1787,18 @@
 /processorParam:Quality=Best
 /build:Music/PirateOst.mp3.mp3
 
+#begin Sounds/CannonShot.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/CannonShot.wav
+
+#begin Sounds/Waves.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/Waves.wav
+
 #begin Textures/Botes/Barquito_BaseColor.tga
 /importer:TextureImporter
 /processor:TextureProcessor

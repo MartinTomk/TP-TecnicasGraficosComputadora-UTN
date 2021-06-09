@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Audio;
 using TGC.MonoGame.TP.Cameras;
 using TGC.MonoGame.TP.Skydome;
 using TGC.MonoGame.TP.Geometries;
@@ -174,7 +175,11 @@ namespace TGC.MonoGame.TP
         private RenderTargetCube EnvironmentMapRenderTarget { get; set; }
         private Vector3 refPosition { get; }
         //private Effect WaterEnvEffect { get; set; }
-
+        //Sonido 
+        private SoundEffect Waves { get; set; }
+        private SoundEffect ShipShoot { get; set; }
+        private SoundEffectInstance Instance { get; set; }
+        private SoundEffectInstance ShootInstance { get; set; }
         // pal debuggin
         //SpriteBatch spriteBatch;
         //SpriteFont font;
@@ -369,6 +374,12 @@ namespace TGC.MonoGame.TP
             lightBox = new CubePrimitive(GraphicsDevice, 70, Color.Yellow);
             lightBox2 = new CubePrimitive(GraphicsDevice, 25, Color.White);
 
+            //Sonido
+            Waves = Content.Load<SoundEffect>(ContentFolderSounds + "Waves");
+            ShipShoot = Content.Load<SoundEffect>(ContentFolderSounds + "CannonShot");
+            ShootInstance = ShipShoot.CreateInstance();
+            Instance = Waves.CreateInstance();
+
             BulletModel = Content.Load<Model>(ContentFolder3D + "Bullets/Bullet");
 
             font = Content.Load<SpriteFont>("Fonts/Font");
@@ -446,7 +457,12 @@ namespace TGC.MonoGame.TP
             {
                 bullet.Update();
             }
-
+            if (Instance.State != SoundState.Playing)
+            {
+                Instance.IsLooped = true;
+                Instance.Play();
+                Instance.Volume = (float)0.45;
+            }
             base.Update(gameTime);
 
         }
@@ -630,7 +646,7 @@ namespace TGC.MonoGame.TP
                 Bullets[i].Draw(gameTime);
             }
 
-            _ui.Draw();
+            //_ui.Draw();
 
             base.Draw(gameTime);
         }
@@ -796,12 +812,20 @@ namespace TGC.MonoGame.TP
                     bullet._available = false;
 
                     availableBullets = PoolBullets.FindAll(b => b._available).Count;
+                    ShootInstance.Play();
                 }
             }
 
             lastMouseState = mouseState;
 
-
+            if (keyboardState.IsKeyDown(Keys.M) && Instance.State == SoundState.Playing && Instance.Volume <= 0.98)
+            {
+                Instance.Volume += (float)0.02;
+            }
+            if (keyboardState.IsKeyDown(Keys.N) && Instance.State == SoundState.Playing && Instance.Volume >= 0.03)
+            {
+                Instance.Volume -= (float)0.02;
+            }
         }
 
         private void MoveForward(float amount)
