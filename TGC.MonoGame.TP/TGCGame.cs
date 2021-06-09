@@ -237,8 +237,6 @@ namespace TGC.MonoGame.TP
             WaterEffect.Parameters["shininess"]?.SetValue(15f);
             WaterEffect.Parameters["KReflection"]?.SetValue(0.52f);
 
-
-
             ModelCasa = Content.Load<Model>(ContentFolder3D + "Island/CasaGeo");
 
             ModelPalm1 = Content.Load<Model>(ContentFolder3D + "Island/Palmera1Geo");
@@ -476,14 +474,11 @@ namespace TGC.MonoGame.TP
 
             #region Pass 7
 
-            //GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+            GraphicsDevice.DepthStencilState = DepthStencilState.Default;
             // Set the render target as our shadow map, we are drawing the depth into this texture
-            //GraphicsDevice.SetRenderTarget(ScreenRenderTarget);
-            //GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.CornflowerBlue, 1f, 0);
-
-            // Set the render target as null, we are drawing on the screen!
-            GraphicsDevice.SetRenderTarget(null);
+            GraphicsDevice.SetRenderTarget(SceneRenderTarget);
             GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.CornflowerBlue, 1f, 0);
+
 
             // Draw our scene with the default effect and default camera
 
@@ -536,22 +531,13 @@ namespace TGC.MonoGame.TP
             #region Draw Water
 
             // Set up our Effect to draw the robot
-            //WaterEnvEffect.CurrentTechnique = WaterEnvEffect.Techniques["EnvironmentMap"];
             WaterEffect.Parameters["baseTexture"]?.SetValue(WaterTexture);
             WaterEffect.Parameters["foamTexture"]?.SetValue(WaterFoamTexture);
             WaterEffect.Parameters["normalTexture"]?.SetValue(WaterNormalTexture);
             WaterEffect.Parameters["Time"]?.SetValue(time);
             WaterEffect.Parameters["environmentMap"]?.SetValue(EnvironmentMapRenderTarget);
             WaterEffect.Parameters["eyePosition"]?.SetValue(shotCam.Position);
-            //WaterEnvEffect.Parameters["baseTexture"]?.SetValue(WaterTexture);
 
-            //var worldMatrix = Matrix.CreateTranslation(0, 0, 0);
-            // World is used to transform from model space to world space
-            //WaterEnvEffect.Parameters["World"]?.SetValue(worldMatrix);
-            // InverseTransposeWorld is used to rotate normals
-            //WaterEnvEffect.Parameters["InverseTransposeWorld"]?.SetValue(Matrix.Transpose(Matrix.Invert(worldMatrix)));
-            // WorldViewProjection is used to transform from model space to clip space
-            //WaterEnvEffect.Parameters["WorldViewProjection"]?.SetValue(worldMatrix * shotCam.View * shotCam.Projection);
 
             for (int i = -8; i < 8; i++)
                 for (int j = -8; j < 8; j++)
@@ -564,100 +550,12 @@ namespace TGC.MonoGame.TP
                   
                     DrawModel(ModelWater, MatrixWater, WaterEffect, shotCam);
                 }
-            //DrawModel(ModelWater, Matrix.CreateScale(10f, 0f, 10f), WaterEffect);
-            
-            /// Dibujo Botes
-            /*
-            foreach (var mesh in ModelWater.Meshes)
-            {
-                foreach (var meshPart in mesh.MeshParts)
-                {
-                    worldMatrix *= Matrix.CreateScale(500f) * Matrix.CreateTranslation(0, 0, 0);
-                    WaterEffect.Parameters["World"].SetValue(worldMatrix);
-                    WaterEffect.Parameters["InverseTransposeWorld"]?.SetValue(Matrix.Transpose(Matrix.Invert(worldMatrix)));
-                    //WaterEffect.Parameters["WorldViewProjection"]?.SetValue(worldMatrix * shotCam.View * shotCam.Projection);
-                    meshPart.Effect = WaterEffect;
-                }
-                mesh.Draw();
-            }
-            
-            //DrawModel(ModelWater, Matrix.CreateScale(50f), WaterEnvEffect, shotCam);
-            */
+
             #endregion
 
             #endregion
 
-            /*
-            // Aca deberiamos poner toda la logia de renderizado del juego.
-            #region Pass 1
-
-            GraphicsDevice.DepthStencilState = DepthStencilState.Default;
-            // Set the render target as our shadow map, we are drawing the depth into this texture
-            GraphicsDevice.SetRenderTarget(SceneRenderTarget);
-            GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.CornflowerBlue, 1f, 0);
-
-            time += Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds);
-            // Para dibujar le modelo necesitamos pasarle informacion que el efecto esta esperando.
-            IslandEffect.Parameters["ModelTexture"].SetValue(IslandTexture);
-            LightEffect.Parameters["baseTexture"].SetValue(IslandTexture);
-
-
-            DrawModelLight(ModelIsland, MatrixIsland1, LightEffect);
-            DrawModelLight(ModelIsland, MatrixIsland2, LightEffect);
-            DrawModelLight(ModelIsland, MatrixIsland3, LightEffect);
-            DrawModelLight(ModelCasa, MatrixCasa, LightEffect);
-            
-            DrawModelLight(ModelRock1, MatrixRock1, LightEffect);
-            DrawModelLight(ModelRock2, MatrixRock2, LightEffect);
-            DrawModelLight(ModelRock2, MatrixRock3, LightEffect);
-            DrawModelLight(ModelRock3, MatrixRock4, LightEffect);
-            DrawModelLight(ModelRock5, MatrixRock5, LightEffect);
-            DrawModelLight(ModelRock2, MatrixRock6, LightEffect);
-            DrawModelLight(ModelRock1, MatrixRock7, LightEffect);
-            LightEffect.Parameters["baseTexture"].SetValue(IslandMiscTexture);
-            DrawModelLight(ModelIsland2, MatrixIsland4, LightEffect);
-            DrawModelLight(ModelIsland3, MatrixIsland5, LightEffect);
-            
-
-            DrawModelLight(ModelPalm1, Matrix.CreateScale(0.08f) * Matrix.CreateTranslation(60, 10, 280), LightEffect);
-            DrawModelLight(ModelPalm2, Matrix.CreateScale(0.08f) * Matrix.CreateTranslation(110, 0, 300), LightEffect);
-            DrawModelLight(ModelPalm3, Matrix.CreateScale(0.08f) * Matrix.CreateTranslation(-50, 48, 150), LightEffect);
-            DrawModelLight(ModelPalm4, Matrix.CreateScale(0.09f) * Matrix.CreateTranslation(750, 0, -60), LightEffect);
-            DrawModelLight(ModelPalm5, Matrix.CreateScale(0.09f) * Matrix.CreateTranslation(580, 0, -150), LightEffect);
-            DrawModelLight(ModelPalm5, Matrix.CreateScale(0.09f) * Matrix.CreateRotationY(4f) * Matrix.CreateTranslation(-650, 30, -100), LightEffect);
-
-            WaterEffect.Parameters["baseTexture"]?.SetValue(WaterTexture);
-            WaterEffect.Parameters["normalTexture"]?.SetValue(WaterNormalTexture);
-            WaterEffect.Parameters["Time"]?.SetValue(time);
-            for (int i = -8; i < 8; i++)
-                for (int j = -8; j < 8; j++)
-                {
-                    Matrix MatrixWater = Matrix.Identity * Matrix.CreateScale(10f, 0f, 10f) * Matrix.CreateTranslation(i * 200, 0, j * 200);
-                    WaterEffect.Parameters["InverseTransposeWorld"]?.SetValue(Matrix.Transpose(Matrix.Invert(MatrixWater)));
-                    DrawModel(ModelWater, MatrixWater, WaterEffect);
-                }
-            //DrawModel(ModelWater, Matrix.CreateScale(10f, 0f, 10f), WaterEffect);
-
-            /// Dibujo Botes
-
-            SM.Draw();
-            Patrol.Draw();
-            Cruiser.Draw();
-            Barquito.Draw();
-            PlayerBoat.Draw();
-            
-            //Iluminacion
-            lightBox.Draw(LightBoxWorld, shotCam.View, shotCam.Projection);
-            lightBox2.Draw(LightBoxWorld2, shotCam.View, shotCam.Projection);
-            //DrawModel(PlayerBoatModel, Matrix.CreateRotationY((float)PlayerRotation)* PlayerBoatMatrix  , PlayerBoatEffect);
-
-            /// Skydome
-            Skydome.Draw(shotCam.View, shotCam.Projection, shotCam.Position);
-            SkyDomeEffect.Parameters["Time"].SetValue(time);
-            
-            #endregion
-
-            #region Pass 2
+            #region Pass 8
 
             // No depth needed
             GraphicsDevice.DepthStencilState = DepthStencilState.None;
@@ -669,7 +567,6 @@ namespace TGC.MonoGame.TP
             FullScreenQuad.Draw(dropsEffect);
 
             #endregion
-            */
 
             base.Draw(gameTime);
         }
