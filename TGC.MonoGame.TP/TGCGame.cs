@@ -47,9 +47,17 @@ namespace TGC.MonoGame.TP
         /// </summary>
         private GraphicsDeviceManager Graphics { get; }
         private SpriteBatch SpriteBatch { get; set; }
+
+        /// Isla 1 ///
         private Model ModelIsland { get; set; }
+        private Effect VolcanEffect1 { get; set; }
+        public Texture2D volcanTexture;
+        public Texture2D volcanNormalTexture;
+
+
         private Model ModelIsland2 { get; set; }
         private Model ModelIsland3 { get; set; }
+        
         private Model ModelCasa { get; set; }
         private Effect IslandEffect { get; set; }
         private Model ModelWater { get; set; }
@@ -65,6 +73,9 @@ namespace TGC.MonoGame.TP
         //private Model ModelRock4 { get; set; }
         private Model ModelRock5 { get; set; }
         private Effect IslandMiscEffect { get; set; }
+
+
+
         public Texture2D IslandTexture;
         public Texture2D IslandMiscTexture;
         public Texture2D WaterTexture;
@@ -213,11 +224,25 @@ namespace TGC.MonoGame.TP
             SpriteBatch = new SpriteBatch(GraphicsDevice);
 
             // Cargo el modelos /// ISLA ///
-            ModelIsland = Content.Load<Model>(ContentFolder3D + "Island/IslaGeo");
-            ModelIsland2 = Content.Load<Model>(ContentFolder3D + "Island/Isla2Geo");
-            ModelIsland3 = Content.Load<Model>(ContentFolder3D + "Island/Isla3Geo");
+            ModelIsland = Content.Load<Model>(ContentFolder3D + "Island/isla_volcan1");
+            VolcanEffect1 = Content.Load<Effect>(ContentFolderEffects + "islasShader");
+            volcanTexture = Content.Load<Texture2D>(ContentFolderTextures + "Island/Isla1/isla_geo_DefaultMaterial_Diffuse");
+            volcanNormalTexture = Content.Load<Texture2D>(ContentFolderTextures + "Island/Isla1/isla_geo_DefaultMaterial_Normal");
+            VolcanEffect1.Parameters["ambientColor"].SetValue(new Vector3(.2f, 1f, 0.2f));
+            //VolcanEffect1.Parameters["diffuseColor"].SetValue(new Vector3(1f, 1f, 0.0f));
+            VolcanEffect1.Parameters["specularColor"].SetValue(new Vector3(1f, 1f, 1f));
+            VolcanEffect1.Parameters["KAmbient"].SetValue(0.3f);
+            VolcanEffect1.Parameters["KDiffuse"].SetValue(1f);
+            VolcanEffect1.Parameters["KSpecular"].SetValue(0.2f);
+            VolcanEffect1.Parameters["shininess"].SetValue(5.0f);
+
+
             IslandEffect = Content.Load<Effect>(ContentFolderEffects + "BasicShader");
             IslandTexture = Content.Load<Texture2D>(ContentFolderTextures + "Island/TropicalIsland02Diffuse");
+            ModelIsland2 = Content.Load<Model>(ContentFolder3D + "Island/Isla2Geo");
+            ModelIsland3 = Content.Load<Model>(ContentFolder3D + "Island/Isla3Geo");
+
+
 
             IslandMiscEffect = Content.Load<Effect>(ContentFolderEffects + "BasicShader");
             IslandMiscTexture = Content.Load<Texture2D>(ContentFolderTextures + "Island/TropicalIsland01Diffuse");
@@ -377,6 +402,9 @@ namespace TGC.MonoGame.TP
             LightEffect.Parameters["lightPosition"].SetValue(lightPosition);
             LightEffect.Parameters["eyePosition"].SetValue(shotCam.Position);
 
+            VolcanEffect1.Parameters["lightPosition"].SetValue(lightPosition);
+            VolcanEffect1.Parameters["eyePosition"].SetValue(shotCam.Position);
+
             WaterEffect.Parameters["lightPosition"]?.SetValue(lightPosition);
             WaterEffect.Parameters["eyePosition"]?.SetValue(shotCam.Position);
 
@@ -422,10 +450,12 @@ namespace TGC.MonoGame.TP
                 IslandEffect.Parameters["ModelTexture"].SetValue(IslandTexture);
                 LightEffect.Parameters["baseTexture"].SetValue(IslandTexture);
 
+                VolcanEffect1.Parameters["baseTexture"].SetValue(volcanTexture);
+                VolcanEffect1.Parameters["normalTexture"].SetValue(volcanNormalTexture);
 
-                DrawModelLight(ModelIsland, MatrixIsland1, LightEffect, CubeMapCamera);
-                DrawModelLight(ModelIsland, MatrixIsland2, LightEffect, CubeMapCamera);
-                DrawModelLight(ModelIsland, MatrixIsland3, LightEffect, CubeMapCamera);
+                DrawModelLight(ModelIsland, MatrixIsland1, VolcanEffect1, CubeMapCamera);
+                DrawModelLight(ModelIsland, MatrixIsland2, VolcanEffect1, CubeMapCamera);
+                DrawModelLight(ModelIsland, MatrixIsland3, VolcanEffect1, CubeMapCamera);
                 DrawModelLight(ModelCasa, MatrixCasa, LightEffect, CubeMapCamera);
 
                 DrawModelLight(ModelRock1, MatrixRock1, LightEffect, CubeMapCamera);
@@ -484,10 +514,12 @@ namespace TGC.MonoGame.TP
             IslandEffect.Parameters["ModelTexture"].SetValue(IslandTexture);
             LightEffect.Parameters["baseTexture"].SetValue(IslandTexture);
 
+            VolcanEffect1.Parameters["baseTexture"].SetValue(volcanTexture);
+            VolcanEffect1.Parameters["normalTexture"].SetValue(volcanNormalTexture);
 
-            DrawModelLight(ModelIsland, MatrixIsland1, LightEffect, shotCam);
-            DrawModelLight(ModelIsland, MatrixIsland2, LightEffect, shotCam);
-            DrawModelLight(ModelIsland, MatrixIsland3, LightEffect, shotCam);
+            DrawModelLight(ModelIsland, MatrixIsland1, VolcanEffect1, shotCam);
+            DrawModelLight(ModelIsland, MatrixIsland2, VolcanEffect1, shotCam);
+            DrawModelLight(ModelIsland, MatrixIsland3, VolcanEffect1, shotCam);
             DrawModelLight(ModelCasa, MatrixCasa, LightEffect, shotCam);
 
             DrawModelLight(ModelRock1, MatrixRock1, LightEffect, shotCam);
