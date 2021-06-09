@@ -646,7 +646,7 @@ namespace TGC.MonoGame.TP
                 Bullets[i].Draw(gameTime);
             }
 
-            //_ui.Draw();
+            _ui.Draw();
 
             base.Draw(gameTime);
         }
@@ -812,6 +812,10 @@ namespace TGC.MonoGame.TP
                     bullet._available = false;
 
                     availableBullets = PoolBullets.FindAll(b => b._available).Count;
+
+                    if (ShootInstance.State == SoundState.Playing)
+                        ShootInstance.Stop();
+
                     ShootInstance.Play();
                 }
             }
