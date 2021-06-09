@@ -64,6 +64,7 @@ namespace TGC.MonoGame.TP.Menu
             menuMusic = Content.Load<Song>("Music/PirateOst.mp3");
             MediaPlayer.IsRepeating = true;
             MediaPlayer.Play(menuMusic);
+            MediaPlayer.Volume = (float)0.1;
         }
 
         /// <summary>
