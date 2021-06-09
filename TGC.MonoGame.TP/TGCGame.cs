@@ -6,7 +6,8 @@ using TGC.MonoGame.TP.Cameras;
 using TGC.MonoGame.TP.Skydome;
 using TGC.MonoGame.TP.Geometries;
 using TGC.MonoGame.TP.Ships;
-
+using TGC.MonoGame.TP.UI;
+using System.Collections.Generic;
 
 namespace TGC.MonoGame.TP
 {
@@ -106,13 +107,13 @@ namespace TGC.MonoGame.TP
         private Ship Barquito { get; set; }
         private Ship PlayerBoat { get; set; }
 
-        private Ship PlayerControlledShip { get; set; }
+        public Ship PlayerControlledShip { get; set; }
 
         /// <summary>
         /// Camara
         /// </summary>
         private BoatCamera Camera { get; set; }
-        private Matrix World { get; set; }
+        public Matrix World { get; set; }
         private Matrix View { get; set; }
         private Matrix Projection { get; set; }
 
@@ -129,7 +130,7 @@ namespace TGC.MonoGame.TP
         private Effect SkyDomeEffect { get; set; }
         public Texture2D SkyDomeTexture;
 
-        private Ship[] Ships;
+        public Ship[] Ships;
         BoundingSphere IslandSphere;
 
         private BoundingSphere[] IslandColliders;
@@ -145,6 +146,15 @@ namespace TGC.MonoGame.TP
         private CubePrimitive lightBox2;
         private float Timer { get; set; }
 
+        public Model BulletModel;
+        public List<Bullet.Bullet> BulletsToDelete;
+        public List<Bullet.Bullet> Bullets;
+        public List<Bullet.Bullet> PoolBullets;
+        private int amountBullets = 20;
+        public int availableBullets;
+        private GameUI _ui;
+        private MouseState lastMouseState = new MouseState();
+        public Vector3 Orientacion { get; set; }
 
         public SpriteBatch spriteBatch;
         public SpriteFont font;
@@ -206,6 +216,16 @@ namespace TGC.MonoGame.TP
 
             CubeMapCamera = new StaticCamera(1f, refPosition, Vector3.UnitX, Vector3.Up);
             CubeMapCamera.BuildProjection(1f, 1f, 3000f, MathHelper.PiOver2);
+
+            PoolBullets = new List<Bullet.Bullet>();
+            for (int i = 0; i < amountBullets; i++)
+            {
+                Bullet.Bullet bullet = new Bullet.Bullet();
+                PoolBullets.Add(bullet);
+            }
+            availableBullets = amountBullets;
+
+            _ui = new GameUI(this);
 
             base.Initialize();
             //Colliders.
@@ -349,6 +369,8 @@ namespace TGC.MonoGame.TP
             lightBox = new CubePrimitive(GraphicsDevice, 70, Color.Yellow);
             lightBox2 = new CubePrimitive(GraphicsDevice, 25, Color.White);
 
+            BulletModel = Content.Load<Model>(ContentFolder3D + "Bullets/Bullet");
+
             font = Content.Load<SpriteFont>("Fonts/Font");
 
             // OVERLAY GOTAS //
@@ -418,7 +440,12 @@ namespace TGC.MonoGame.TP
             shotCam.Position = PlayerBoat.Position + new Vector3(0, CameraArm, 0);
             CubeMapCamera.Position = shotCam.Position + new Vector3(0, -30, 0);
 
+            Bullets = PoolBullets.FindAll(b => b._active);
 
+            foreach (var bullet in Bullets)
+            {
+                bullet.Update();
+            }
 
             base.Update(gameTime);
 
@@ -598,6 +625,13 @@ namespace TGC.MonoGame.TP
 
             #endregion
 
+            for (int i = 0; i < Bullets.Count; i++)
+            {
+                Bullets[i].Draw(gameTime);
+            }
+
+            _ui.Draw();
+
             base.Draw(gameTime);
         }
 
@@ -745,6 +779,27 @@ namespace TGC.MonoGame.TP
             {
                 RotateLeft(PlayerControlledShip.RotationSpeed * elapsedTime);
             }
+
+            var mouseState = Mouse.GetState();
+
+            if (mouseState.LeftButton.Equals(ButtonState.Pressed) &&
+                lastMouseState.LeftButton.Equals(ButtonState.Released))
+            {
+                Bullet.Bullet bullet = PoolBullets.Find(b => b._available);
+
+                if (bullet != null)
+                {
+                    Vector3 direccionProa = Vector3.Normalize(PlayerBoat.ProaPos);
+
+                    bullet.Init(this, direccionProa);
+
+                    bullet._available = false;
+
+                    availableBullets = PoolBullets.FindAll(b => b._available).Count;
+                }
+            }
+
+            lastMouseState = mouseState;
 
 
         }
