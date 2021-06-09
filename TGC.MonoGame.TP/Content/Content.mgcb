@@ -31,6 +31,12 @@
 /processorParam:DebugMode=Auto
 /build:Effects/EnvironmentMap.fx
 
+#begin Effects/ShipsShader.fx
+/importer:EffectImporter
+/processor:EffectProcessor
+/processorParam:DebugMode=Auto
+/build:Effects/ShipsShader.fx
+
 #begin Effects/SkyDome.fx
 /importer:EffectImporter
 /processor:EffectProcessor
@@ -1760,6 +1766,30 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:Textures/Botes/Battleship_lambert1_AlbedoTransparency.tga.png
+
+#begin Textures/Botes/Battleship_lambert1_SpecularSmoothness.tga.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Textures/Botes/Battleship_lambert1_SpecularSmoothness.tga.png
+
+#begin Textures/Botes/blanco.jpg
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Textures/Botes/blanco.jpg
 
 #begin Textures/Botes/SM_T_Boat_M_Boat_BaseColor.TGA
 /importer:TextureImporter

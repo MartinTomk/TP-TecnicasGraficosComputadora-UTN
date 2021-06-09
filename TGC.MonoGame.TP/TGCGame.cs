@@ -153,7 +153,7 @@ namespace TGC.MonoGame.TP
         private StaticCamera CubeMapCamera { get; set; }
         private RenderTargetCube EnvironmentMapRenderTarget { get; set; }
         private Vector3 refPosition { get; }
-        private Effect WaterEnvEffect { get; set; }
+        //private Effect WaterEnvEffect { get; set; }
 
         // pal debuggin
         //SpriteBatch spriteBatch;
@@ -233,7 +233,7 @@ namespace TGC.MonoGame.TP
             WaterEffect.Parameters["KAmbient"]?.SetValue(0.5f);
             WaterEffect.Parameters["KFoam"]?.SetValue(0.15f);
             WaterEffect.Parameters["KDiffuse"]?.SetValue(0.8f);
-            WaterEffect.Parameters["KSpecular"]?.SetValue(0.12f);
+            WaterEffect.Parameters["KSpecular"]?.SetValue(0.42f);
             WaterEffect.Parameters["shininess"]?.SetValue(15f);
             WaterEffect.Parameters["KReflection"]?.SetValue(0.52f);
 
@@ -270,19 +270,19 @@ namespace TGC.MonoGame.TP
 
             //// BOTES ////
 
-            SM = new Ship(this, new Vector3(-100f, 0.01f, 400f), new Vector3(0f, MathHelper.PiOver2, 0f), new Vector3(0.04f, 0.04f, 0.04f), 0.5f, "Botes/SMGeo", "BasicShader", "Botes/SM_T_Boat_M_Boat_BaseColor");
+            SM = new Ship(this, new Vector3(-100f, 0.01f, 400f), new Vector3(0f, MathHelper.PiOver2, 0f), new Vector3(0.04f, 0.04f, 0.04f), 0.5f, "Botes/SMGeo", "ShipsShader", "Botes/SM_T_Boat_M_Boat_BaseColor", "Botes/SM_T_Boat_M_Boat_OcclusionRoughnessMetallic", "Botes/SM_T_Boat_M_Boat_Normal");
             SM.LoadContent();
 
-            Patrol = new Ship(this, new Vector3(-300f, 0.01f, 500f), new Vector3(0f, MathHelper.PiOver2, 0f), new Vector3(0.07f, 0.07f, 0.07f), 0.5f, "Botes/PatrolGeo", "BasicShader", "Botes/T_Patrol_Ship_1K_BaseColor");
+            Patrol = new Ship(this, new Vector3(-300f, 0.01f, 500f), new Vector3(0f, MathHelper.PiOver2, 0f), new Vector3(0.07f, 0.07f, 0.07f), 0.5f, "Botes/PatrolGeo", "ShipsShader", "Botes/T_Patrol_Ship_1K_BaseColor", "Botes/T_Patrol_Ship_1K_OcclusionRoughnessMetallic", "Botes/T_Patrol_Ship_1K_Normal");
             Patrol.LoadContent();
 
-            Cruiser = new Ship(this, new Vector3(-100f, 0.01f, 900f), new Vector3(0f, MathHelper.PiOver2, 0f), new Vector3(0.03f, 0.03f, 0.03f), 0.5f, "Botes/CruiserGeo", "BasicShader", "Botes/T_Cruiser_M_Cruiser_BaseColor");
+            Cruiser = new Ship(this, new Vector3(-100f, 0.01f, 900f), new Vector3(0f, MathHelper.PiOver2, 0f), new Vector3(0.03f, 0.03f, 0.03f), 0.5f, "Botes/CruiserGeo", "ShipsShader", "Botes/T_Cruiser_M_Cruiser_BaseColor", "Botes/T_Cruiser_M_Cruiser_OcclusionRoughnessMetallic", "Botes/T_Cruiser_M_Cruiser_Normal");
             Cruiser.LoadContent();
 
-            Barquito = new Ship(this, new Vector3(-200f, 0.01f, 700f), new Vector3(0f, MathHelper.PiOver2, 0f), new Vector3(0.05f, 0.05f, 0.05f), 0.5f, "Botes/BarquitoGeo", "BasicShader", "Botes/Barquito_BaseColor");
+            Barquito = new Ship(this, new Vector3(-200f, 0.01f, 700f), new Vector3(0f, MathHelper.PiOver2, 0f), new Vector3(0.05f, 0.05f, 0.05f), 0.5f, "Botes/BarquitoGeo", "ShipsShader", "Botes/Barquito_BaseColor", "Botes/blanco", "Island/normalAgua");
             Barquito.LoadContent();
 
-            PlayerBoat = new Ship(this, new Vector3(0f, 0.01f, 600f), new Vector3(0f, 0f, 0f), new Vector3(0.1f, 0.1f, 0.1f), 0.5f, "ShipB/Source/Ship", "BasicShader", "Botes/Battleship_lambert1_AlbedoTransparency.tga");
+            PlayerBoat = new Ship(this, new Vector3(0f, 0.01f, 600f), new Vector3(0f, 0f, 0f), new Vector3(0.1f, 0.1f, 0.1f), 0.5f, "ShipB/Source/Ship", "ShipsShader", "Botes/Battleship_lambert1_AlbedoTransparency.tga", "Botes/Battleship_lambert1_SpecularSmoothness.tga", "Island/normalAgua");
             PlayerBoat.playerMode = true;
             PlayerBoat.LoadContent();
 
@@ -343,12 +343,9 @@ namespace TGC.MonoGame.TP
                 GraphicsDevice.Viewport.Height, false, SurfaceFormat.Color, DepthFormat.Depth24, 0,
                 RenderTargetUsage.DiscardContents);
 
-            ScreenRenderTarget = new RenderTarget2D(GraphicsDevice, GraphicsDevice.Viewport.Width,
-                GraphicsDevice.Viewport.Height, false, SurfaceFormat.Color, DepthFormat.None, 0,
-                RenderTargetUsage.DiscardContents);
-
-            // Load the shadowmap effect
-            //WaterEnvEffect = Content.Load<Effect>(ContentFolderEffects + "EnvironmentMap");
+            //ScreenRenderTarget = new RenderTarget2D(GraphicsDevice, GraphicsDevice.Viewport.Width,
+            //    GraphicsDevice.Viewport.Height, false, SurfaceFormat.Color, DepthFormat.None, 0,
+            //    RenderTargetUsage.DiscardContents);
 
 
             // Create a render target for the scene
@@ -369,17 +366,6 @@ namespace TGC.MonoGame.TP
             var elapsedTime = Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds);
             ProcessKeyboard(elapsedTime);
 
-            // Aca deberiamos poner toda la logica de actualizacion del juego.
-            SM.Update(gameTime);
-            Patrol.Update(gameTime);
-            Cruiser.Update(gameTime);
-            Barquito.Update(gameTime);
-            PlayerBoat.Update(gameTime);
-            shotCam.Update(gameTime);
-            shotCam.Position = PlayerBoat.Position + new Vector3(0, CameraArm, 0);
-            CubeMapCamera.Position = shotCam.Position + new Vector3(0, -30, 0);
-
-
             //Iluminacion 
             var posicionY = (float)MathF.Cos(Timer / 5) * 1500f;
             var posicionZ = (float)MathF.Sin(Timer / 5) * 1500f;
@@ -393,6 +379,17 @@ namespace TGC.MonoGame.TP
 
             WaterEffect.Parameters["lightPosition"]?.SetValue(lightPosition);
             WaterEffect.Parameters["eyePosition"]?.SetValue(shotCam.Position);
+
+            // Aca deberiamos poner toda la logica de actualizacion del juego.
+            SM.Update(gameTime, shotCam, lightPosition);
+            Patrol.Update(gameTime, shotCam, lightPosition);
+            Cruiser.Update(gameTime, shotCam, lightPosition);
+            Barquito.Update(gameTime, shotCam, lightPosition);
+            PlayerBoat.Update(gameTime, shotCam, lightPosition);
+            shotCam.Update(gameTime);
+            shotCam.Position = PlayerBoat.Position + new Vector3(0, CameraArm, 0);
+            CubeMapCamera.Position = shotCam.Position + new Vector3(0, -30, 0);
+
 
             base.Update(gameTime);
 
@@ -587,6 +584,39 @@ namespace TGC.MonoGame.TP
             }
         }
 
+
+        private void DrawModelLight(Model geometry, Matrix transform, Effect light, Camera cam)
+        {
+            var modelMeshesBaseTransforms = new Matrix[geometry.Bones.Count];
+            geometry.CopyAbsoluteBoneTransformsTo(modelMeshesBaseTransforms);
+            foreach (var modelMesh in geometry.Meshes)
+            {
+                // We set the main matrices for each mesh to draw
+                // World is used to transform from model space to world space
+                light.Parameters["World"].SetValue(transform);
+                // InverseTransposeWorld is used to rotate normals
+                light.Parameters["InverseTransposeWorld"].SetValue(Matrix.Transpose(Matrix.Invert(transform)));
+                // WorldViewProjection is used to transform from model space to clip space
+                light.Parameters["WorldViewProjection"].SetValue(transform * cam.View * cam.Projection);
+                    foreach (var meshPart in modelMesh.MeshParts) {
+                        meshPart.Effect = light;
+                }
+                // Once we set these matrices we draw
+                modelMesh.Draw();
+            }
+        }
+
+        public void DrawCenterTextY(string msg, float Y, float escala)
+        {
+            var W = GraphicsDevice.Viewport.Width;
+            var H = GraphicsDevice.Viewport.Height;
+            var size = font.MeasureString(msg) * escala;
+            spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null,
+                Matrix.CreateScale(escala) * Matrix.CreateTranslation((W - size.X) / 2, Y, 0));
+            spriteBatch.DrawString(font, msg, new Vector2(0, 0), Color.YellowGreen);
+            spriteBatch.End();
+        }
+
         private void SetCubemapCameraForOrientation(CubeMapFace face)
         {
             switch (face)
@@ -623,38 +653,6 @@ namespace TGC.MonoGame.TP
                     break;
             }
         }
-        private void DrawModelLight(Model geometry, Matrix transform, Effect light, Camera cam)
-        {
-            var modelMeshesBaseTransforms = new Matrix[geometry.Bones.Count];
-            geometry.CopyAbsoluteBoneTransformsTo(modelMeshesBaseTransforms);
-            foreach (var modelMesh in geometry.Meshes)
-            {
-                // We set the main matrices for each mesh to draw
-                // World is used to transform from model space to world space
-                light.Parameters["World"].SetValue(transform);
-                // InverseTransposeWorld is used to rotate normals
-                light.Parameters["InverseTransposeWorld"].SetValue(Matrix.Transpose(Matrix.Invert(transform)));
-                // WorldViewProjection is used to transform from model space to clip space
-                light.Parameters["WorldViewProjection"].SetValue(transform * cam.View * cam.Projection);
-                    foreach (var meshPart in modelMesh.MeshParts) {
-                        meshPart.Effect = light;
-                }
-                // Once we set these matrices we draw
-                modelMesh.Draw();
-            }
-        }
-
-        public void DrawCenterTextY(string msg, float Y, float escala)
-        {
-            var W = GraphicsDevice.Viewport.Width;
-            var H = GraphicsDevice.Viewport.Height;
-            var size = font.MeasureString(msg) * escala;
-            spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null,
-                Matrix.CreateScale(escala) * Matrix.CreateTranslation((W - size.X) / 2, Y, 0));
-            spriteBatch.DrawString(font, msg, new Vector2(0, 0), Color.YellowGreen);
-            spriteBatch.End();
-        }
-
         /// <summary>
         ///     Libero los recursos que se cargaron en el juego.
         /// </summary>

@@ -20,8 +20,12 @@ namespace TGC.MonoGame.TP.Ships
         public string EffectName;
 
         public Texture2D ShipTexture;
+        public Texture2D ShipAoTexture;
+        public Texture2D ShipNormalTexture;
 
         public string TextureName;
+        public string TextureAoName;
+        public string TextureNormalName;
         public Vector3 Position { get; set; }
         public Vector3 Rotation { get; set; }
         public Vector3 wavesRotation { get; set; }
@@ -45,7 +49,7 @@ namespace TGC.MonoGame.TP.Ships
         public BoundingSphere BoatBox { get; set; }
         //public BoundingBox BoatBox { get; set; }
 
-        public Ship(TGCGame game, Vector3 pos, Vector3 rot, Vector3 scale, float speed, string modelName, string effect, string textureName)
+        public Ship(TGCGame game, Vector3 pos, Vector3 rot, Vector3 scale, float speed, string modelName, string effect, string textureName, string textureAoName, string textureNormalName)
         {
             Game = game;
             Position = pos;
@@ -55,6 +59,8 @@ namespace TGC.MonoGame.TP.Ships
             ModelName = modelName;
             EffectName = effect;
             TextureName = textureName;
+            TextureAoName = textureAoName;
+            TextureNormalName = textureNormalName;
             MovementSpeed = 100.0f;
             RotationSpeed = 0.5f;
             FrontDirection = Vector3.Forward;
@@ -67,6 +73,16 @@ namespace TGC.MonoGame.TP.Ships
             ShipModel = Game.Content.Load<Model>(TGCGame.ContentFolder3D + ModelName);
             ShipEffect = Game.Content.Load<Effect>(TGCGame.ContentFolderEffects + EffectName);
             ShipTexture = Game.Content.Load<Texture2D>(TGCGame.ContentFolderTextures + TextureName);
+            ShipAoTexture = Game.Content.Load<Texture2D>(TGCGame.ContentFolderTextures + TextureAoName);
+            ShipNormalTexture = Game.Content.Load<Texture2D>(TGCGame.ContentFolderTextures + TextureNormalName);
+
+            ShipEffect.Parameters["ambientColor"]?.SetValue(new Vector3(0.2f, 0.2f, 0.2f));
+            //ShipEffect.Parameters["diffuseColor"]?.SetValue(new Vector3(0f, 0.25f, 0.48f));
+            ShipEffect.Parameters["specularColor"]?.SetValue(new Vector3(0.98f, 0.98f, 0.98f));
+            ShipEffect.Parameters["KAmbient"]?.SetValue(0.2f);
+            ShipEffect.Parameters["KDiffuse"]?.SetValue(1f);
+            ShipEffect.Parameters["KSpecular"]?.SetValue(.3f);
+            ShipEffect.Parameters["shininess"]?.SetValue(5f);
 
             //BoatBox = new BoundingBox(Vector3.Transform(-Vector3.One * 0.5f, BoatMatrix), Vector3.Transform(Vector3.One * 0.5f, BoatMatrix));
             BoatBox = new BoundingSphere(Position, 50);
@@ -75,7 +91,9 @@ namespace TGC.MonoGame.TP.Ships
 
         public void Draw(Camera cam)
         {
-            ShipEffect.Parameters["ModelTexture"].SetValue(ShipTexture);
+            ShipEffect.Parameters["baseTexture"]?.SetValue(ShipTexture);
+            ShipEffect.Parameters["aoTexture"]?.SetValue(ShipAoTexture);
+            ShipEffect.Parameters["normalTexture"]?.SetValue(ShipNormalTexture);
             DrawModel(ShipModel, BoatMatrix, ShipEffect, cam);
         }
 
@@ -83,15 +101,18 @@ namespace TGC.MonoGame.TP.Ships
         {
             foreach (var mesh in geometry.Meshes)
             {
-                effect.Parameters["World"].SetValue(transform);
-                effect.Parameters["View"].SetValue(cam.View);
-                effect.Parameters["Projection"].SetValue(cam.Projection);
+                effect.Parameters["World"]?.SetValue(transform);
+                effect.Parameters["InverseTransposeWorld"]?.SetValue(Matrix.Transpose(Matrix.Invert(transform)));
+                effect.Parameters["WorldViewProjection"]?.SetValue(transform * cam.View * cam.Projection);
+                
+                //effect.Parameters["View"].SetValue(cam.View);
+                //effect.Parameters["Projection"].SetValue(cam.Projection);
                 foreach (var meshPart in mesh.MeshParts)
                     meshPart.Effect = effect;
                 mesh.Draw();
             }
         }
-        public void Update(GameTime gameTime)
+        public void Update(GameTime gameTime, Camera cam, Vector3 light)
         {
             // Esto es el tiempo que transcurre entre update y update (promedio 0.0166s)
             float elapsedTime = Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds);
@@ -105,6 +126,9 @@ namespace TGC.MonoGame.TP.Ships
             FrontDirection = -new Vector3((float)Math.Sin(RotationRadians), 0.0f, (float)Math.Cos(RotationRadians));
             //BoatBox = new BoundingBox(Vector3.Transform(-Vector3.One * 0.5f, BoatMatrix), Vector3.Transform(Vector3.One * 0.5f, BoatMatrix));
             BoatBox = new BoundingSphere(Position, 50);
+
+            ShipEffect.Parameters["lightPosition"]?.SetValue(light);
+            ShipEffect.Parameters["eyePosition"]?.SetValue(cam.Position);
         }
 
         float frac(float val)
@@ -141,8 +165,8 @@ namespace TGC.MonoGame.TP.Ships
             Vector3 wave6 = createWave(time, 4, 5, new Vector2(-0.5f, -0.3f), 0.5f, 8, 0.2f, 4, worldPosition);
             Vector3 wave7 = createWave(time, 8, 5, new Vector2(-0.8f, 0.4f), 0.3f, 5, 0.3f, 6, worldPosition);
 
-            worldPosition = (wave1 + wave2 + wave3 + wave4 + wave5 + wave6 * 0.4f + wave7 * 0.6f) / 6;
-            return (float)worldPosition.Y;
+            worldPosition = (wave1 + wave2 + wave3 + wave4 + wave5 + wave6  + wave7 ) / 6;
+            return (float)worldPosition.Y - 3;
         }
     }
 }

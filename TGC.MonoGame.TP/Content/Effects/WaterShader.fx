@@ -185,11 +185,11 @@ VertexShaderOutput MainVS(in VertexShaderInput input)
     float3 dxWave7 = createWave(8, 5, float2(-0.8, 0.4), 0.3, 5, 0.3, 6, float4(worldPosition.x + EPSILON, worldPosition.yz, 1));
     float3 dzWave7 = createWave(8, 5, float2(-0.8, 0.4), 0.3, 5, 0.3, 6, float4(worldPosition.xy, worldPosition.z + EPSILON, 1));
 
-    worldPosition.xyz += (wave1 + wave2 + wave3 + wave4 + wave5 + wave6 * 0.4 + wave7 * 0.6) / 7;
+    worldPosition.xyz += (wave1 + wave2 + wave3 + wave4 + wave5 + wave6  + wave7 ) / 7;
 
     float3 normalVector = float3(0,0,0);
-    normalVector.x = (dxWave1.x + dxWave2.x + dxWave3.x + dxWave4.x + dxWave5.x + dxWave6.x * 0.4 + dxWave7.x * 0.6) / 7;
-    normalVector.z = (dxWave1.z + dxWave2.z + dxWave3.z + dxWave4.z + dxWave5.z + dxWave6.z * 0.4 + dxWave7.z * 0.6) / 7;
+    normalVector.x = (dxWave1.x + dxWave2.x + dxWave3.x + dxWave4.x + dxWave5.x + dxWave6.x  + dxWave7.x ) / 7;
+    normalVector.z = (dxWave1.z + dxWave2.z + dxWave3.z + dxWave4.z + dxWave5.z + dxWave6.z  + dxWave7.z ) / 7;
 
     float3 waterTangent1 = normalize(float3(1, normalVector.x, 0));
     float3 waterTangent2 = normalize(float3(0, normalVector.z, 1));
@@ -215,8 +215,9 @@ float4 MainPS(VertexShaderOutput input) : COLOR
 
     float3 normal = getNormalFromMap(input.TextureCoordinates, input.WorldPosition.xyz, input.Normal.xyz);
 
+    //float3 worldNormal = input.Normal.xyz * normal;
     float3 worldNormal = input.Normal.xyz + normal;
-    //float3 reflNormal = normalize(input.ReflNormal.xyz);
+    float3 reflNormal = input.Normal.xyz * normal;
 
 
 
@@ -238,19 +239,19 @@ float4 MainPS(VertexShaderOutput input) : COLOR
 
     //Obtener texel de CubeMap
     float3 view = normalize(eyePosition.xyz - input.WorldPosition.xyz);
-    float3 reflection = reflect(view, worldNormal);
+    float3 reflection = reflect(view, reflNormal);
     float3 reflectionColor = texCUBE(environmentMapSampler, reflection).rgb;
 
     float3 ambientLight = KAmbient * ambientColor + KFoam * foamColor.rgb;
 
     // Calculate the diffuse light
     float NdotL = saturate(dot(worldNormal, lightDirection));
-    float3 diffuseLight = KDiffuse * NdotL;
+    float3 diffuseLight = KDiffuse * diffuseColor * NdotL;
 
     float3 baseColor = saturate(ambientLight + diffuseLight);
 
     float crestaBase = saturate(input.WorldPosition.y * 0.008) + 0.22;
-    baseColor += float3(1, 1, 1) * float3(crestaBase, crestaBase, crestaBase);
+    baseColor += saturate(float3(1, 1, 1) * float3(crestaBase, crestaBase, crestaBase));
     
     if (input.WorldPosition.y * 0.1 > -1) {
         float n = input.WorldPosition.y * 0.5 * noise(input.WorldPosition.x * 0.01) * noise(input.WorldPosition.z * 0.01) * texelColor.r;
