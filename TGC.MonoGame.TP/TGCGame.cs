@@ -26,6 +26,7 @@ namespace TGC.MonoGame.TP
         public const string ContentFolderSpriteFonts = "SpriteFonts/";
         public const string ContentFolderTextures = "Textures/";
 
+
         /// <summary>
         ///     Constructor del juego.
         /// </summary>
@@ -67,6 +68,7 @@ namespace TGC.MonoGame.TP
         public Texture2D IslandTexture;
         public Texture2D IslandMiscTexture;
         public Texture2D WaterTexture;
+        public Texture2D WaterFoamTexture;
         public Texture2D WaterNormalTexture;
 
         Matrix MatrixIsland1;
@@ -137,6 +139,22 @@ namespace TGC.MonoGame.TP
         public SpriteBatch spriteBatch;
         public SpriteFont font;
 
+
+        // OVERLAY GOTAS //
+        private Texture2D dropsTexture { get; set; }
+        private Texture2D dropsTexture2 { get; set; }
+        private Effect dropsEffect { get; set; }
+        private FullScreenQuad FullScreenQuad { get; set; }
+        private RenderTarget2D SceneRenderTarget { get; set; }
+        private RenderTarget2D ScreenRenderTarget { get; set; }
+
+        // ENV MAP //
+        private const int EnvironmentmapSize = 2048;
+        private StaticCamera CubeMapCamera { get; set; }
+        private RenderTargetCube EnvironmentMapRenderTarget { get; set; }
+        private Vector3 refPosition { get; }
+        private Effect WaterEnvEffect { get; set; }
+
         // pal debuggin
         //SpriteBatch spriteBatch;
         //SpriteFont font;
@@ -147,6 +165,8 @@ namespace TGC.MonoGame.TP
         /// </summary>
         protected override void Initialize()
         {
+            Window.Title = "_.~\"~._.~\"~.__.~\"~._.~\"~._.~\"~._.~\"~.__.~\"~._.~\"~._.~\"~._.~\"~.__.~\"(_.~\"(_.~\"(_.~\"(_.~\"(    11 ANCLAS 11" +
+                            "    _.~\"(_.~\"(_.~\"(_.~\"(_.~\"(_.~\"~._.~\"~._.~\"~._.~\"~.__.~\"~._.~\"~._.~\"~._.~\"~._";
             // La logica de inicializacion que no depende del contenido se recomienda poner en este metodo.
 
             // Apago el backface culling.
@@ -175,6 +195,9 @@ namespace TGC.MonoGame.TP
             IslandScaleCollisionTest = 0.2f;
             IslandSphere = new BoundingSphere(Vector3.Zero, 400);
 
+            CubeMapCamera = new StaticCamera(1f, refPosition, Vector3.UnitX, Vector3.Up);
+            CubeMapCamera.BuildProjection(1f, 1f, 3000f, MathHelper.PiOver2);
+
             base.Initialize();
             //Colliders.
         }
@@ -202,14 +225,18 @@ namespace TGC.MonoGame.TP
             ModelWater = Content.Load<Model>(ContentFolder3D + "Island/waterAltaGeo");
             WaterEffect = Content.Load<Effect>(ContentFolderEffects + "WaterShader");
             WaterTexture = Content.Load<Texture2D>(ContentFolderTextures + "Island/TexturesCom_WaterPlain0012_1_seamless_S");
+            WaterFoamTexture = Content.Load<Texture2D>(ContentFolderTextures + "Island/53_sea water foam texture-seamless");
             WaterNormalTexture = Content.Load<Texture2D>(ContentFolderTextures + "Island/normalAgua");
             WaterEffect.Parameters["ambientColor"]?.SetValue(new Vector3(0f, 0.17f, 0.37f));
             WaterEffect.Parameters["diffuseColor"]?.SetValue(new Vector3(0f, 0.25f, 0.48f));
             WaterEffect.Parameters["specularColor"]?.SetValue(new Vector3(0.95f, 0.95f, 0.95f));
-            WaterEffect.Parameters["KAmbient"]?.SetValue(0.6f);
+            WaterEffect.Parameters["KAmbient"]?.SetValue(0.5f);
+            WaterEffect.Parameters["KFoam"]?.SetValue(0.15f);
             WaterEffect.Parameters["KDiffuse"]?.SetValue(0.8f);
             WaterEffect.Parameters["KSpecular"]?.SetValue(0.12f);
             WaterEffect.Parameters["shininess"]?.SetValue(15f);
+            WaterEffect.Parameters["KReflection"]?.SetValue(0.52f);
+
 
 
             ModelCasa = Content.Load<Model>(ContentFolder3D + "Island/CasaGeo");
@@ -302,6 +329,35 @@ namespace TGC.MonoGame.TP
 
             font = Content.Load<SpriteFont>("Fonts/Font");
 
+            // OVERLAY GOTAS //
+            
+            dropsTexture = Content.Load<Texture2D>(ContentFolderTextures + "Dirty");
+            dropsTexture2 = Content.Load<Texture2D>(ContentFolderTextures + "Smudgy");
+            dropsEffect = Content.Load<Effect>(ContentFolderEffects + "TextureMerge");
+            dropsEffect.Parameters["overlayTexture"]?.SetValue(dropsTexture);
+            dropsEffect.Parameters["overlayTexture2"]?.SetValue(dropsTexture2);
+
+            // Create a full screen quad to post-process
+            FullScreenQuad = new FullScreenQuad(GraphicsDevice);
+
+            // Create a render target for the scene
+            SceneRenderTarget = new RenderTarget2D(GraphicsDevice, GraphicsDevice.Viewport.Width,
+                GraphicsDevice.Viewport.Height, false, SurfaceFormat.Color, DepthFormat.Depth24, 0,
+                RenderTargetUsage.DiscardContents);
+
+            ScreenRenderTarget = new RenderTarget2D(GraphicsDevice, GraphicsDevice.Viewport.Width,
+                GraphicsDevice.Viewport.Height, false, SurfaceFormat.Color, DepthFormat.None, 0,
+                RenderTargetUsage.DiscardContents);
+
+            // Load the shadowmap effect
+            //WaterEnvEffect = Content.Load<Effect>(ContentFolderEffects + "EnvironmentMap");
+
+
+            // Create a render target for the scene
+            EnvironmentMapRenderTarget = new RenderTargetCube(GraphicsDevice, EnvironmentmapSize, false,
+                SurfaceFormat.Color, DepthFormat.Depth24, 0, RenderTargetUsage.DiscardContents);
+            GraphicsDevice.BlendState = BlendState.Opaque;
+
             base.LoadContent();
         }
 
@@ -323,6 +379,7 @@ namespace TGC.MonoGame.TP
             PlayerBoat.Update(gameTime);
             shotCam.Update(gameTime);
             shotCam.Position = PlayerBoat.Position + new Vector3(0, CameraArm, 0);
+            CubeMapCamera.Position = shotCam.Position + new Vector3(0, -30, 0);
 
 
             //Iluminacion 
@@ -349,8 +406,195 @@ namespace TGC.MonoGame.TP
         /// </summary>
         protected override void Draw(GameTime gameTime)
         {
+            time += Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds);
+
+            #region Pass 1-6
+
+            GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+            // Draw to our cubemap from the robot position
+            for (var face = CubeMapFace.PositiveX; face <= CubeMapFace.NegativeZ; face++)
+            {
+                // Set the render target as our cubemap face, we are drawing the scene in this texture
+                GraphicsDevice.SetRenderTarget(EnvironmentMapRenderTarget, face);
+                GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.CornflowerBlue, 1f, 0);
+
+                SetCubemapCameraForOrientation(face);
+                CubeMapCamera.BuildView();
+
+                // Draw our scene. Do not draw our tank as it would be occluded by itself 
+                // (if it has backface culling on)
+                // Para dibujar le modelo necesitamos pasarle informacion que el efecto esta esperando.
+                IslandEffect.Parameters["ModelTexture"].SetValue(IslandTexture);
+                LightEffect.Parameters["baseTexture"].SetValue(IslandTexture);
+
+
+                DrawModelLight(ModelIsland, MatrixIsland1, LightEffect, CubeMapCamera);
+                DrawModelLight(ModelIsland, MatrixIsland2, LightEffect, CubeMapCamera);
+                DrawModelLight(ModelIsland, MatrixIsland3, LightEffect, CubeMapCamera);
+                DrawModelLight(ModelCasa, MatrixCasa, LightEffect, CubeMapCamera);
+
+                DrawModelLight(ModelRock1, MatrixRock1, LightEffect, CubeMapCamera);
+                DrawModelLight(ModelRock2, MatrixRock2, LightEffect, CubeMapCamera);
+                DrawModelLight(ModelRock2, MatrixRock3, LightEffect, CubeMapCamera);
+                DrawModelLight(ModelRock3, MatrixRock4, LightEffect, CubeMapCamera);
+                DrawModelLight(ModelRock5, MatrixRock5, LightEffect, CubeMapCamera);
+                DrawModelLight(ModelRock2, MatrixRock6, LightEffect, CubeMapCamera);
+                DrawModelLight(ModelRock1, MatrixRock7, LightEffect, CubeMapCamera);
+                LightEffect.Parameters["baseTexture"].SetValue(IslandMiscTexture);
+                DrawModelLight(ModelIsland2, MatrixIsland4, LightEffect, CubeMapCamera);
+                DrawModelLight(ModelIsland3, MatrixIsland5, LightEffect, CubeMapCamera);
+
+
+                DrawModelLight(ModelPalm1, Matrix.CreateScale(0.08f) * Matrix.CreateTranslation(60, 10, 280), LightEffect, CubeMapCamera);
+                DrawModelLight(ModelPalm2, Matrix.CreateScale(0.08f) * Matrix.CreateTranslation(110, 0, 300), LightEffect, CubeMapCamera);
+                DrawModelLight(ModelPalm3, Matrix.CreateScale(0.08f) * Matrix.CreateTranslation(-50, 48, 150), LightEffect, CubeMapCamera);
+                DrawModelLight(ModelPalm4, Matrix.CreateScale(0.09f) * Matrix.CreateTranslation(750, 0, -60), LightEffect, CubeMapCamera);
+                DrawModelLight(ModelPalm5, Matrix.CreateScale(0.09f) * Matrix.CreateTranslation(580, 0, -150), LightEffect, CubeMapCamera);
+                DrawModelLight(ModelPalm5, Matrix.CreateScale(0.09f) * Matrix.CreateRotationY(4f) * Matrix.CreateTranslation(-650, 30, -100), LightEffect, CubeMapCamera);
+
+
+                /// Dibujo Botes
+
+                SM.Draw(CubeMapCamera);
+                Patrol.Draw(CubeMapCamera);
+                Cruiser.Draw(CubeMapCamera);
+                Barquito.Draw(CubeMapCamera);
+                //PlayerBoat.Draw(CubeMapCamera);
+
+                //Iluminacion
+                lightBox.Draw(LightBoxWorld, CubeMapCamera.View, CubeMapCamera.Projection);
+                lightBox2.Draw(LightBoxWorld2, CubeMapCamera.View, CubeMapCamera.Projection);
+                //DrawModel(PlayerBoatModel, Matrix.CreateRotationY((float)PlayerRotation)* PlayerBoatMatrix  , PlayerBoatEffect);
+
+                /// Skydome
+                Skydome.Draw(CubeMapCamera.View, CubeMapCamera.Projection, CubeMapCamera.Position);
+                SkyDomeEffect.Parameters["Time"].SetValue(time);
+
+            }
+
+            #endregion
+
+            #region Pass 7
+
+            //GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+            // Set the render target as our shadow map, we are drawing the depth into this texture
+            //GraphicsDevice.SetRenderTarget(ScreenRenderTarget);
+            //GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.CornflowerBlue, 1f, 0);
+
+            // Set the render target as null, we are drawing on the screen!
+            GraphicsDevice.SetRenderTarget(null);
+            GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.CornflowerBlue, 1f, 0);
+
+            // Draw our scene with the default effect and default camera
+
+
+            // Para dibujar le modelo necesitamos pasarle informacion que el efecto esta esperando.
+            IslandEffect.Parameters["ModelTexture"].SetValue(IslandTexture);
+            LightEffect.Parameters["baseTexture"].SetValue(IslandTexture);
+
+
+            DrawModelLight(ModelIsland, MatrixIsland1, LightEffect, shotCam);
+            DrawModelLight(ModelIsland, MatrixIsland2, LightEffect, shotCam);
+            DrawModelLight(ModelIsland, MatrixIsland3, LightEffect, shotCam);
+            DrawModelLight(ModelCasa, MatrixCasa, LightEffect, shotCam);
+
+            DrawModelLight(ModelRock1, MatrixRock1, LightEffect, shotCam);
+            DrawModelLight(ModelRock2, MatrixRock2, LightEffect, shotCam);
+            DrawModelLight(ModelRock2, MatrixRock3, LightEffect, shotCam);
+            DrawModelLight(ModelRock3, MatrixRock4, LightEffect, shotCam);
+            DrawModelLight(ModelRock5, MatrixRock5, LightEffect, shotCam);
+            DrawModelLight(ModelRock2, MatrixRock6, LightEffect, shotCam);
+            DrawModelLight(ModelRock1, MatrixRock7, LightEffect, shotCam);
+            LightEffect.Parameters["baseTexture"].SetValue(IslandMiscTexture);
+            DrawModelLight(ModelIsland2, MatrixIsland4, LightEffect, shotCam);
+            DrawModelLight(ModelIsland3, MatrixIsland5, LightEffect, shotCam);
+
+
+            DrawModelLight(ModelPalm1, Matrix.CreateScale(0.08f) * Matrix.CreateTranslation(60, 10, 280), LightEffect, shotCam);
+            DrawModelLight(ModelPalm2, Matrix.CreateScale(0.08f) * Matrix.CreateTranslation(110, 0, 300), LightEffect, shotCam);
+            DrawModelLight(ModelPalm3, Matrix.CreateScale(0.08f) * Matrix.CreateTranslation(-50, 48, 150), LightEffect, shotCam);
+            DrawModelLight(ModelPalm4, Matrix.CreateScale(0.09f) * Matrix.CreateTranslation(750, 0, -60), LightEffect, shotCam);
+            DrawModelLight(ModelPalm5, Matrix.CreateScale(0.09f) * Matrix.CreateTranslation(580, 0, -150), LightEffect, shotCam);
+            DrawModelLight(ModelPalm5, Matrix.CreateScale(0.09f) * Matrix.CreateRotationY(4f) * Matrix.CreateTranslation(-650, 30, -100), LightEffect, shotCam);
+
+            SM.Draw(shotCam);
+            Patrol.Draw(shotCam);
+            Cruiser.Draw(shotCam);
+            Barquito.Draw(shotCam);
+            PlayerBoat.Draw(shotCam);
+
+            //Iluminacion
+            lightBox.Draw(LightBoxWorld, shotCam.View, shotCam.Projection);
+            lightBox2.Draw(LightBoxWorld2, shotCam.View, shotCam.Projection);
+            //DrawModel(PlayerBoatModel, Matrix.CreateRotationY((float)PlayerRotation)* PlayerBoatMatrix  , PlayerBoatEffect);
+
+            /// Skydome
+            Skydome.Draw(shotCam.View, shotCam.Projection, shotCam.Position);
+            SkyDomeEffect.Parameters["Time"].SetValue(time);
+
+
+            #region Draw Water
+
+            // Set up our Effect to draw the robot
+            //WaterEnvEffect.CurrentTechnique = WaterEnvEffect.Techniques["EnvironmentMap"];
+            WaterEffect.Parameters["baseTexture"]?.SetValue(WaterTexture);
+            WaterEffect.Parameters["foamTexture"]?.SetValue(WaterFoamTexture);
+            WaterEffect.Parameters["normalTexture"]?.SetValue(WaterNormalTexture);
+            WaterEffect.Parameters["Time"]?.SetValue(time);
+            WaterEffect.Parameters["environmentMap"]?.SetValue(EnvironmentMapRenderTarget);
+            WaterEffect.Parameters["eyePosition"]?.SetValue(shotCam.Position);
+            //WaterEnvEffect.Parameters["baseTexture"]?.SetValue(WaterTexture);
+
+            //var worldMatrix = Matrix.CreateTranslation(0, 0, 0);
+            // World is used to transform from model space to world space
+            //WaterEnvEffect.Parameters["World"]?.SetValue(worldMatrix);
+            // InverseTransposeWorld is used to rotate normals
+            //WaterEnvEffect.Parameters["InverseTransposeWorld"]?.SetValue(Matrix.Transpose(Matrix.Invert(worldMatrix)));
+            // WorldViewProjection is used to transform from model space to clip space
+            //WaterEnvEffect.Parameters["WorldViewProjection"]?.SetValue(worldMatrix * shotCam.View * shotCam.Projection);
+
+            for (int i = -8; i < 8; i++)
+                for (int j = -8; j < 8; j++)
+                {
+                    Matrix MatrixWater = Matrix.Identity * Matrix.CreateScale(10f, 0f, 10f) * Matrix.CreateTranslation(i * 200, 0, j * 200);
+                    WaterEffect.Parameters["World"].SetValue(MatrixWater);
+                    WaterEffect.Parameters["View"].SetValue(shotCam.View);
+                    WaterEffect.Parameters["Projection"].SetValue(shotCam.Projection);
+                    WaterEffect.Parameters["InverseTransposeWorld"]?.SetValue(Matrix.Transpose(Matrix.Invert(MatrixWater)));
+                  
+                    DrawModel(ModelWater, MatrixWater, WaterEffect, shotCam);
+                }
+            //DrawModel(ModelWater, Matrix.CreateScale(10f, 0f, 10f), WaterEffect);
+            
+            /// Dibujo Botes
+            /*
+            foreach (var mesh in ModelWater.Meshes)
+            {
+                foreach (var meshPart in mesh.MeshParts)
+                {
+                    worldMatrix *= Matrix.CreateScale(500f) * Matrix.CreateTranslation(0, 0, 0);
+                    WaterEffect.Parameters["World"].SetValue(worldMatrix);
+                    WaterEffect.Parameters["InverseTransposeWorld"]?.SetValue(Matrix.Transpose(Matrix.Invert(worldMatrix)));
+                    //WaterEffect.Parameters["WorldViewProjection"]?.SetValue(worldMatrix * shotCam.View * shotCam.Projection);
+                    meshPart.Effect = WaterEffect;
+                }
+                mesh.Draw();
+            }
+            
+            //DrawModel(ModelWater, Matrix.CreateScale(50f), WaterEnvEffect, shotCam);
+            */
+            #endregion
+
+            #endregion
+
+            /*
             // Aca deberiamos poner toda la logia de renderizado del juego.
-            GraphicsDevice.Clear(Color.White);
+            #region Pass 1
+
+            GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+            // Set the render target as our shadow map, we are drawing the depth into this texture
+            GraphicsDevice.SetRenderTarget(SceneRenderTarget);
+            GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.CornflowerBlue, 1f, 0);
 
             time += Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds);
             // Para dibujar le modelo necesitamos pasarle informacion que el efecto esta esperando.
@@ -410,17 +654,33 @@ namespace TGC.MonoGame.TP
             /// Skydome
             Skydome.Draw(shotCam.View, shotCam.Projection, shotCam.Position);
             SkyDomeEffect.Parameters["Time"].SetValue(time);
+            
+            #endregion
+
+            #region Pass 2
+
+            // No depth needed
+            GraphicsDevice.DepthStencilState = DepthStencilState.None;
+            // Set the render target to null, we are drawing to the screen
+            GraphicsDevice.SetRenderTarget(null);
+
+            dropsEffect.Parameters["time"]?.SetValue(time);
+            dropsEffect.Parameters["baseTexture"]?.SetValue(SceneRenderTarget);
+            FullScreenQuad.Draw(dropsEffect);
+
+            #endregion
+            */
 
             base.Draw(gameTime);
         }
 
-        private void DrawModel(Model geometry, Matrix transform, Effect effect)
+        private void DrawModel(Model geometry, Matrix transform, Effect effect, Camera cam)
         {
             foreach (var mesh in geometry.Meshes)
             {
-                effect.Parameters["World"].SetValue(transform);
-                effect.Parameters["View"].SetValue(shotCam.View);
-                effect.Parameters["Projection"].SetValue(shotCam.Projection);
+                //effect.Parameters["World"].SetValue(transform);
+                //effect.Parameters["View"].SetValue(cam.View);
+                //effect.Parameters["Projection"].SetValue(cam.Projection);
                 foreach (var meshPart in mesh.MeshParts)
                 {
                     meshPart.Effect = effect;
@@ -429,7 +689,44 @@ namespace TGC.MonoGame.TP
                 mesh.Draw();
             }
         }
-        private void DrawModelLight(Model geometry, Matrix transform, Effect light)
+
+        private void SetCubemapCameraForOrientation(CubeMapFace face)
+        {
+            switch (face)
+            {
+                default:
+                case CubeMapFace.PositiveX:
+                    CubeMapCamera.FrontDirection = -Vector3.UnitX;
+                    CubeMapCamera.UpDirection = Vector3.Down;
+                    break;
+
+                case CubeMapFace.NegativeX:
+                    CubeMapCamera.FrontDirection = Vector3.UnitX;
+                    CubeMapCamera.UpDirection = Vector3.Down;
+                    break;
+
+                case CubeMapFace.PositiveY:
+                    CubeMapCamera.FrontDirection = Vector3.Down;
+                    CubeMapCamera.UpDirection = Vector3.UnitZ;
+                    break;
+
+                case CubeMapFace.NegativeY:
+                    CubeMapCamera.FrontDirection = Vector3.Up;
+                    CubeMapCamera.UpDirection = -Vector3.UnitZ;
+                    break;
+
+                case CubeMapFace.PositiveZ:
+                    CubeMapCamera.FrontDirection = -Vector3.UnitZ;
+                    CubeMapCamera.UpDirection = Vector3.Down;
+                    break;
+
+                case CubeMapFace.NegativeZ:
+                    CubeMapCamera.FrontDirection = Vector3.UnitZ;
+                    CubeMapCamera.UpDirection = Vector3.Down;
+                    break;
+            }
+        }
+        private void DrawModelLight(Model geometry, Matrix transform, Effect light, Camera cam)
         {
             var modelMeshesBaseTransforms = new Matrix[geometry.Bones.Count];
             geometry.CopyAbsoluteBoneTransformsTo(modelMeshesBaseTransforms);
@@ -441,7 +738,7 @@ namespace TGC.MonoGame.TP
                 // InverseTransposeWorld is used to rotate normals
                 light.Parameters["InverseTransposeWorld"].SetValue(Matrix.Transpose(Matrix.Invert(transform)));
                 // WorldViewProjection is used to transform from model space to clip space
-                light.Parameters["WorldViewProjection"].SetValue(transform * shotCam.View * shotCam.Projection);
+                light.Parameters["WorldViewProjection"].SetValue(transform * cam.View * cam.Projection);
                     foreach (var meshPart in modelMesh.MeshParts) {
                         meshPart.Effect = light;
                 }

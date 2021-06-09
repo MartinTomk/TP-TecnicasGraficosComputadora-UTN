@@ -25,11 +25,23 @@
 /processorParam:DebugMode=Auto
 /build:Effects/BlinnPhong.fx
 
+#begin Effects/EnvironmentMap.fx
+/importer:EffectImporter
+/processor:EffectProcessor
+/processorParam:DebugMode=Auto
+/build:Effects/EnvironmentMap.fx
+
 #begin Effects/SkyDome.fx
 /importer:EffectImporter
 /processor:EffectProcessor
 /processorParam:DebugMode=Auto
 /build:Effects/SkyDome.fx
+
+#begin Effects/TextureMerge.fx
+/importer:EffectImporter
+/processor:EffectProcessor
+/processorParam:DebugMode=Auto
+/build:Effects/TextureMerge.fx
 
 #begin Effects/WaterShader.fx
 /importer:EffectImporter
@@ -1929,6 +1941,42 @@
 /processorParam:TextureFormat=Color
 /build:Textures/Botes/T_Transport_M_Transport_Details_OcclusionRoughnessMetallic.TGA
 
+#begin Textures/Dirty.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Textures/Dirty.png
+
+#begin Textures/Island/53_sea water foam texture-seamless.jpg
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Textures/Island/53_sea water foam texture-seamless.jpg
+
+#begin Textures/Island/foam.jpg
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Textures/Island/foam.jpg
+
 #begin Textures/Island/normalAgua.jpeg
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -2048,4 +2096,16 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:Textures/Menu/Presentacion_IM.jpeg
+
+#begin Textures/Smudgy.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Textures/Smudgy.png
 

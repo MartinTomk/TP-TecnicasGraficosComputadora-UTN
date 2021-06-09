@@ -7,6 +7,7 @@
 #define PS_SHADERMODEL ps_4_0_level_9_1
 #endif
 
+
 float4x4 View;
 float4x4 Projection;
 float4x4 World;
@@ -23,6 +24,9 @@ float3 diffuseColor; // Light's Diffuse Color
 float KSpecular;
 float3 specularColor; // Light's Specular Color
 float shininess;
+
+float KReflection;
+float KFoam;
 
 float Time = 0;
 
@@ -42,12 +46,23 @@ struct VertexShaderOutput
     float2 TextureCoordinates : TEXCOORD0;
     float4 WorldPosition : TEXCOORD1;
     float4 Normal : TEXCOORD2;
+    //float4 ReflNormal : TEXCOORD3;
 };
 
 texture baseTexture;
 sampler2D textureSampler = sampler_state
 {
     Texture = (baseTexture);
+    MagFilter = Linear;
+    MinFilter = Linear;
+    AddressU = Mirror;
+    AddressV = Mirror;
+};
+
+texture foamTexture;
+sampler2D foamSampler = sampler_state
+{
+    Texture = (foamTexture);
     MagFilter = Linear;
     MinFilter = Linear;
     AddressU = Mirror;
@@ -65,6 +80,17 @@ sampler2D normalSampler = sampler_state
     MAGFILTER = LINEAR;
     MIPFILTER = LINEAR;
 };
+
+texture environmentMap;
+samplerCUBE environmentMapSampler = sampler_state
+{
+    Texture = (environmentMap);
+    MagFilter = Linear;
+    MinFilter = Linear;
+    AddressU = Clamp;
+    AddressV = Clamp;
+};
+
 
 // 2D Random
 float random(in float2 st) {
@@ -120,6 +146,9 @@ float3 getNormalFromMap(float2 textureCoordinates, float3 worldPosition, float3 
     return normalize(mul(tangentNormal, TBN));
 }
 
+
+
+
 VertexShaderOutput MainVS(in VertexShaderInput input)
 {
     // Clear the output
@@ -165,7 +194,9 @@ VertexShaderOutput MainVS(in VertexShaderInput input)
     float3 waterTangent1 = normalize(float3(1, normalVector.x, 0));
     float3 waterTangent2 = normalize(float3(0, normalVector.z, 1));
     input.Normal.xyz = normalize(cross(waterTangent2, waterTangent1));
-    
+
+    //output.ReflNormal = mul(float4(normalize(input.Normal.xyz), 1.0), InverseTransposeWorld);
+
     output.WorldPosition = worldPosition;
     output.Normal = input.Normal;
 
@@ -173,16 +204,21 @@ VertexShaderOutput MainVS(in VertexShaderInput input)
     output.Position = mul(viewPosition, Projection);
     output.TextureCoordinates = input.TextureCoordinates;
     output.Color = input.Color;
-    
+
     return output;
 }
+
 
 float4 MainPS(VertexShaderOutput input) : COLOR
 {
     float alturaY = clamp(lightPosition.y / 1500, 0.5, 1);
 
-    float3 worldNormal = input.Normal;
-    float3 normal = getNormalFromMap(input.TextureCoordinates, input.WorldPosition.xyz, worldNormal);
+    float3 normal = getNormalFromMap(input.TextureCoordinates, input.WorldPosition.xyz, input.Normal.xyz);
+
+    float3 worldNormal = input.Normal.xyz + normal;
+    //float3 reflNormal = normalize(input.ReflNormal.xyz);
+
+
 
     // Base vectors
     float3 lightDirection = normalize(lightPosition - input.WorldPosition.xyz);
@@ -191,11 +227,24 @@ float4 MainPS(VertexShaderOutput input) : COLOR
 
     // Get the texture texel textureSampler is the sampler, Texcoord is the interpolated coordinates
     float4 texelColor = tex2D(textureSampler, input.TextureCoordinates);
+    float4 foamColor = tex2D(foamSampler, input.TextureCoordinates);
 
-    float3 ambientLight = KAmbient * ambientColor;
+
+    // Get the texel from the texture
+    float3 reflColor = tex2D(textureSampler, input.TextureCoordinates).rgb;
+
+    // Not part of the mapping, just adjusting color
+    reflColor = lerp(reflColor, float3(1, 1, 1), step(length(reflColor), 0.01));
+
+    //Obtener texel de CubeMap
+    float3 view = normalize(eyePosition.xyz - input.WorldPosition.xyz);
+    float3 reflection = reflect(view, worldNormal);
+    float3 reflectionColor = texCUBE(environmentMapSampler, reflection).rgb;
+
+    float3 ambientLight = KAmbient * ambientColor + KFoam * foamColor.rgb;
 
     // Calculate the diffuse light
-    float NdotL = saturate(dot(input.Normal.xyz + normal, lightDirection));
+    float NdotL = saturate(dot(worldNormal, lightDirection));
     float3 diffuseLight = KDiffuse * NdotL;
 
     float3 baseColor = saturate(ambientLight + diffuseLight);
@@ -203,17 +252,23 @@ float4 MainPS(VertexShaderOutput input) : COLOR
     float crestaBase = saturate(input.WorldPosition.y * 0.008) + 0.22;
     baseColor += float3(1, 1, 1) * float3(crestaBase, crestaBase, crestaBase);
     
-    if (input.WorldPosition.y * 0.2 > -1) {
+    if (input.WorldPosition.y * 0.1 > -1) {
         float n = input.WorldPosition.y * 0.5 * noise(input.WorldPosition.x * 0.01) * noise(input.WorldPosition.z * 0.01) * texelColor.r;
-        baseColor += float3(.1, .1, .1) * float3(n, n, n);
+        baseColor += float3(.1, .1, .1) * float3(n * saturate(foamColor.r * 2), n * saturate(foamColor.r * 2), n * saturate(foamColor.r * 2));
     }
 
+    float3 specColor = specularColor * texelColor.r;
+    //specularColor *= float3(texelColor.r, texelColor.r, texelColor.r);
     // Calculate the specular light
-    float NdotH = dot(input.Normal.xyz, halfVector);
-    float3 specularLight = sign(NdotL) * KSpecular * specularColor * pow(saturate(NdotH), shininess);
+    float NdotH = dot(worldNormal, halfVector);
+    float3 specularLight = sign(NdotL) * KSpecular * specColor * pow(saturate(NdotH), shininess);
 
     // Final calculation
-    float4 finalColor = float4(baseColor + specularLight, 1) * alturaY;
+    //return float4(lerp(baseColor, reflectionColor, 0.5), 1);
+    float4 finalColor = float4(lerp(baseColor, reflectionColor * KReflection, 0.5) + specularLight, 1) * alturaY;
+    //float4 finalColor = float4(baseColor + reflectionColor * KReflection + specularLight, 1) * alturaY;
+
+    //float4 finalColor = float4(reflectionColor, 1);
     
     return finalColor;
 }

@@ -2,6 +2,7 @@ using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using TGC.MonoGame.TP.Cameras;
 
 namespace TGC.MonoGame.TP.Ships
 {
@@ -72,19 +73,19 @@ namespace TGC.MonoGame.TP.Ships
         }
 
 
-        public void Draw()
+        public void Draw(Camera cam)
         {
             ShipEffect.Parameters["ModelTexture"].SetValue(ShipTexture);
-            DrawModel(ShipModel, BoatMatrix, ShipEffect);
+            DrawModel(ShipModel, BoatMatrix, ShipEffect, cam);
         }
 
-        private void DrawModel(Model geometry, Matrix transform, Effect effect)
+        private void DrawModel(Model geometry, Matrix transform, Effect effect, Camera cam)
         {
             foreach (var mesh in geometry.Meshes)
             {
                 effect.Parameters["World"].SetValue(transform);
-                effect.Parameters["View"].SetValue(Game.CurrentCamera.View);
-                effect.Parameters["Projection"].SetValue(Game.CurrentCamera.Projection);
+                effect.Parameters["View"].SetValue(cam.View);
+                effect.Parameters["Projection"].SetValue(cam.Projection);
                 foreach (var meshPart in mesh.MeshParts)
                     meshPart.Effect = effect;
                 mesh.Draw();

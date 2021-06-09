@@ -39,6 +39,9 @@ namespace TGC.MonoGame.TP.Menu
         /// </summary>
         protected override void Initialize()
         {
+            Window.Title = "_.~\"~._.~\"~.__.~\"~._.~\"~._.~\"~._.~\"~.__.~\"~._.~\"~._.~\"~._.~\"~.__.~\"(_.~\"(_.~\"(_.~\"(_.~\"(    11 ANCLAS 11" +
+                "    _.~\"(_.~\"(_.~\"(_.~\"(_.~\"(_.~\"~._.~\"~._.~\"~._.~\"~.__.~\"~._.~\"~._.~\"~._.~\"~._";
+
             IsMouseVisible = true;
             graphics.PreferredBackBufferWidth = 1280;
             graphics.PreferredBackBufferHeight = 720;
