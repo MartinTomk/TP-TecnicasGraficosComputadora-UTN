@@ -300,7 +300,6 @@ namespace TGC.MonoGame.TP
         {
             var elapsedTime = Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds);
             ProcessKeyboard(elapsedTime);
-
             // Aca deberiamos poner toda la logica de actualizacion del juego.
             SM.Update(gameTime);
             Patrol.Update(gameTime);
@@ -457,6 +456,7 @@ namespace TGC.MonoGame.TP
             base.UnloadContent();
         }
 
+
         private void ProcessKeyboard(float elapsedTime)
         {
             var keyboardState = Keyboard.GetState();
@@ -467,15 +467,33 @@ namespace TGC.MonoGame.TP
             }
 
             //var currentMovementSpeed = MovementSpeed;
-
             if (keyboardState.IsKeyDown(Keys.W))
             {
-                MoveForward(PlayerControlledShip.MovementSpeed * elapsedTime);
+                PlayerControlledShip.BoatVelocity = Math.Clamp(PlayerControlledShip.BoatVelocity + PlayerControlledShip.BoatAcceleration, - PlayerControlledShip.MovementSpeed, PlayerControlledShip.MovementSpeed);
+                //MoveForward(PlayerControlledShip.MovementSpeed * elapsedTime);
+                MoveForward(PlayerControlledShip.BoatVelocity * elapsedTime);
             }
 
             if (keyboardState.IsKeyDown(Keys.S))
             {
-                MoveBackwards(PlayerControlledShip.MovementSpeed * elapsedTime);
+                PlayerControlledShip.BoatVelocity = Math.Clamp(PlayerControlledShip.BoatVelocity - PlayerControlledShip.BoatAcceleration, - PlayerControlledShip.MovementSpeed, PlayerControlledShip.MovementSpeed);
+                MoveBackwards(-PlayerControlledShip.BoatVelocity * elapsedTime);
+                //MoveBackwards(PlayerControlledShip.MovementSpeed * elapsedTime);
+            }
+
+            if(!keyboardState.IsKeyDown(Keys.W) && !keyboardState.IsKeyDown(Keys.S))
+            {
+                if (PlayerControlledShip.BoatVelocity > 0) 
+                {
+                    PlayerControlledShip.BoatVelocity = Math.Clamp(PlayerControlledShip.BoatVelocity - PlayerControlledShip.BoatAcceleration, 0.0f, PlayerControlledShip.MovementSpeed);
+                    MoveForward(PlayerControlledShip.BoatVelocity * elapsedTime);
+                }
+
+                if (PlayerControlledShip.BoatVelocity < 0)
+                {
+                    PlayerControlledShip.BoatVelocity = Math.Clamp(PlayerControlledShip.BoatVelocity + PlayerControlledShip.BoatAcceleration, -PlayerControlledShip.MovementSpeed, 0.0f);
+                    MoveBackwards(-PlayerControlledShip.BoatVelocity * elapsedTime);
+                }
             }
 
             if (keyboardState.IsKeyDown(Keys.A))
@@ -508,6 +526,7 @@ namespace TGC.MonoGame.TP
                 if (FuturePosition.Intersects(IslandColliders[index]))
                 {
                     willCollide = true;
+                    PlayerControlledShip.BoatVelocity = 0.0f;
                 }
             }
 
