@@ -153,7 +153,7 @@ namespace TGC.MonoGame.TP
         public List<Bullet.Bullet> PoolBullets;
         private int amountBullets = 20;
         public int availableBullets;
-        //private GameUI _ui;
+        private GameUI _ui;
         private MouseState lastMouseState = new MouseState();
         public Vector3 Orientacion { get; set; }
 
@@ -230,7 +230,7 @@ namespace TGC.MonoGame.TP
             }
             availableBullets = amountBullets;
 
-            //_ui = new GameUI(this);
+            _ui = new GameUI(this);
 
             base.Initialize();
             //Colliders.
@@ -646,7 +646,7 @@ namespace TGC.MonoGame.TP
                 Bullets[i].Draw(gameTime);
             }
 
-            //_ui.Draw();
+            _ui.Draw();
 
             base.Draw(gameTime);
         }
@@ -812,6 +812,10 @@ namespace TGC.MonoGame.TP
                     bullet._available = false;
 
                     availableBullets = PoolBullets.FindAll(b => b._available).Count;
+
+                    if (ShootInstance.State == SoundState.Playing)
+                        ShootInstance.Stop();
+
                     ShootInstance.Play();
                 }
             }
