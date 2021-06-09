@@ -130,12 +130,11 @@ namespace TGC.MonoGame.TP
         public Texture2D SkyDomeTexture;
 
         private Ship[] Ships;
-        float IslandScaleCollisionTest;
         BoundingSphere IslandSphere;
 
         private BoundingSphere[] IslandColliders;
 
-        BoundingBox TestBox;
+        //BoundingBox TestBox;
 
         // Iluminacion
         private Effect LightEffect{ get; set; }
@@ -194,7 +193,7 @@ namespace TGC.MonoGame.TP
             Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, GraphicsDevice.Viewport.AspectRatio, 1, 50);
             var screenSize = new Point(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height / 2);
 
-            CameraArm = 30.0f;
+            CameraArm = 60.0f;
             shotCam = new BoatCamera(GraphicsDevice.Viewport.AspectRatio, new Vector3(0, CameraArm, 600), screenSize);
 
             Graphics.PreferredBackBufferWidth = 1280;
@@ -203,7 +202,6 @@ namespace TGC.MonoGame.TP
 
             spriteBatch = new SpriteBatch(Graphics.GraphicsDevice);
 
-            IslandScaleCollisionTest = 0.2f;
             IslandSphere = new BoundingSphere(Vector3.Zero, 400);
 
             CubeMapCamera = new StaticCamera(1f, refPosition, Vector3.UnitX, Vector3.Up);
@@ -295,23 +293,24 @@ namespace TGC.MonoGame.TP
 
             //// BOTES ////
 
-            SM = new Ship(this, new Vector3(-100f, 0.01f, 400f), new Vector3(0f, MathHelper.PiOver2, 0f), new Vector3(0.04f, 0.04f, 0.04f), 0.5f, "Botes/SMGeo", "ShipsShader", "Botes/SM_T_Boat_M_Boat_BaseColor", "Botes/SM_T_Boat_M_Boat_OcclusionRoughnessMetallic", "Botes/SM_T_Boat_M_Boat_Normal");
+            SM = new Ship(this, new Vector3(-100f, 0.01f, 400f), new Vector3(0f, 0f, 0f), new Vector3(0.04f, 0.04f, 0.04f), 100.0f, 30.0f, "Botes/SMGeo", "ShipsShader", "Botes/SM_T_Boat_M_Boat_BaseColor", "Botes/SM_T_Boat_M_Boat_OcclusionRoughnessMetallic", "Botes/SM_T_Boat_M_Boat_Normal");
             SM.LoadContent();
 
-            Patrol = new Ship(this, new Vector3(-300f, 0.01f, 500f), new Vector3(0f, MathHelper.PiOver2, 0f), new Vector3(0.07f, 0.07f, 0.07f), 0.5f, "Botes/PatrolGeo", "ShipsShader", "Botes/T_Patrol_Ship_1K_BaseColor", "Botes/T_Patrol_Ship_1K_OcclusionRoughnessMetallic", "Botes/T_Patrol_Ship_1K_Normal");
+            Patrol = new Ship(this, new Vector3(-300f, 0.01f, 500f), new Vector3(0f, 0f, 0f), new Vector3(0.07f, 0.07f, 0.07f), 100.0f, 350.0f, "Botes/PatrolGeo", "ShipsShader", "Botes/T_Patrol_Ship_1K_BaseColor", "Botes/T_Patrol_Ship_1K_OcclusionRoughnessMetallic", "Botes/T_Patrol_Ship_1K_Normal");
             Patrol.LoadContent();
 
-            Cruiser = new Ship(this, new Vector3(-100f, 0.01f, 900f), new Vector3(0f, MathHelper.PiOver2, 0f), new Vector3(0.03f, 0.03f, 0.03f), 0.5f, "Botes/CruiserGeo", "ShipsShader", "Botes/T_Cruiser_M_Cruiser_BaseColor", "Botes/T_Cruiser_M_Cruiser_OcclusionRoughnessMetallic", "Botes/T_Cruiser_M_Cruiser_Normal");
+            Cruiser = new Ship(this, new Vector3(-100f, 0.01f, 900f), new Vector3(0f, 0.0f, 0f), new Vector3(0.03f, 0.03f, 0.03f), 100.0f, 350.0f, "Botes/CruiserGeo", "ShipsShader", "Botes/T_Cruiser_M_Cruiser_BaseColor", "Botes/T_Cruiser_M_Cruiser_OcclusionRoughnessMetallic", "Botes/T_Cruiser_M_Cruiser_Normal");
             Cruiser.LoadContent();
 
-            Barquito = new Ship(this, new Vector3(-200f, 0.01f, 700f), new Vector3(0f, MathHelper.PiOver2, 0f), new Vector3(0.05f, 0.05f, 0.05f), 0.5f, "Botes/BarquitoGeo", "ShipsShader", "Botes/Barquito_BaseColor", "Botes/blanco", "Island/normalAgua");
+            Barquito = new Ship(this, new Vector3(-200f, 0.01f, 700f), new Vector3(0f, 0f, 0f), new Vector3(0.05f, 0.05f, 0.05f), 300.0f, 20.0f, "Botes/BarquitoGeo", "ShipsShader", "Botes/Barquito_BaseColor", "Botes/blanco", "Island/normalAgua");
             Barquito.LoadContent();
 
-            PlayerBoat = new Ship(this, new Vector3(0f, 0.01f, 600f), new Vector3(0f, 0f, 0f), new Vector3(0.1f, 0.1f, 0.1f), 0.5f, "ShipB/Source/Ship", "ShipsShader", "Botes/Battleship_lambert1_AlbedoTransparency.tga", "Botes/Battleship_lambert1_SpecularSmoothness.tga", "Island/normalAgua");
+            PlayerBoat = new Ship(this, new Vector3(0f, 0.01f, 600f), new Vector3(0f, MathHelper.PiOver2, 0f), new Vector3(0.1f, 0.1f, 0.1f), 100.0f, 200.0f, "ShipB/Source/Ship", "ShipsShader", "Botes/Battleship_lambert1_AlbedoTransparency.tga", "Botes/Battleship_lambert1_SpecularSmoothness.tga", "Island/normalAgua");
             PlayerBoat.playerMode = true;
             PlayerBoat.LoadContent();
 
             PlayerControlledShip = PlayerBoat;
+            //PlayerControlledShip = Barquito;
 
             Ships = new Ship[]
             {
@@ -391,6 +390,7 @@ namespace TGC.MonoGame.TP
             var elapsedTime = Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds);
             ProcessKeyboard(elapsedTime);
 
+
             //Iluminacion 
             var posicionY = (float)MathF.Cos(Timer / 5) * 1500f;
             var posicionZ = (float)MathF.Sin(Timer / 5) * 1500f;
@@ -417,6 +417,7 @@ namespace TGC.MonoGame.TP
             shotCam.Update(gameTime);
             shotCam.Position = PlayerBoat.Position + new Vector3(0, CameraArm, 0);
             CubeMapCamera.Position = shotCam.Position + new Vector3(0, -30, 0);
+
 
 
             base.Update(gameTime);
@@ -695,6 +696,7 @@ namespace TGC.MonoGame.TP
             base.UnloadContent();
         }
 
+
         private void ProcessKeyboard(float elapsedTime)
         {
             var keyboardState = Keyboard.GetState();
@@ -705,15 +707,33 @@ namespace TGC.MonoGame.TP
             }
 
             //var currentMovementSpeed = MovementSpeed;
-
             if (keyboardState.IsKeyDown(Keys.W))
             {
-                MoveForward(PlayerControlledShip.MovementSpeed * elapsedTime);
+                PlayerControlledShip.BoatVelocity = Math.Clamp(PlayerControlledShip.BoatVelocity + PlayerControlledShip.BoatAcceleration, - PlayerControlledShip.MovementSpeed, PlayerControlledShip.MovementSpeed);
+                //MoveForward(PlayerControlledShip.MovementSpeed * elapsedTime);
+                MoveForward(PlayerControlledShip.BoatVelocity * elapsedTime);
             }
 
             if (keyboardState.IsKeyDown(Keys.S))
             {
-                MoveBackwards(PlayerControlledShip.MovementSpeed * elapsedTime);
+                PlayerControlledShip.BoatVelocity = Math.Clamp(PlayerControlledShip.BoatVelocity - PlayerControlledShip.BoatAcceleration, - PlayerControlledShip.MovementSpeed, PlayerControlledShip.MovementSpeed);
+                MoveBackwards(-PlayerControlledShip.BoatVelocity * elapsedTime);
+                //MoveBackwards(PlayerControlledShip.MovementSpeed * elapsedTime);
+            }
+
+            if(!keyboardState.IsKeyDown(Keys.W) && !keyboardState.IsKeyDown(Keys.S))
+            {
+                if (PlayerControlledShip.BoatVelocity > 0) 
+                {
+                    PlayerControlledShip.BoatVelocity = Math.Clamp(PlayerControlledShip.BoatVelocity - PlayerControlledShip.BoatAcceleration, 0.0f, PlayerControlledShip.MovementSpeed);
+                    MoveForward(PlayerControlledShip.BoatVelocity * elapsedTime);
+                }
+
+                if (PlayerControlledShip.BoatVelocity < 0)
+                {
+                    PlayerControlledShip.BoatVelocity = Math.Clamp(PlayerControlledShip.BoatVelocity + PlayerControlledShip.BoatAcceleration, -PlayerControlledShip.MovementSpeed, 0.0f);
+                    MoveBackwards(-PlayerControlledShip.BoatVelocity * elapsedTime);
+                }
             }
 
             if (keyboardState.IsKeyDown(Keys.A))
@@ -746,6 +766,7 @@ namespace TGC.MonoGame.TP
                 if (FuturePosition.Intersects(IslandColliders[index]))
                 {
                     willCollide = true;
+                    PlayerControlledShip.BoatVelocity = 0.0f;
                 }
             }
 
@@ -758,7 +779,7 @@ namespace TGC.MonoGame.TP
         }
         private void RotateRight(float amount)
         {
-            PlayerControlledShip.Rotation = new Vector3(PlayerControlledShip.Rotation.X, PlayerControlledShip.Rotation.Y + amount, PlayerControlledShip.Rotation.Z);
+            //PlayerControlledShip.Rotation = new Vector3(PlayerControlledShip.Rotation.X, PlayerControlledShip.Rotation.Y + amount, PlayerControlledShip.Rotation.Z);
             PlayerControlledShip.RotationRadians += amount;
         }
         private void RotateLeft(float amount)
