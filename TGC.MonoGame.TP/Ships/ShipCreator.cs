@@ -88,10 +88,10 @@ namespace TGC.MonoGame.TP.Ships
             ShipAoTexture = Game.Content.Load<Texture2D>(TGCGame.ContentFolderTextures + TextureAoName);
             ShipNormalTexture = Game.Content.Load<Texture2D>(TGCGame.ContentFolderTextures + TextureNormalName);
 
-            ShipEffect.Parameters["ambientColor"]?.SetValue(new Vector3(0.2f, 0.2f, 0.2f));
+            ShipEffect.Parameters["ambientColor"]?.SetValue(new Vector3(0.6f, 0.6f, 0.6f));
             //ShipEffect.Parameters["diffuseColor"]?.SetValue(new Vector3(0f, 0.25f, 0.48f));
             ShipEffect.Parameters["specularColor"]?.SetValue(new Vector3(0.98f, 0.98f, 0.98f));
-            ShipEffect.Parameters["KAmbient"]?.SetValue(0.2f);
+            ShipEffect.Parameters["KAmbient"]?.SetValue(0.6f);
             ShipEffect.Parameters["KDiffuse"]?.SetValue(1f);
             ShipEffect.Parameters["KSpecular"]?.SetValue(.3f);
             ShipEffect.Parameters["shininess"]?.SetValue(5f);
