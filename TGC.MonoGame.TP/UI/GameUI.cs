@@ -15,8 +15,7 @@ namespace TGC.MonoGame.TP.UI
         public GameUI(TGCGame game)
         {
             _game = game;
-            _spriteBatch = new SpriteBatch(game.GraphicsDevice);
-
+            
             _font = _game.Content.Load<SpriteFont>("Fonts/Font");
         }
 
@@ -29,13 +28,14 @@ namespace TGC.MonoGame.TP.UI
 
             var viewportHeight = _game.GraphicsDevice.Viewport.Height;
 
-            _spriteBatch.Begin();
-            _spriteBatch.DrawString(_font, textSpeed, new Vector2(10, viewportHeight - 20), Color.White);
-            _spriteBatch.DrawString(_font, rotation, new Vector2(10, viewportHeight - 50), Color.White);
-            _spriteBatch.DrawString(_font, textLife, new Vector2(10, viewportHeight - 80), Color.White);
-            _spriteBatch.DrawString(_font, bullets, new Vector2(10, viewportHeight - 110), Color.White);
+            
+            _game.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.Opaque);
+            _game.spriteBatch.DrawString(_font, textSpeed, new Vector2(10, viewportHeight - 20), Color.White);
+            _game.spriteBatch.DrawString(_font, rotation, new Vector2(10, viewportHeight - 50), Color.White);
+            _game.spriteBatch.DrawString(_font, textLife, new Vector2(10, viewportHeight - 80), Color.White);
+            _game.spriteBatch.DrawString(_font, bullets, new Vector2(10, viewportHeight - 110), Color.White);
 
-            _spriteBatch.End();
+            _game.spriteBatch.End();
         }
     }
 }
