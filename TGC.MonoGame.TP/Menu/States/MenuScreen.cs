@@ -142,7 +142,11 @@ namespace TGC.MonoGame.TP.Menu.States
                                 $"\n" +
                                 $"      Apuntar: Mouse\n" +
                                 $"      Disparar: Boton Izquierdo del Mouse\n" +
-                                $"      Vista: Boton Derecho del Mouse\n" +
+                                $"      Vista: Boton Derecho del Mouse\n\n\n" +
+                                $"Sonido FX:\n" +
+                                $"\n" +
+                                $"      N: Bajar el volumen\n" +
+                                $"      M: Subir el volumen\n" +
                                 $"\n", new Vector2(900, 150), Color.White);
 
                     break;

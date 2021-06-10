@@ -190,7 +190,7 @@ namespace TGC.MonoGame.TP.Ships
             Vector3 wave7 = createWave(time, 8, 5, new Vector2(-0.8f, 0.4f), 0.3f, 5, 0.3f, 6, xPos, zPos);
 
             worldPosition = (wave1 + wave2 + wave3 + wave4 + wave5 + wave6  + wave7 ) / 6;
-            return (float)worldPosition.Y;
+            return (float)worldPosition.Y - 2;
         }
 
         private float GetBoatInclination()
