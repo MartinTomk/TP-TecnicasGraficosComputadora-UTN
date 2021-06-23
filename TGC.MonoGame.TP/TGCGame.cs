@@ -80,6 +80,7 @@ namespace TGC.MonoGame.TP
 
         public Texture2D IslandTexture;
         public Texture2D IslandMiscTexture;
+
         public Texture2D WaterTexture;
         public Texture2D WaterFoamTexture;
         public Texture2D WaterNormalTexture;
@@ -432,6 +433,7 @@ namespace TGC.MonoGame.TP
             var lightPosition2 = new Vector3(1000f, posicionY * -1f, posicionZ * -1);
             LightBoxWorld = Matrix.CreateTranslation(lightPosition);
             LightBoxWorld2 = Matrix.CreateTranslation(lightPosition2);
+
             LightEffect.Parameters["lightPosition"].SetValue(lightPosition);
             LightEffect.Parameters["eyePosition"].SetValue(shotCam.Position);
 

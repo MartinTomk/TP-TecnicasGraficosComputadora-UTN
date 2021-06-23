@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Media;
 
+
 namespace TGC.MonoGame.TP.Menu
 {
     class MenuScreen : Game
@@ -58,6 +59,7 @@ namespace TGC.MonoGame.TP.Menu
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
+
             _currentState = new States.MenuScreen(this, graphics, Content);
 
 
@@ -101,9 +103,10 @@ namespace TGC.MonoGame.TP.Menu
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
-
+            //GraphicsDevice.Clear(Color.CornflowerBlue);
+            //spriteBatch.Begin(samplerState: spriteBatch.GraphicsDevice.SamplerStates[0], rasterizerState: spriteBatch.GraphicsDevice.RasterizerState);
             _currentState.Draw(gameTime, spriteBatch);
+            //spriteBatch.End();
 
             base.Draw(gameTime);
         }

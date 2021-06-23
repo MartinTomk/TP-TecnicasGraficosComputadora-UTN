@@ -41,6 +41,8 @@ namespace TGC.MonoGame.TP.Menu.Controls
 
         public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
+            //spriteBatch.Begin(samplerState: spriteBatch.GraphicsDevice.SamplerStates[0], rasterizerState: spriteBatch.GraphicsDevice.RasterizerState);
+
             if (visible)
             {
                 var colour = Color.White;
@@ -58,6 +60,8 @@ namespace TGC.MonoGame.TP.Menu.Controls
                     spriteBatch.DrawString(_font, Text, new Vector2(x, y), PenColour);
                 }
             }
+            //spriteBatch.End();
+
         }
 
         public override void Update(GameTime gameTime)
