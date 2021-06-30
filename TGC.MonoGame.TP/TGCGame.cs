@@ -59,7 +59,7 @@ namespace TGC.MonoGame.TP
 
         private Model ModelIsland2 { get; set; }
         private Model ModelIsland3 { get; set; }
-        
+
         private Model ModelCasa { get; set; }
         private Effect IslandEffect { get; set; }
         private Model ModelWater { get; set; }
@@ -104,7 +104,7 @@ namespace TGC.MonoGame.TP
         /// Barcos
         /// </summary>
         private Ship SM { get; set; }
-        private Ship Patrol { get; set; }
+        public Ship Patrol { get; set; }
         private Ship Cruiser { get; set; }
         private Ship Barquito { get; set; }
         private Ship PlayerBoat { get; set; }
@@ -120,10 +120,10 @@ namespace TGC.MonoGame.TP
         private Matrix Projection { get; set; }
 
         private float CameraArm;
-        
+
         public Camera shotCam;
         public Camera CurrentCamera => shotCam;
-      
+
         /// <summary>
         /// Skydome
         /// </summary>
@@ -132,15 +132,16 @@ namespace TGC.MonoGame.TP
         private Effect SkyDomeEffect { get; set; }
         public Texture2D SkyDomeTexture;
 
-        public Ship[] Ships;
+        public Ship[] Ships { get; set; }
+
         BoundingSphere IslandSphere;
 
-        private BoundingSphere[] IslandColliders;
+        public BoundingSphere[] IslandColliders;
 
         //BoundingBox TestBox;
 
         // Iluminacion
-        private Effect LightEffect{ get; set; }
+        private Effect LightEffect { get; set; }
         private Matrix LightBoxWorld { get; set; } = Matrix.Identity;
         private Matrix LightBoxWorld2 { get; set; } = Matrix.Identity;
 
@@ -166,6 +167,7 @@ namespace TGC.MonoGame.TP
         private Texture2D dropsTexture { get; set; }
         private Texture2D dropsTexture2 { get; set; }
         private Effect dropsEffect { get; set; }
+        private Effect nightVisionEffect { get; set; }
         private FullScreenQuad FullScreenQuad { get; set; }
         private RenderTarget2D SceneRenderTarget { get; set; }
         private RenderTarget2D ScreenRenderTarget { get; set; }
@@ -328,7 +330,7 @@ namespace TGC.MonoGame.TP
             Cruiser = new Ship(this, new Vector3(-100f, 0.01f, 900f), new Vector3(0f, 0.0f, 0f), new Vector3(0.03f, 0.03f, 0.03f), 100.0f, 350.0f, "Botes/CruiserGeo", "ShipsShader", "Botes/T_Cruiser_M_Cruiser_BaseColor", "Botes/T_Cruiser_M_Cruiser_OcclusionRoughnessMetallic", "Botes/T_Cruiser_M_Cruiser_Normal");
             Cruiser.LoadContent();
 
-            Barquito = new Ship(this, new Vector3(-200f, 0.01f, 700f), new Vector3(0f, 0f, 0f), new Vector3(0.05f, 0.05f, 0.05f), 300.0f, 20.0f, "Botes/BarquitoGeo", "ShipsShader", "Botes/Barquito_BaseColor", "Botes/blanco", "Island/normalAgua");
+            Barquito = new Ship(this, new Vector3(-400f, 0.01f, 1000f), new Vector3(0f, 0f, 0f), new Vector3(0.05f, 0.05f, 0.05f), 300.0f, 20.0f, "Botes/BarquitoGeo", "ShipsShader", "Botes/Barquito_BaseColor", "Botes/blanco", "Island/normalAgua");
             Barquito.LoadContent();
 
             PlayerBoat = new Ship(this, new Vector3(0f, 0.01f, 600f), new Vector3(0f, MathHelper.PiOver2, 0f), new Vector3(0.1f, 0.1f, 0.1f), 100.0f, 200.0f, "ShipB/Source/Ship", "ShipsShader", "Botes/Battleship_lambert1_AlbedoTransparency.tga", "Botes/Battleship_lambert1_SpecularSmoothness.tga", "Island/normalAgua");
@@ -340,18 +342,22 @@ namespace TGC.MonoGame.TP
 
             Ships = new Ship[]
             {
-                SM, Patrol, Cruiser, Barquito
+                PlayerControlledShip, SM, Patrol, Cruiser, Barquito
             };
+
+            // Tienen que agregarse despues de que las demas sean creadas.
+            foreach (Ship ship in Ships)
+                ship.AddShips();
 
             float radius = 50f;
             IslandColliders = new BoundingSphere[]
             {
                 new BoundingSphere(MatrixIsland1.Translation, 100), new BoundingSphere(MatrixIsland2.Translation, 300), new BoundingSphere(MatrixIsland3.Translation, radius),
-                new BoundingSphere(MatrixIsland4.Translation, radius), new BoundingSphere(MatrixIsland5.Translation, radius), 
-                new BoundingSphere(MatrixCasa.Translation, radius), 
-                new BoundingSphere(MatrixRock1.Translation, radius), new BoundingSphere(MatrixRock2.Translation, radius), new BoundingSphere(MatrixRock3.Translation, radius), 
-                new BoundingSphere(MatrixRock4.Translation, radius), new BoundingSphere(MatrixRock5.Translation, radius), new BoundingSphere(MatrixRock6.Translation, radius), 
-                new BoundingSphere(MatrixRock7.Translation, radius), 
+                new BoundingSphere(MatrixIsland4.Translation, radius), new BoundingSphere(MatrixIsland5.Translation, radius),
+                new BoundingSphere(MatrixCasa.Translation, radius),
+                new BoundingSphere(MatrixRock1.Translation, radius), new BoundingSphere(MatrixRock2.Translation, radius), new BoundingSphere(MatrixRock3.Translation, radius),
+                new BoundingSphere(MatrixRock4.Translation, radius), new BoundingSphere(MatrixRock5.Translation, radius), new BoundingSphere(MatrixRock6.Translation, radius),
+                new BoundingSphere(MatrixRock7.Translation, radius),
             };
 
 
@@ -361,7 +367,7 @@ namespace TGC.MonoGame.TP
             Skydome = new SkyDome(SkyDomeModel, SkyDomeTexture, SkyDomeEffect, 200);
 
             //Valores de Iluminacion 
-            LightEffect = Content.Load<Effect>(ContentFolderEffects + "BlinnPhong"); 
+            LightEffect = Content.Load<Effect>(ContentFolderEffects + "BlinnPhong");
 
             LightEffect.Parameters["ambientColor"].SetValue(new Vector3(1f, 1f, 0.0f));
             LightEffect.Parameters["diffuseColor"].SetValue(new Vector3(1f, 1f, 0.0f));
@@ -386,12 +392,14 @@ namespace TGC.MonoGame.TP
             font = Content.Load<SpriteFont>("Fonts/Font");
 
             // OVERLAY GOTAS //
-            
+
             dropsTexture = Content.Load<Texture2D>(ContentFolderTextures + "Dirty");
             dropsTexture2 = Content.Load<Texture2D>(ContentFolderTextures + "Smudgy");
             dropsEffect = Content.Load<Effect>(ContentFolderEffects + "TextureMerge");
             dropsEffect.Parameters["overlayTexture"]?.SetValue(dropsTexture);
             dropsEffect.Parameters["overlayTexture2"]?.SetValue(dropsTexture2);
+
+            nightVisionEffect = Content.Load<Effect>(ContentFolderEffects + "NightVision");
 
             // Create a full screen quad to post-process
             FullScreenQuad = new FullScreenQuad(GraphicsDevice);
@@ -401,10 +409,9 @@ namespace TGC.MonoGame.TP
                 GraphicsDevice.Viewport.Height, false, SurfaceFormat.Color, DepthFormat.Depth24, 0,
                 RenderTargetUsage.DiscardContents);
 
-            //ScreenRenderTarget = new RenderTarget2D(GraphicsDevice, GraphicsDevice.Viewport.Width,
-            //    GraphicsDevice.Viewport.Height, false, SurfaceFormat.Color, DepthFormat.None, 0,
-            //    RenderTargetUsage.DiscardContents);
-
+            ScreenRenderTarget = new RenderTarget2D(GraphicsDevice, GraphicsDevice.Viewport.Width,
+                GraphicsDevice.Viewport.Height, false, SurfaceFormat.Color, DepthFormat.None, 0,
+                RenderTargetUsage.DiscardContents);
 
             // Create a render target for the scene
             EnvironmentMapRenderTarget = new RenderTargetCube(GraphicsDevice, EnvironmentmapSize, false,
@@ -450,7 +457,7 @@ namespace TGC.MonoGame.TP
             Barquito.Update(gameTime, shotCam, lightPosition);
             PlayerBoat.Update(gameTime, shotCam, lightPosition);
             shotCam.Update(gameTime);
-            shotCam.Position = PlayerBoat.Position + new Vector3(0, CameraArm, 0);
+            shotCam.Position = PlayerBoat.Position + new Vector3(0, CameraArm, 0) - shotCam.FrontDirection * 175f;
             CubeMapCamera.Position = shotCam.Position + new Vector3(0, -30, 0);
 
             Bullets = PoolBullets.FindAll(b => b._active);
@@ -624,7 +631,7 @@ namespace TGC.MonoGame.TP
                     WaterEffect.Parameters["View"].SetValue(shotCam.View);
                     WaterEffect.Parameters["Projection"].SetValue(shotCam.Projection);
                     WaterEffect.Parameters["InverseTransposeWorld"]?.SetValue(Matrix.Transpose(Matrix.Invert(MatrixWater)));
-                  
+
                     DrawModel(ModelWater, MatrixWater, WaterEffect, shotCam);
                 }
 
@@ -634,14 +641,35 @@ namespace TGC.MonoGame.TP
 
             #region Pass 8
 
+
             // No depth needed
             GraphicsDevice.DepthStencilState = DepthStencilState.None;
             // Set the render target to null, we are drawing to the screen
-            GraphicsDevice.SetRenderTarget(null);
 
-            dropsEffect.Parameters["time"]?.SetValue(time);
-            dropsEffect.Parameters["baseTexture"]?.SetValue(SceneRenderTarget);
-            FullScreenQuad.Draw(dropsEffect);
+            var keyboardState = Keyboard.GetState();
+            if (keyboardState.IsKeyDown(Keys.R))
+            {
+                GraphicsDevice.SetRenderTarget(ScreenRenderTarget);
+                dropsEffect.Parameters["time"]?.SetValue(time);
+                dropsEffect.Parameters["baseTexture"]?.SetValue(SceneRenderTarget);
+                FullScreenQuad.Draw(dropsEffect);
+
+                GraphicsDevice.SetRenderTarget(null);
+                nightVisionEffect.Parameters["time"]?.SetValue(time);
+                nightVisionEffect.Parameters["baseTexture"]?.SetValue(ScreenRenderTarget);
+                FullScreenQuad.Draw(nightVisionEffect);
+
+            }
+            else
+            {
+                GraphicsDevice.SetRenderTarget(null);
+                dropsEffect.Parameters["time"]?.SetValue(time);
+                dropsEffect.Parameters["baseTexture"]?.SetValue(SceneRenderTarget);
+                FullScreenQuad.Draw(dropsEffect);
+            }
+
+
+
 
             #endregion
 
@@ -685,8 +713,9 @@ namespace TGC.MonoGame.TP
                 light.Parameters["InverseTransposeWorld"].SetValue(Matrix.Transpose(Matrix.Invert(transform)));
                 // WorldViewProjection is used to transform from model space to clip space
                 light.Parameters["WorldViewProjection"].SetValue(transform * cam.View * cam.Projection);
-                    foreach (var meshPart in modelMesh.MeshParts) {
-                        meshPart.Effect = light;
+                foreach (var meshPart in modelMesh.MeshParts)
+                {
+                    meshPart.Effect = light;
                 }
                 // Once we set these matrices we draw
                 modelMesh.Draw();
@@ -760,44 +789,30 @@ namespace TGC.MonoGame.TP
                 Exit();
             }
 
-            //var currentMovementSpeed = MovementSpeed;
             if (keyboardState.IsKeyDown(Keys.W))
             {
-                PlayerControlledShip.BoatVelocity = Math.Clamp(PlayerControlledShip.BoatVelocity + PlayerControlledShip.BoatAcceleration, - PlayerControlledShip.MovementSpeed, PlayerControlledShip.MovementSpeed);
-                //MoveForward(PlayerControlledShip.MovementSpeed * elapsedTime);
-                MoveForward(PlayerControlledShip.BoatVelocity * elapsedTime);
+                PlayerControlledShip.MoveForward(elapsedTime);
             }
 
             if (keyboardState.IsKeyDown(Keys.S))
             {
-                PlayerControlledShip.BoatVelocity = Math.Clamp(PlayerControlledShip.BoatVelocity - PlayerControlledShip.BoatAcceleration, - PlayerControlledShip.MovementSpeed, PlayerControlledShip.MovementSpeed);
-                MoveBackwards(-PlayerControlledShip.BoatVelocity * elapsedTime);
-                //MoveBackwards(PlayerControlledShip.MovementSpeed * elapsedTime);
+                PlayerControlledShip.MoveBackwards(elapsedTime);
             }
 
-            if(!keyboardState.IsKeyDown(Keys.W) && !keyboardState.IsKeyDown(Keys.S))
+            // Setteo bIsMoving a false para que el barco desacelere
+            if (!keyboardState.IsKeyDown(Keys.W) && !keyboardState.IsKeyDown(Keys.S))
             {
-                if (PlayerControlledShip.BoatVelocity > 0) 
-                {
-                    PlayerControlledShip.BoatVelocity = Math.Clamp(PlayerControlledShip.BoatVelocity - PlayerControlledShip.BoatAcceleration, 0.0f, PlayerControlledShip.MovementSpeed);
-                    MoveForward(PlayerControlledShip.BoatVelocity * elapsedTime);
-                }
-
-                if (PlayerControlledShip.BoatVelocity < 0)
-                {
-                    PlayerControlledShip.BoatVelocity = Math.Clamp(PlayerControlledShip.BoatVelocity + PlayerControlledShip.BoatAcceleration, -PlayerControlledShip.MovementSpeed, 0.0f);
-                    MoveBackwards(-PlayerControlledShip.BoatVelocity * elapsedTime);
-                }
+                PlayerControlledShip.bIsMoving = false;
             }
 
             if (keyboardState.IsKeyDown(Keys.A))
             {
-                RotateRight(PlayerControlledShip.RotationSpeed * elapsedTime);
+                PlayerControlledShip.RotateRight(elapsedTime);
             }
 
             if (keyboardState.IsKeyDown(Keys.D))
             {
-                RotateLeft(PlayerControlledShip.RotationSpeed * elapsedTime);
+                PlayerControlledShip.RotateLeft(elapsedTime);
             }
 
             var mouseState = Mouse.GetState();
@@ -834,44 +849,6 @@ namespace TGC.MonoGame.TP
             {
                 Instance.Volume -= (float)0.02;
             }
-        }
-
-        private void MoveForward(float amount)
-        {
-            BoundingSphere FuturePosition = new BoundingSphere(PlayerControlledShip.Position + PlayerControlledShip.FrontDirection * amount, 50);
-            bool willCollide = false;
-            for (var index = 0; index < Ships.Length && !willCollide; index++)
-            {
-                if (FuturePosition.Intersects(Ships[index].BoatBox))
-                {
-                    willCollide = true;
-                }
-            }
-
-            for (var index = 0; index < IslandColliders.Length && !willCollide; index++)
-            {
-                if (FuturePosition.Intersects(IslandColliders[index]))
-                {
-                    willCollide = true;
-                    PlayerControlledShip.BoatVelocity = 0.0f;
-                }
-            }
-
-            if (!willCollide)
-                PlayerControlledShip.Position += PlayerControlledShip.FrontDirection * amount;
-        }
-        private void MoveBackwards(float amount)
-        {
-            MoveForward(-amount);
-        }
-        private void RotateRight(float amount)
-        {
-            //PlayerControlledShip.Rotation = new Vector3(PlayerControlledShip.Rotation.X, PlayerControlledShip.Rotation.Y + amount, PlayerControlledShip.Rotation.Z);
-            PlayerControlledShip.RotationRadians += amount;
-        }
-        private void RotateLeft(float amount)
-        {
-            RotateRight(-amount);
         }
     }
 }

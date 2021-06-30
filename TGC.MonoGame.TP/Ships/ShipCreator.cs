@@ -10,7 +10,7 @@ namespace TGC.MonoGame.TP.Ships
     public class Ship
     {
         private TGCGame Game;
-        
+
         private float time;
 
         private Model ShipModel { get; set; }
@@ -33,6 +33,7 @@ namespace TGC.MonoGame.TP.Ships
         public Vector3 FrontDirection { get; set; }
         public Vector3 wavesRotation { get; set; }
         public Vector3 Scale { get; set; }
+        private Ship[] OtherShips;
         public float Speed { get; set; }
         public float Length { get; set; }
 
@@ -44,7 +45,7 @@ namespace TGC.MonoGame.TP.Ships
 
         public float BoatVelocity;
         public float BoatAcceleration;
-
+        public bool bIsMoving;
         public Matrix BoatMatrix { get; set; }
 
         public bool playerMode = false;
@@ -54,7 +55,7 @@ namespace TGC.MonoGame.TP.Ships
 
         public BoundingSphere BoatBox { get; set; }
         //public BoundingBox BoatBox { get; set; }
-        
+
         public SpherePrimitive DebugSphere;
         public Vector3 ProaPos { get; set; }
         public Vector3 PopaPos { get; set; }
@@ -78,9 +79,8 @@ namespace TGC.MonoGame.TP.Ships
             RotationSpeed = 0.5f;
             BoatVelocity = 0.0f;
             BoatAcceleration = 0.5f;
-
             //BoatMatrix = Matrix.Identity * Matrix.CreateScale(scale) * Matrix.CreateRotationY(rot.Y) * Matrix.CreateTranslation(pos);
-    }
+        }
         public void LoadContent()
         {
             ShipModel = Game.Content.Load<Model>(TGCGame.ContentFolder3D + ModelName);
@@ -110,8 +110,8 @@ namespace TGC.MonoGame.TP.Ships
             ShipEffect.Parameters["aoTexture"]?.SetValue(ShipAoTexture);
             ShipEffect.Parameters["normalTexture"]?.SetValue(ShipNormalTexture);
             DrawModel(ShipModel, BoatMatrix, ShipEffect, cam);
-            DebugSphere.Draw(Matrix.Identity * Matrix.CreateTranslation(ProaPos), Game.CurrentCamera.View, Game.CurrentCamera.Projection);
-            DebugSphere.Draw(Matrix.Identity * Matrix.CreateTranslation(PopaPos), Game.CurrentCamera.View, Game.CurrentCamera.Projection);
+            //DebugSphere.Draw(Matrix.Identity * Matrix.CreateTranslation(ProaPos), Game.CurrentCamera.View, Game.CurrentCamera.Projection);
+            //DebugSphere.Draw(Matrix.Identity * Matrix.CreateTranslation(PopaPos), Game.CurrentCamera.View, Game.CurrentCamera.Projection);
         }
 
         private void DrawModel(Model geometry, Matrix transform, Effect effect, Camera cam)
@@ -121,7 +121,7 @@ namespace TGC.MonoGame.TP.Ships
                 effect.Parameters["World"]?.SetValue(transform);
                 effect.Parameters["InverseTransposeWorld"]?.SetValue(Matrix.Transpose(Matrix.Invert(transform)));
                 effect.Parameters["WorldViewProjection"]?.SetValue(transform * cam.View * cam.Projection);
-                
+
                 //effect.Parameters["View"].SetValue(cam.View);
                 //effect.Parameters["Projection"].SetValue(cam.Projection);
                 foreach (var meshPart in mesh.MeshParts)
@@ -137,7 +137,7 @@ namespace TGC.MonoGame.TP.Ships
             // Esto es el tiempo total transcurrido en el tiempo, siempre se incrementa
             time += Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds);
 
-            
+
             float InclinationRadians = GetBoatInclination();
             // ProaPos y PopaPos se settean en GetBoatInclination()
             float WavePosY = (ProaPos.Y + PopaPos.Y) / 2;
@@ -146,13 +146,18 @@ namespace TGC.MonoGame.TP.Ships
             Vector3 InclinationAxis = Vector3.Cross(Vector3.Up, FrontDirection);
             Position = new Vector3(Position.X, WavePosY, Position.Z);
             BoatMatrix = Matrix.CreateScale(Scale) * Matrix.CreateRotationY(ModelRotation.Y) * Matrix.CreateRotationY(RotationRadians) * Matrix.CreateFromAxisAngle(InclinationAxis, InclinationRadians) * Matrix.CreateTranslation(Position);
-            
+
             FrontDirection = new Vector3((float)Math.Cos(-RotationRadians), 0.0f, (float)Math.Sin(-RotationRadians));
             //BoatBox = new BoundingBox(Vector3.Transform(-Vector3.One * 0.5f, BoatMatrix), Vector3.Transform(Vector3.One * 0.5f, BoatMatrix));
             BoatBox = new BoundingSphere(Position, 50);
 
             ShipEffect.Parameters["lightPosition"]?.SetValue(light);
             ShipEffect.Parameters["eyePosition"]?.SetValue(cam.Position);
+
+            if (!bIsMoving)
+                Decelerate(elapsedTime);
+            if (this != Game.PlayerControlledShip)
+                MoveTowardsPlayer(elapsedTime);
         }
 
         float frac(float val)
@@ -173,14 +178,14 @@ namespace TGC.MonoGame.TP.Ships
             wave.Z = waveAmplitude * steepness * waveDir.Y * MathF.Cos(Vector2.Dot(posXZ, waveDir) * spaceMult + time * timeMult);
             return wave;
         }
-        
+
         public float GetWaterPositionY(float time, float xPos, float zPos)
         {
             Vector3 worldPosition = Position;
 
             //createWave(float steepness, float numWaves, float2 waveDir, float waveAmplitude, float waveLength, float peak, float speed, float4 position) {
 
-            Vector3 wave1 = createWave(time, 4, 5, new Vector2( 0.5f, 0.3f), 40, 160, 3, 10, xPos, zPos);
+            Vector3 wave1 = createWave(time, 4, 5, new Vector2(0.5f, 0.3f), 40, 160, 3, 10, xPos, zPos);
             Vector3 wave2 = createWave(time, 8, 5, new Vector2(0.8f, -0.4f), 12, 120, 1.2f, 20, xPos, zPos);
             Vector3 wave3 = createWave(time, 4, 5, new Vector2(0.3f, 0.2f), 2, 90, 5, 25, xPos, zPos);
             Vector3 wave4 = createWave(time, 2, 5, new Vector2(0.4f, 0.25f), 2, 60, 15, 15, xPos, zPos);
@@ -189,7 +194,7 @@ namespace TGC.MonoGame.TP.Ships
             Vector3 wave6 = createWave(time, 4, 5, new Vector2(-0.5f, -0.3f), 0.5f, 8, 0.2f, 4, xPos, zPos);
             Vector3 wave7 = createWave(time, 8, 5, new Vector2(-0.8f, 0.4f), 0.3f, 5, 0.3f, 6, xPos, zPos);
 
-            worldPosition = (wave1 + wave2 + wave3 + wave4 + wave5 + wave6  + wave7 ) / 6;
+            worldPosition = (wave1 + wave2 + wave3 + wave4 + wave5 + wave6 + wave7) / 6;
             return (float)worldPosition.Y - 2;
         }
 
@@ -212,5 +217,94 @@ namespace TGC.MonoGame.TP.Ships
             if (WavePosYProa > WavePosYPopa) InclinationRadians *= -1;
             return InclinationRadians;
         }
+
+        public void Move(float amount)
+        {
+            bIsMoving = true;
+            BoundingSphere FuturePosition = new BoundingSphere(Position + FrontDirection * amount, 50);
+            bool willCollide = false;
+            for (var index = 0; index < OtherShips.Length && !willCollide; index++)
+            {
+                if (FuturePosition.Intersects(OtherShips[index].BoatBox))
+                {
+                    willCollide = true;
+                    BoatVelocity = 0.0f;
+                }
+            }
+
+            for (var index = 0; index < Game.IslandColliders.Length && !willCollide; index++)
+            {
+                if (FuturePosition.Intersects(Game.IslandColliders[index]))
+                {
+                    willCollide = true;
+                    BoatVelocity = 0.0f;
+                }
+            }
+
+            if (!willCollide)
+                Position += FrontDirection * amount;
+        }
+        public void MoveForward(float amount)
+        {
+            BoatVelocity = Math.Clamp(BoatVelocity + BoatAcceleration, -MovementSpeed, MovementSpeed);
+            Move(BoatVelocity * amount);
+        }
+        public void MoveBackwards(float amount)
+        {
+            BoatVelocity = Math.Clamp(BoatVelocity - BoatAcceleration, -MovementSpeed, MovementSpeed);
+            Move(BoatVelocity * amount);
+        }
+        public void RotateRight(float amount)
+        {
+            RotationRadians += RotationSpeed * amount;
+        }
+        public void RotateLeft(float amount)
+        {
+            RotateRight(-amount);
+        }
+        private void Decelerate(float amount)
+        {
+            if (BoatVelocity > 0)
+                BoatVelocity = Math.Clamp(BoatVelocity - BoatAcceleration, 0.0f, MovementSpeed);
+
+            if (BoatVelocity < 0)
+                BoatVelocity = Math.Clamp(BoatVelocity + BoatAcceleration, -MovementSpeed, 0.0f);
+            Move(amount * BoatVelocity);
+        }
+        public void AddShips()
+        {
+            // Agrego el resto de las ships menos esta
+            OtherShips = new Ship[Game.Ships.Length - 1];
+            int i = 0;
+            foreach (Ship ship in Game.Ships)
+            {
+                if (ship != this)
+                {
+                    OtherShips[i] = ship;
+                    i++;
+                }
+            }
+        }
+        public double AngleToPlayer;
+        public double FrontDirectionAngle;
+
+        private void MoveTowardsPlayer(float elapsedTime)
+        {
+            Vector3 VectorToPlayerXYZ = Game.PlayerControlledShip.Position - Position;
+            Vector2 FrontDirectionXZ = new Vector2(FrontDirection.X, FrontDirection.Z);
+            Vector2 DirectionToPlayer = new Vector2(VectorToPlayerXYZ.X, VectorToPlayerXYZ.Z);
+
+            AngleToPlayer = Math.Acos((double)(DirectionToPlayer.X / DirectionToPlayer.Length()));
+            FrontDirectionAngle = Math.Acos((double)(FrontDirectionXZ.X / FrontDirectionXZ.Length()));
+
+
+            if (AngleToPlayer > FrontDirectionAngle)
+                RotateLeft(elapsedTime);
+            if (AngleToPlayer + 0.1 <= FrontDirectionAngle)
+                RotateRight(elapsedTime);
+
+            MoveForward(elapsedTime);
+        }
+
     }
 }
