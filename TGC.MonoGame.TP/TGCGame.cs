@@ -166,6 +166,7 @@ namespace TGC.MonoGame.TP
         private Texture2D dropsTexture { get; set; }
         private Texture2D dropsTexture2 { get; set; }
         private Effect dropsEffect { get; set; }
+        private Effect nightVisionEffect { get; set; }
         private FullScreenQuad FullScreenQuad { get; set; }
         private RenderTarget2D SceneRenderTarget { get; set; }
         private RenderTarget2D ScreenRenderTarget { get; set; }
@@ -393,6 +394,8 @@ namespace TGC.MonoGame.TP
             dropsEffect.Parameters["overlayTexture"]?.SetValue(dropsTexture);
             dropsEffect.Parameters["overlayTexture2"]?.SetValue(dropsTexture2);
 
+            nightVisionEffect = Content.Load<Effect>(ContentFolderEffects + "NightVision");
+
             // Create a full screen quad to post-process
             FullScreenQuad = new FullScreenQuad(GraphicsDevice);
 
@@ -401,10 +404,9 @@ namespace TGC.MonoGame.TP
                 GraphicsDevice.Viewport.Height, false, SurfaceFormat.Color, DepthFormat.Depth24, 0,
                 RenderTargetUsage.DiscardContents);
 
-            //ScreenRenderTarget = new RenderTarget2D(GraphicsDevice, GraphicsDevice.Viewport.Width,
-            //    GraphicsDevice.Viewport.Height, false, SurfaceFormat.Color, DepthFormat.None, 0,
-            //    RenderTargetUsage.DiscardContents);
-
+            ScreenRenderTarget = new RenderTarget2D(GraphicsDevice, GraphicsDevice.Viewport.Width,
+                GraphicsDevice.Viewport.Height, false, SurfaceFormat.Color, DepthFormat.None, 0,
+                RenderTargetUsage.DiscardContents);
 
             // Create a render target for the scene
             EnvironmentMapRenderTarget = new RenderTargetCube(GraphicsDevice, EnvironmentmapSize, false,
@@ -634,18 +636,38 @@ namespace TGC.MonoGame.TP
 
             #region Pass 8
 
+
             // No depth needed
             GraphicsDevice.DepthStencilState = DepthStencilState.None;
             // Set the render target to null, we are drawing to the screen
-            GraphicsDevice.SetRenderTarget(null);
 
-            dropsEffect.Parameters["time"]?.SetValue(time);
-            dropsEffect.Parameters["baseTexture"]?.SetValue(SceneRenderTarget);
-            FullScreenQuad.Draw(dropsEffect);
+            var keyboardState = Keyboard.GetState();
+            if (keyboardState.IsKeyDown(Keys.R))
+            {
+                GraphicsDevice.SetRenderTarget(ScreenRenderTarget);
+                dropsEffect.Parameters["time"]?.SetValue(time);
+                dropsEffect.Parameters["baseTexture"]?.SetValue(SceneRenderTarget);
+                FullScreenQuad.Draw(dropsEffect);
 
-            #endregion
+                GraphicsDevice.SetRenderTarget(null);
+                nightVisionEffect.Parameters["time"]?.SetValue(time);
+                nightVisionEffect.Parameters["baseTexture"]?.SetValue(ScreenRenderTarget);
+                FullScreenQuad.Draw(nightVisionEffect);
 
-            for (int i = 0; i < Bullets.Count; i++)
+            } else
+            {
+                GraphicsDevice.SetRenderTarget(null);
+                dropsEffect.Parameters["time"]?.SetValue(time);
+                dropsEffect.Parameters["baseTexture"]?.SetValue(SceneRenderTarget);
+                FullScreenQuad.Draw(dropsEffect);
+            }
+
+
+
+
+                #endregion
+
+                for (int i = 0; i < Bullets.Count; i++)
             {
                 Bullets[i].Draw(gameTime);
             }
