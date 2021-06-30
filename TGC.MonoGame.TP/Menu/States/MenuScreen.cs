@@ -205,19 +205,22 @@ namespace TGC.MonoGame.TP.Menu.States
 
         public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
+            //spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.Opaque);
             spriteBatch.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
             spriteBatch.GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.CornflowerBlue, 1f, 0);
-            spriteBatch.Begin(samplerState: spriteBatch.GraphicsDevice.SamplerStates[0], rasterizerState: spriteBatch.GraphicsDevice.RasterizerState, 
-                blendState: spriteBatch.GraphicsDevice.BlendState);
+            spriteBatch.Begin();
+
+            //spriteBatch.Begin(BlendState.AlphaBlend, SpriteSortMode.Deferred, SaveStateMode.SaveState);
+            //spriteBatch.Begin(samplerState: spriteBatch.GraphicsDevice.SamplerStates[0], rasterizerState: spriteBatch.GraphicsDevice.RasterizerState);
 
             switch (status)
             {
-                
+
                 case ST_PRESENTACION:
                     spriteBatch.Draw(background, new Vector2(0, 0), Color.White);
                     break;
                 case ST_MENU:
-                    //spriteBatch.Draw(BGInstructions, Vector2.Zero, Color.White);
+                    spriteBatch.GraphicsDevice.BlendState = BlendState.Opaque;
                     ShipEffect.Parameters["baseTexture"]?.SetValue(ShipTexture);
                     ShipEffect.Parameters["aoTexture"]?.SetValue(ShipAoTexture);
                     ShipEffect.Parameters["normalTexture"]?.SetValue(ShipNormalTexture);
@@ -227,7 +230,6 @@ namespace TGC.MonoGame.TP.Menu.States
                     WaterEffect.Parameters["foamTexture"]?.SetValue(WaterFoamTexture);
                     WaterEffect.Parameters["normalTexture"]?.SetValue(WaterNormalTexture);
                     WaterEffect.Parameters["Time"]?.SetValue(time);
-                    //WaterEffect.Parameters["environmentMap"]?.SetValue(EnvironmentMapRenderTarget);
                     WaterEffect.Parameters["eyePosition"]?.SetValue(menuCam.Position);
 
                     for (int i = -20; i < 20; i++)
@@ -256,7 +258,7 @@ namespace TGC.MonoGame.TP.Menu.States
                     spriteBatch.Draw(BGControls, Vector2.Zero, Color.White);
                     goBackButton.visible = true;
                     quitGameButton.visible = true;
-                    
+
                     spriteBatch.DrawString(buttonFont, $"Movimiento del barco:\n" +
                                 $"\n" +
                                 $"      W: Mover hacia adelante\n" +
@@ -285,6 +287,10 @@ namespace TGC.MonoGame.TP.Menu.States
             spriteBatch.End();
         }
 
+        private static BlendFunction GetAlphaBlendFunction(SpriteBatch spriteBatch)
+        {
+            return spriteBatch.GraphicsDevice.BlendState.AlphaBlendFunction;
+        }
 
         private void MenuButton_Click(object sender, EventArgs e)
         {

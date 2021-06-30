@@ -480,6 +480,7 @@ namespace TGC.MonoGame.TP
             #region Pass 1-6
 
             GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+            spriteBatch.GraphicsDevice.BlendState = BlendState.Opaque;
             // Draw to our cubemap from the robot position
             for (var face = CubeMapFace.PositiveX; face <= CubeMapFace.NegativeZ; face++)
             {
@@ -551,6 +552,7 @@ namespace TGC.MonoGame.TP
             // Set the render target as our shadow map, we are drawing the depth into this texture
             GraphicsDevice.SetRenderTarget(SceneRenderTarget);
             GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.CornflowerBlue, 1f, 0);
+
 
 
             // Draw our scene with the default effect and default camera

@@ -29,7 +29,7 @@ namespace TGC.MonoGame.TP.UI
             var viewportHeight = _game.GraphicsDevice.Viewport.Height;
 
             
-            _game.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.Opaque);
+            _game.spriteBatch.Begin();
             _game.spriteBatch.DrawString(_font, textSpeed, new Vector2(10, viewportHeight - 20), Color.White);
             _game.spriteBatch.DrawString(_font, rotation, new Vector2(10, viewportHeight - 50), Color.White);
             _game.spriteBatch.DrawString(_font, textLife, new Vector2(10, viewportHeight - 80), Color.White);
