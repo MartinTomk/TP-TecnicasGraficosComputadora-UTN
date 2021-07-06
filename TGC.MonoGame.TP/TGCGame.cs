@@ -132,10 +132,11 @@ namespace TGC.MonoGame.TP
         private Effect SkyDomeEffect { get; set; }
         public Texture2D SkyDomeTexture;
 
-        public Ship[] Ships;
+        public Ship[] Ships { get; set; }
+
         BoundingSphere IslandSphere;
 
-        private BoundingSphere[] IslandColliders;
+        public BoundingSphere[] IslandColliders;
 
         //BoundingBox TestBox;
 
@@ -341,8 +342,12 @@ namespace TGC.MonoGame.TP
 
             Ships = new Ship[]
             {
-                SM, Patrol, Cruiser, Barquito
+                PlayerControlledShip, SM, Patrol, Cruiser, Barquito
             };
+
+            // Tienen que agregarse despues de que las demas sean creadas.
+            foreach (Ship ship in Ships)
+                ship.AddShips();
 
             float radius = 50f;
             IslandColliders = new BoundingSphere[]
@@ -455,6 +460,14 @@ namespace TGC.MonoGame.TP
             shotCam.Position = PlayerBoat.Position + new Vector3(0, CameraArm, 0);
             CubeMapCamera.Position = shotCam.Position + new Vector3(0, -30, 0);
 
+            foreach (Ship ship in Ships)
+            {
+                if(ship != PlayerControlledShip)
+                {
+                    ship.MoveForward(elapsedTime);
+                    ship.RotateLeft(0.5f * elapsedTime);
+                }
+            }
             Bullets = PoolBullets.FindAll(b => b._active);
 
             foreach (var bullet in Bullets)
@@ -782,44 +795,30 @@ namespace TGC.MonoGame.TP
                 Exit();
             }
 
-            //var currentMovementSpeed = MovementSpeed;
             if (keyboardState.IsKeyDown(Keys.W))
             {
-                PlayerControlledShip.BoatVelocity = Math.Clamp(PlayerControlledShip.BoatVelocity + PlayerControlledShip.BoatAcceleration, - PlayerControlledShip.MovementSpeed, PlayerControlledShip.MovementSpeed);
-                //MoveForward(PlayerControlledShip.MovementSpeed * elapsedTime);
-                MoveForward(PlayerControlledShip.BoatVelocity * elapsedTime);
+                PlayerControlledShip.MoveForward(elapsedTime);
             }
 
             if (keyboardState.IsKeyDown(Keys.S))
             {
-                PlayerControlledShip.BoatVelocity = Math.Clamp(PlayerControlledShip.BoatVelocity - PlayerControlledShip.BoatAcceleration, - PlayerControlledShip.MovementSpeed, PlayerControlledShip.MovementSpeed);
-                MoveBackwards(-PlayerControlledShip.BoatVelocity * elapsedTime);
-                //MoveBackwards(PlayerControlledShip.MovementSpeed * elapsedTime);
+                PlayerControlledShip.MoveBackwards(elapsedTime);
             }
 
-            if(!keyboardState.IsKeyDown(Keys.W) && !keyboardState.IsKeyDown(Keys.S))
+            // Setteo bIsMoving a false para que el barco desacelere
+            if (!keyboardState.IsKeyDown(Keys.W) && !keyboardState.IsKeyDown(Keys.S))
             {
-                if (PlayerControlledShip.BoatVelocity > 0) 
-                {
-                    PlayerControlledShip.BoatVelocity = Math.Clamp(PlayerControlledShip.BoatVelocity - PlayerControlledShip.BoatAcceleration, 0.0f, PlayerControlledShip.MovementSpeed);
-                    MoveForward(PlayerControlledShip.BoatVelocity * elapsedTime);
-                }
-
-                if (PlayerControlledShip.BoatVelocity < 0)
-                {
-                    PlayerControlledShip.BoatVelocity = Math.Clamp(PlayerControlledShip.BoatVelocity + PlayerControlledShip.BoatAcceleration, -PlayerControlledShip.MovementSpeed, 0.0f);
-                    MoveBackwards(-PlayerControlledShip.BoatVelocity * elapsedTime);
-                }
+                PlayerControlledShip.bIsMoving = false;
             }
 
             if (keyboardState.IsKeyDown(Keys.A))
             {
-                RotateRight(PlayerControlledShip.RotationSpeed * elapsedTime);
+                PlayerControlledShip.RotateRight(elapsedTime);
             }
 
             if (keyboardState.IsKeyDown(Keys.D))
             {
-                RotateLeft(PlayerControlledShip.RotationSpeed * elapsedTime);
+                PlayerControlledShip.RotateLeft(elapsedTime);
             }
 
             var mouseState = Mouse.GetState();
@@ -856,44 +855,6 @@ namespace TGC.MonoGame.TP
             {
                 Instance.Volume -= (float)0.02;
             }
-        }
-
-        private void MoveForward(float amount)
-        {
-            BoundingSphere FuturePosition = new BoundingSphere(PlayerControlledShip.Position + PlayerControlledShip.FrontDirection * amount, 50);
-            bool willCollide = false;
-            for (var index = 0; index < Ships.Length && !willCollide; index++)
-            {
-                if (FuturePosition.Intersects(Ships[index].BoatBox))
-                {
-                    willCollide = true;
-                }
-            }
-
-            for (var index = 0; index < IslandColliders.Length && !willCollide; index++)
-            {
-                if (FuturePosition.Intersects(IslandColliders[index]))
-                {
-                    willCollide = true;
-                    PlayerControlledShip.BoatVelocity = 0.0f;
-                }
-            }
-
-            if (!willCollide)
-                PlayerControlledShip.Position += PlayerControlledShip.FrontDirection * amount;
-        }
-        private void MoveBackwards(float amount)
-        {
-            MoveForward(-amount);
-        }
-        private void RotateRight(float amount)
-        {
-            //PlayerControlledShip.Rotation = new Vector3(PlayerControlledShip.Rotation.X, PlayerControlledShip.Rotation.Y + amount, PlayerControlledShip.Rotation.Z);
-            PlayerControlledShip.RotationRadians += amount;
-        }
-        private void RotateLeft(float amount)
-        {
-            RotateRight(-amount);
         }
     }
 }
