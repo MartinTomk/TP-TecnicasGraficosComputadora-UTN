@@ -33,6 +33,7 @@ namespace TGC.MonoGame.TP.Ships
         public Vector3 FrontDirection { get; set; }
         public Vector3 wavesRotation { get; set; }
         public Vector3 Scale { get; set; }
+        private Ship[] OtherShips;
         public float Speed { get; set; }
         public float Length { get; set; }
 
@@ -44,7 +45,7 @@ namespace TGC.MonoGame.TP.Ships
 
         public float BoatVelocity;
         public float BoatAcceleration;
-
+        public bool bIsMoving;
         public Matrix BoatMatrix { get; set; }
 
         public bool playerMode = false;
@@ -78,7 +79,6 @@ namespace TGC.MonoGame.TP.Ships
             RotationSpeed = 0.5f;
             BoatVelocity = 0.0f;
             BoatAcceleration = 0.5f;
-
             //BoatMatrix = Matrix.Identity * Matrix.CreateScale(scale) * Matrix.CreateRotationY(rot.Y) * Matrix.CreateTranslation(pos);
     }
         public void LoadContent()
@@ -153,6 +153,10 @@ namespace TGC.MonoGame.TP.Ships
 
             ShipEffect.Parameters["lightPosition"]?.SetValue(light);
             ShipEffect.Parameters["eyePosition"]?.SetValue(cam.Position);
+
+            if (!bIsMoving)
+                Decelerate(elapsedTime);
+
         }
 
         float frac(float val)
@@ -211,6 +215,73 @@ namespace TGC.MonoGame.TP.Ships
             float InclinationRadians = (float)Math.Acos(DotProductInclinationRotation);
             if (WavePosYProa > WavePosYPopa) InclinationRadians *= -1;
             return InclinationRadians;
+        }
+
+        public void Move(float amount)
+        {
+            bIsMoving = true;
+            BoundingSphere FuturePosition = new BoundingSphere(Position + FrontDirection * amount, 50);
+            bool willCollide = false;
+            for (var index = 0; index < OtherShips.Length && !willCollide; index++)
+            {
+                if (FuturePosition.Intersects(OtherShips[index].BoatBox))
+                {
+                    willCollide = true;
+                }
+            }
+
+            for (var index = 0; index < Game.IslandColliders.Length && !willCollide; index++)
+            {
+                if (FuturePosition.Intersects(Game.IslandColliders[index]))
+                {
+                    willCollide = true;
+                    BoatVelocity = 0.0f;
+                }
+            }
+
+            if (!willCollide)
+                Position += FrontDirection * amount;
+        }
+        public void MoveForward(float amount)
+        {
+            BoatVelocity = Math.Clamp(BoatVelocity + BoatAcceleration, -MovementSpeed, MovementSpeed);
+            Move(BoatVelocity * amount);
+        }
+        public void MoveBackwards(float amount)
+        {
+            BoatVelocity = Math.Clamp(BoatVelocity - BoatAcceleration, -MovementSpeed, MovementSpeed);
+            Move(BoatVelocity * amount);
+        }
+        public void RotateRight(float amount)
+        {
+            RotationRadians += RotationSpeed * amount;
+        }
+        public void RotateLeft(float amount)
+        {
+            RotateRight(-amount);
+        }
+        private void Decelerate(float amount)
+        {
+            if (BoatVelocity > 0)
+                BoatVelocity = Math.Clamp(BoatVelocity - BoatAcceleration, 0.0f, MovementSpeed);
+
+            if (BoatVelocity < 0)
+                BoatVelocity = Math.Clamp(BoatVelocity + BoatAcceleration, -MovementSpeed, 0.0f);
+            Move(amount * BoatVelocity);
+        }
+        public void AddShips()
+        {
+            // Agrego el resto de las ships menos esta
+            OtherShips = new Ship[Game.Ships.Length - 1];
+            int i = 0;
+            foreach (Ship ship in Game.Ships)
+            {
+                if (ship != this)
+                {
+                    OtherShips[i] = ship;
+                    i++;
+                }
+            }
         }
     }
 }
