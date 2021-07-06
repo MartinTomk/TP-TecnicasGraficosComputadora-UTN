@@ -110,8 +110,8 @@ namespace TGC.MonoGame.TP.Ships
             ShipEffect.Parameters["aoTexture"]?.SetValue(ShipAoTexture);
             ShipEffect.Parameters["normalTexture"]?.SetValue(ShipNormalTexture);
             DrawModel(ShipModel, BoatMatrix, ShipEffect, cam);
-            DebugSphere.Draw(Matrix.Identity * Matrix.CreateTranslation(ProaPos), Game.CurrentCamera.View, Game.CurrentCamera.Projection);
-            DebugSphere.Draw(Matrix.Identity * Matrix.CreateTranslation(PopaPos), Game.CurrentCamera.View, Game.CurrentCamera.Projection);
+            //DebugSphere.Draw(Matrix.Identity * Matrix.CreateTranslation(ProaPos), Game.CurrentCamera.View, Game.CurrentCamera.Projection);
+            //DebugSphere.Draw(Matrix.Identity * Matrix.CreateTranslation(PopaPos), Game.CurrentCamera.View, Game.CurrentCamera.Projection);
         }
 
         private void DrawModel(Model geometry, Matrix transform, Effect effect, Camera cam)
@@ -227,6 +227,7 @@ namespace TGC.MonoGame.TP.Ships
                 if (FuturePosition.Intersects(OtherShips[index].BoatBox))
                 {
                     willCollide = true;
+                    BoatVelocity = 0.0f;
                 }
             }
 

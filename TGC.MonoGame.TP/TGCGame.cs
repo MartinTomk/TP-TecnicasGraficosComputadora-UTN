@@ -460,6 +460,14 @@ namespace TGC.MonoGame.TP
             shotCam.Position = PlayerBoat.Position + new Vector3(0, CameraArm, 0);
             CubeMapCamera.Position = shotCam.Position + new Vector3(0, -30, 0);
 
+            foreach (Ship ship in Ships)
+            {
+                if(ship != PlayerControlledShip)
+                {
+                    ship.MoveForward(elapsedTime);
+                    ship.RotateLeft(0.5f * elapsedTime);
+                }
+            }
             Bullets = PoolBullets.FindAll(b => b._active);
 
             foreach (var bullet in Bullets)
@@ -847,44 +855,6 @@ namespace TGC.MonoGame.TP
             {
                 Instance.Volume -= (float)0.02;
             }
-        }
-
-        private void MoveForward(float amount)
-        {
-            BoundingSphere FuturePosition = new BoundingSphere(PlayerControlledShip.Position + PlayerControlledShip.FrontDirection * amount, 50);
-            bool willCollide = false;
-            for (var index = 0; index < Ships.Length && !willCollide; index++)
-            {
-                if (FuturePosition.Intersects(Ships[index].BoatBox))
-                {
-                    willCollide = true;
-                }
-            }
-
-            for (var index = 0; index < IslandColliders.Length && !willCollide; index++)
-            {
-                if (FuturePosition.Intersects(IslandColliders[index]))
-                {
-                    willCollide = true;
-                    PlayerControlledShip.BoatVelocity = 0.0f;
-                }
-            }
-
-            if (!willCollide)
-                PlayerControlledShip.Position += PlayerControlledShip.FrontDirection * amount;
-        }
-        private void MoveBackwards(float amount)
-        {
-            MoveForward(-amount);
-        }
-        private void RotateRight(float amount)
-        {
-            //PlayerControlledShip.Rotation = new Vector3(PlayerControlledShip.Rotation.X, PlayerControlledShip.Rotation.Y + amount, PlayerControlledShip.Rotation.Z);
-            PlayerControlledShip.RotationRadians += amount;
-        }
-        private void RotateLeft(float amount)
-        {
-            RotateRight(-amount);
         }
     }
 }
