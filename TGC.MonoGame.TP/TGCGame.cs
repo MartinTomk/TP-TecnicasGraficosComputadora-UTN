@@ -457,7 +457,7 @@ namespace TGC.MonoGame.TP
             Barquito.Update(gameTime, shotCam, lightPosition);
             PlayerBoat.Update(gameTime, shotCam, lightPosition);
             shotCam.Update(gameTime);
-            shotCam.Position = PlayerBoat.Position + new Vector3(0, CameraArm, 0);
+            shotCam.Position = PlayerBoat.Position + new Vector3(0, CameraArm, 0) - shotCam.FrontDirection *175f;
             CubeMapCamera.Position = shotCam.Position + new Vector3(0, -30, 0);
 
             foreach (Ship ship in Ships)
