@@ -104,7 +104,7 @@ namespace TGC.MonoGame.TP
         /// Barcos
         /// </summary>
         private Ship SM { get; set; }
-        private Ship Patrol { get; set; }
+        public Ship Patrol { get; set; }
         private Ship Cruiser { get; set; }
         private Ship Barquito { get; set; }
         private Ship PlayerBoat { get; set; }
@@ -330,7 +330,7 @@ namespace TGC.MonoGame.TP
             Cruiser = new Ship(this, new Vector3(-100f, 0.01f, 900f), new Vector3(0f, 0.0f, 0f), new Vector3(0.03f, 0.03f, 0.03f), 100.0f, 350.0f, "Botes/CruiserGeo", "ShipsShader", "Botes/T_Cruiser_M_Cruiser_BaseColor", "Botes/T_Cruiser_M_Cruiser_OcclusionRoughnessMetallic", "Botes/T_Cruiser_M_Cruiser_Normal");
             Cruiser.LoadContent();
 
-            Barquito = new Ship(this, new Vector3(-200f, 0.01f, 700f), new Vector3(0f, 0f, 0f), new Vector3(0.05f, 0.05f, 0.05f), 300.0f, 20.0f, "Botes/BarquitoGeo", "ShipsShader", "Botes/Barquito_BaseColor", "Botes/blanco", "Island/normalAgua");
+            Barquito = new Ship(this, new Vector3(-400f, 0.01f, 1000f), new Vector3(0f, 0f, 0f), new Vector3(0.05f, 0.05f, 0.05f), 300.0f, 20.0f, "Botes/BarquitoGeo", "ShipsShader", "Botes/Barquito_BaseColor", "Botes/blanco", "Island/normalAgua");
             Barquito.LoadContent();
 
             PlayerBoat = new Ship(this, new Vector3(0f, 0.01f, 600f), new Vector3(0f, MathHelper.PiOver2, 0f), new Vector3(0.1f, 0.1f, 0.1f), 100.0f, 200.0f, "ShipB/Source/Ship", "ShipsShader", "Botes/Battleship_lambert1_AlbedoTransparency.tga", "Botes/Battleship_lambert1_SpecularSmoothness.tga", "Island/normalAgua");
@@ -460,14 +460,6 @@ namespace TGC.MonoGame.TP
             shotCam.Position = PlayerBoat.Position + new Vector3(0, CameraArm, 0) - shotCam.FrontDirection *175f;
             CubeMapCamera.Position = shotCam.Position + new Vector3(0, -30, 0);
 
-            foreach (Ship ship in Ships)
-            {
-                if(ship != PlayerControlledShip)
-                {
-                    ship.MoveForward(elapsedTime);
-                    ship.RotateLeft(0.5f * elapsedTime);
-                }
-            }
             Bullets = PoolBullets.FindAll(b => b._active);
 
             foreach (var bullet in Bullets)
@@ -840,7 +832,7 @@ namespace TGC.MonoGame.TP
 
                     if (ShootInstance.State == SoundState.Playing)
                         ShootInstance.Stop();
-
+                    
                     ShootInstance.Play();
                 }
             }

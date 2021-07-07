@@ -156,7 +156,8 @@ namespace TGC.MonoGame.TP.Ships
 
             if (!bIsMoving)
                 Decelerate(elapsedTime);
-
+            if (this != Game.PlayerControlledShip)
+                MoveTowardsPlayer(elapsedTime);
         }
 
         float frac(float val)
@@ -284,5 +285,26 @@ namespace TGC.MonoGame.TP.Ships
                 }
             }
         }
+        public double AngleToPlayer;
+        public double FrontDirectionAngle;
+
+        private void MoveTowardsPlayer(float elapsedTime)
+        {
+            Vector3 VectorToPlayerXYZ = Game.PlayerControlledShip.Position - Position;
+            Vector2 FrontDirectionXZ = new Vector2(FrontDirection.X, FrontDirection.Z);
+            Vector2 DirectionToPlayer = new Vector2(VectorToPlayerXYZ.X, VectorToPlayerXYZ.Z);
+
+            AngleToPlayer = Math.Acos((double)(DirectionToPlayer.X / DirectionToPlayer.Length()));
+            FrontDirectionAngle = Math.Acos((double)(FrontDirectionXZ.X / FrontDirectionXZ.Length()));
+
+
+            if (AngleToPlayer > FrontDirectionAngle)
+                RotateLeft(elapsedTime);
+            if (AngleToPlayer + 0.1 <= FrontDirectionAngle)
+                RotateRight(elapsedTime);
+
+            MoveForward(elapsedTime);
+        }
+
     }
 }
