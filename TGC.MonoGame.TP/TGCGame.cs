@@ -457,7 +457,7 @@ namespace TGC.MonoGame.TP
             Barquito.Update(gameTime, shotCam, lightPosition);
             PlayerBoat.Update(gameTime, shotCam, lightPosition);
             shotCam.Update(gameTime);
-            shotCam.Position = PlayerBoat.Position + new Vector3(0, CameraArm, 0) - shotCam.FrontDirection * 175f;
+            shotCam.Position = PlayerBoat.Position + new Vector3(0, CameraArm, 0) - shotCam.FrontDirection *175f;
             CubeMapCamera.Position = shotCam.Position + new Vector3(0, -30, 0);
 
             Bullets = PoolBullets.FindAll(b => b._active);
@@ -659,8 +659,7 @@ namespace TGC.MonoGame.TP
                 nightVisionEffect.Parameters["baseTexture"]?.SetValue(ScreenRenderTarget);
                 FullScreenQuad.Draw(nightVisionEffect);
 
-            }
-            else
+            } else
             {
                 GraphicsDevice.SetRenderTarget(null);
                 dropsEffect.Parameters["time"]?.SetValue(time);
@@ -671,9 +670,9 @@ namespace TGC.MonoGame.TP
 
 
 
-            #endregion
+                #endregion
 
-            for (int i = 0; i < Bullets.Count; i++)
+                for (int i = 0; i < Bullets.Count; i++)
             {
                 Bullets[i].Draw(gameTime);
             }
@@ -834,7 +833,7 @@ namespace TGC.MonoGame.TP
 
                     if (ShootInstance.State == SoundState.Playing)
                         ShootInstance.Stop();
-
+                    
                     ShootInstance.Play();
                 }
             }
