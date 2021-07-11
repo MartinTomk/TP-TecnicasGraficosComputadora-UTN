@@ -152,9 +152,9 @@ float4 MergePS(VertexShaderOutput input) : COLOR
     
     //circle *= boxMask;
 
-    //finalColor.rgb += float3(target * 0.5, target * 0.5, target * 0.5);
+    finalColor.rgb += float3(target * 0.5, target * 0.5, target * 0.5);
 
-    finalColor.rgb += float3(boxMask, boxMask, boxMask);
+    //finalColor.rgb += float3(boxMask, boxMask, boxMask);
     //float4 finalColor = float4(color * (1 - mask),1);
 
     return finalColor;

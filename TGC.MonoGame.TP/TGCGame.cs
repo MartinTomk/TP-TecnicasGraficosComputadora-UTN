@@ -321,16 +321,16 @@ namespace TGC.MonoGame.TP
 
             //// BOTES ////
 
-            SM = new Ship(this, new Vector3(-100f, 0.01f, 400f), new Vector3(0f, 0f, 0f), new Vector3(0.04f, 0.04f, 0.04f), 100.0f, 30.0f, "Botes/SMGeo", "ShipsShader", "Botes/SM_T_Boat_M_Boat_BaseColor", "Botes/SM_T_Boat_M_Boat_OcclusionRoughnessMetallic", "Botes/SM_T_Boat_M_Boat_Normal");
+            SM = new Ship(this, new Vector3(-1000f, 0.01f, 400f), new Vector3(0f, 0f, 0f), new Vector3(0.04f, 0.04f, 0.04f), 100.0f, 30.0f, "Botes/SMGeo", "ShipsShader", "Botes/SM_T_Boat_M_Boat_BaseColor", "Botes/SM_T_Boat_M_Boat_OcclusionRoughnessMetallic", "Botes/SM_T_Boat_M_Boat_Normal");
             SM.LoadContent();
 
-            Patrol = new Ship(this, new Vector3(-300f, 0.01f, 500f), new Vector3(0f, 0f, 0f), new Vector3(0.07f, 0.07f, 0.07f), 100.0f, 350.0f, "Botes/PatrolGeo", "ShipsShader", "Botes/T_Patrol_Ship_1K_BaseColor", "Botes/T_Patrol_Ship_1K_OcclusionRoughnessMetallic", "Botes/T_Patrol_Ship_1K_Normal");
+            Patrol = new Ship(this, new Vector3(-600f, 0.01f, 500f), new Vector3(0f, 0f, 0f), new Vector3(0.07f, 0.07f, 0.07f), 100.0f, 350.0f, "Botes/PatrolGeo", "ShipsShader", "Botes/T_Patrol_Ship_1K_BaseColor", "Botes/T_Patrol_Ship_1K_OcclusionRoughnessMetallic", "Botes/T_Patrol_Ship_1K_Normal");
             Patrol.LoadContent();
 
-            Cruiser = new Ship(this, new Vector3(-100f, 0.01f, 900f), new Vector3(0f, 0.0f, 0f), new Vector3(0.03f, 0.03f, 0.03f), 100.0f, 350.0f, "Botes/CruiserGeo", "ShipsShader", "Botes/T_Cruiser_M_Cruiser_BaseColor", "Botes/T_Cruiser_M_Cruiser_OcclusionRoughnessMetallic", "Botes/T_Cruiser_M_Cruiser_Normal");
+            Cruiser = new Ship(this, new Vector3(-1000f, 0.01f, 900f), new Vector3(0f, 0.0f, 0f), new Vector3(0.03f, 0.03f, 0.03f), 100.0f, 350.0f, "Botes/CruiserGeo", "ShipsShader", "Botes/T_Cruiser_M_Cruiser_BaseColor", "Botes/T_Cruiser_M_Cruiser_OcclusionRoughnessMetallic", "Botes/T_Cruiser_M_Cruiser_Normal");
             Cruiser.LoadContent();
 
-            Barquito = new Ship(this, new Vector3(-400f, 0.01f, 1000f), new Vector3(0f, 0f, 0f), new Vector3(0.05f, 0.05f, 0.05f), 300.0f, 20.0f, "Botes/BarquitoGeo", "ShipsShader", "Botes/Barquito_BaseColor", "Botes/blanco", "Island/normalAgua");
+            Barquito = new Ship(this, new Vector3(-800f, 0.01f, 1000f), new Vector3(0f, 0f, 0f), new Vector3(0.05f, 0.05f, 0.05f), 300.0f, 20.0f, "Botes/BarquitoGeo", "ShipsShader", "Botes/Barquito_BaseColor", "Botes/blanco", "Island/normalAgua");
             Barquito.LoadContent();
 
             PlayerBoat = new Ship(this, new Vector3(0f, 0.01f, 600f), new Vector3(0f, MathHelper.PiOver2, 0f), new Vector3(0.1f, 0.1f, 0.1f), 100.0f, 200.0f, "ShipB/Source/Ship", "ShipsShader", "Botes/Battleship_lambert1_AlbedoTransparency.tga", "Botes/Battleship_lambert1_SpecularSmoothness.tga", "Island/normalAgua");

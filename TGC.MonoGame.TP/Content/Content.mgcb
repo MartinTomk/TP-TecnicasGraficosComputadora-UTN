@@ -73,12 +73,26 @@
 /processorParam:DebugMode=Auto
 /build:Effects/WaterShader.fx
 
+#begin Fonts/bebas.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:Fonts/bebas.spritefont
+
 #begin Fonts/Font.spritefont
 /importer:FontDescriptionImporter
 /processor:FontDescriptionProcessor
 /processorParam:PremultiplyAlpha=True
 /processorParam:TextureFormat=Compressed
 /build:Fonts/Font.spritefont
+
+#begin Fonts/monserrat22.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:Fonts/monserrat22.spritefont
 
 #begin Models/Botes/BarquitoCol.fbx
 /importer:FbxImporter
@@ -2171,6 +2185,30 @@
 /processorParam:TextureFormat=Color
 /build:Textures/Island/Water01Diffuse.TGA
 
+#begin Textures/Menu/barrita.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Textures/Menu/barrita.png
+
+#begin Textures/Menu/bote.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Textures/Menu/bote.png
+
 #begin Textures/Menu/Boton.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -2195,6 +2233,18 @@
 /processorParam:TextureFormat=Color
 /build:Textures/Menu/controlesBG.jpg
 
+#begin Textures/Menu/hud.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Textures/Menu/hud.png
+
 #begin Textures/Menu/lightningpano-deck.jpg
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -2218,6 +2268,18 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:Textures/Menu/MenuBG.jpg
+
+#begin Textures/Menu/mira.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Textures/Menu/mira.png
 
 #begin Textures/Menu/Presentacion_IM.jpeg
 /importer:TextureImporter

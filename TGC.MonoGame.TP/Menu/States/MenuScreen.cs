@@ -26,6 +26,7 @@ namespace TGC.MonoGame.TP.Menu.States
 
         private Texture2D buttonTexture;
         private SpriteFont buttonFont;
+        private SpriteFont montserratFont;
 
         public StaticCamera menuCam;
         //private Ship Patrol { get; set; }
@@ -66,6 +67,8 @@ namespace TGC.MonoGame.TP.Menu.States
 
         public MenuScreen(Game game, GraphicsDeviceManager graphics, ContentManager content): base(game, graphics, content)
         {
+            
+
             menuCam = new StaticCamera(graphics.GraphicsDevice.Viewport.AspectRatio, new Vector3(0,100,0), new Vector3(0, 0, 1), new Vector3(0, 1, 0));
             menuCam.FarPlane = 50000;
 
@@ -79,7 +82,7 @@ namespace TGC.MonoGame.TP.Menu.States
             //ShipEffect.Parameters["diffuseColor"]?.SetValue(new Vector3(0f, 0.25f, 0.48f));
             ShipEffect.Parameters["specularColor"]?.SetValue(new Vector3(0.98f, 0.98f, 0.98f));
             ShipEffect.Parameters["KAmbient"]?.SetValue(0.6f);
-            ShipEffect.Parameters["KDiffuse"]?.SetValue(1f);
+            ShipEffect.Parameters["KDiffuse"]?.SetValue(5f);
             ShipEffect.Parameters["KSpecular"]?.SetValue(.3f);
             ShipEffect.Parameters["shininess"]?.SetValue(5f);
 
@@ -120,8 +123,9 @@ namespace TGC.MonoGame.TP.Menu.States
 
             buttonTexture = _content.Load<Texture2D>("Textures/Menu/Boton");
             buttonFont = _content.Load<SpriteFont>("Fonts/Font");
+            montserratFont = _content.Load<SpriteFont>("Fonts/monserrat22");
 
-            menuButton = new Button(buttonTexture, buttonFont, true)
+            menuButton = new Button(buttonTexture, montserratFont, true)
             {
                 Position = new Vector2(560, 600),
                 Text = "Menu",
@@ -129,7 +133,7 @@ namespace TGC.MonoGame.TP.Menu.States
 
             menuButton.Click += MenuButton_Click;
 
-            newGameButton = new Button(buttonTexture, buttonFont, true)
+            newGameButton = new Button(buttonTexture, montserratFont, true)
             {
                 Position = new Vector2(120, 80),
                 Text = "Jugar",
@@ -138,7 +142,7 @@ namespace TGC.MonoGame.TP.Menu.States
             newGameButton.Click += NewGameButton_Click;
             newGameButton.visible = false;
 
-            controlsButton = new Button(buttonTexture, buttonFont, true)
+            controlsButton = new Button(buttonTexture, montserratFont, true)
             {
                 Position = new Vector2(320, 80),
                 Text = "Controles",
@@ -147,10 +151,10 @@ namespace TGC.MonoGame.TP.Menu.States
             controlsButton.Click += controlsButton_Click;
             controlsButton.visible = false;
 
-            goBackButton = new Button(buttonTexture, buttonFont, false)
+            goBackButton = new Button(buttonTexture, montserratFont, false)
             {
                 Position = new Vector2(800, 600),
-                Text = "Menu Principal",
+                Text = "Volver",
             };
             
             goBackButton.Click += goBackButton_Click;
@@ -166,7 +170,7 @@ namespace TGC.MonoGame.TP.Menu.States
 
 
 
-            quitGameButton = new Button(buttonTexture, buttonFont, true)
+            quitGameButton = new Button(buttonTexture, montserratFont, true)
             {
                 Position = new Vector2(1000, 600),
                 Text = "Salir",
@@ -259,15 +263,15 @@ namespace TGC.MonoGame.TP.Menu.States
                     goBackButton.visible = true;
                     quitGameButton.visible = true;
 
-                    spriteBatch.DrawString(buttonFont, $"Movimiento del barco:\n" +
+                    spriteBatch.DrawString(montserratFont, $"Movimiento del barco:\n" +
                                 $"\n" +
                                 $"      W: Mover hacia adelante\n" +
                                 $"      A: Rotar hacia la izquierda\n" +
                                 $"      S: Mover hacia atras\n" +
                                 $"      D: Rotar hacia la derecha\n" +
-                                $"\n", new Vector2(650, 150), Color.White);
+                                $"\n", new Vector2(400, 100), Color.White);
 
-                    spriteBatch.DrawString(buttonFont, $"Movilidad de la mira:\n" +
+                    spriteBatch.DrawString(montserratFont, $"Movilidad de la mira:\n" +
                                 $"\n" +
                                 $"      Apuntar: Mouse\n" +
                                 $"      Disparar: Boton Izquierdo del Mouse\n" +
@@ -276,7 +280,7 @@ namespace TGC.MonoGame.TP.Menu.States
                                 $"\n" +
                                 $"      N: Bajar el volumen\n" +
                                 $"      M: Subir el volumen\n" +
-                                $"\n", new Vector2(900, 150), Color.White);
+                                $"\n", new Vector2(760, 100), Color.White);
 
                     break;
             }

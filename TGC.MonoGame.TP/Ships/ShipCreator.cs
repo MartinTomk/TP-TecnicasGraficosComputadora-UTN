@@ -59,7 +59,7 @@ namespace TGC.MonoGame.TP.Ships
         public SpherePrimitive DebugSphere;
         public Vector3 ProaPos { get; set; }
         public Vector3 PopaPos { get; set; }
-        public int _currentLife = 100;
+        public int _currentLife = 10;
         public Ship(TGCGame game, Vector3 pos, Vector3 rot, Vector3 scale, float speed, float length, string modelName, string effect, string textureName, string textureAoName, string textureNormalName)
 
         {
