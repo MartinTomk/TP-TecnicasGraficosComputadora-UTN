@@ -291,21 +291,11 @@ namespace TGC.MonoGame.TP.Ships
 
         private void MoveTowardsPlayer(float elapsedTime)
         {
-            Vector3 VectorToPlayerXYZ = Game.PlayerControlledShip.Position - Position;
-            Vector2 FrontDirectionXZ = new Vector2(FrontDirection.X, FrontDirection.Z);
-            Vector2 DirectionToPlayer = new Vector2(VectorToPlayerXYZ.X, VectorToPlayerXYZ.Z);
-
-            AngleToPlayer = Math.Acos((double)(DirectionToPlayer.X / DirectionToPlayer.Length()));
-            FrontDirectionAngle = Math.Acos((double)(FrontDirectionXZ.X / FrontDirectionXZ.Length()));
-
-
-            if (AngleToPlayer > FrontDirectionAngle)
-                RotateLeft(elapsedTime);
-            if (AngleToPlayer + 0.1 <= FrontDirectionAngle)
-                RotateRight(elapsedTime);
-
+            Vector3 DirectionToPlayer = Game.PlayerControlledShip.Position - Position;
+            DirectionToPlayer.Normalize();
+            float RotateAngle = Vector3.Cross(FrontDirection, DirectionToPlayer).Y;
+            RotateRight(RotateAngle);
             MoveForward(elapsedTime);
         }
-
     }
 }
