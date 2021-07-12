@@ -100,7 +100,7 @@ namespace TGC.MonoGame.TP.Ships
             //BoatBox = new BoundingBox(Vector3.Transform(-Vector3.One * 0.5f, BoatMatrix), Vector3.Transform(Vector3.One * 0.5f, BoatMatrix));
             BoatBox = new BoundingSphere(Position, 50);
 
-            DebugSphere = new SpherePrimitive(Game.GraphicsDevice, 10);
+            DebugSphere = new SpherePrimitive(Game.GraphicsDevice, 1);
         }
 
 
@@ -110,6 +110,7 @@ namespace TGC.MonoGame.TP.Ships
             ShipEffect.Parameters["aoTexture"]?.SetValue(ShipAoTexture);
             ShipEffect.Parameters["normalTexture"]?.SetValue(ShipNormalTexture);
             DrawModel(ShipModel, BoatMatrix, ShipEffect, cam);
+            //DebugSphere.Draw(Matrix.Identity * Matrix.CreateScale(50f) * Matrix.CreateTranslation(BoatBox.Center), Game.CurrentCamera.View, Game.CurrentCamera.Projection);
             //DebugSphere.Draw(Matrix.Identity * Matrix.CreateTranslation(ProaPos), Game.CurrentCamera.View, Game.CurrentCamera.Projection);
             //DebugSphere.Draw(Matrix.Identity * Matrix.CreateTranslation(PopaPos), Game.CurrentCamera.View, Game.CurrentCamera.Projection);
         }
