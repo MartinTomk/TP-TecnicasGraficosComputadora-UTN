@@ -39,6 +39,7 @@ namespace TGC.MonoGame.TP.UI
             _game.spriteBatch.DrawString(_font, textLife, new Vector2(10, viewportHeight - 80), Color.White);
             _game.spriteBatch.DrawString(_font, bullets, new Vector2(10, viewportHeight - 110), Color.White);
 
+            // pal debug :D
             //_game.spriteBatch.DrawString(_font, angle1, new Vector2(10, viewportHeight - 200), Color.White);
             //_game.spriteBatch.DrawString(_font, angle2, new Vector2(10, viewportHeight - 230), Color.White);
 
