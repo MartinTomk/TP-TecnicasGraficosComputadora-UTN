@@ -8,6 +8,7 @@ using TGC.MonoGame.TP.Skydome;
 using TGC.MonoGame.TP.Geometries;
 using TGC.MonoGame.TP.Ships;
 using TGC.MonoGame.TP.UI;
+using TGC.MonoGame.TP.Gizmos;
 using System.Collections.Generic;
 
 namespace TGC.MonoGame.TP
@@ -42,8 +43,11 @@ namespace TGC.MonoGame.TP
             Content.RootDirectory = "Content";
             // Hace que el mouse sea visible.
             IsMouseVisible = true;
+
+            Gizmos = new Gizmos.Gizmos();
         }
 
+        public Gizmos.Gizmos Gizmos { get; }
         /// <summary>
         /// Isla
         /// </summary>
@@ -187,6 +191,8 @@ namespace TGC.MonoGame.TP
         //SpriteBatch spriteBatch;
         //SpriteFont font;
 
+
+
         /// <summary>
         ///     Se llama una sola vez, al principio cuando se ejecuta el ejemplo.
         ///     Escribir aqui el codigo de inicializacion: el procesamiento que podemos pre calcular para nuestro juego.
@@ -249,6 +255,10 @@ namespace TGC.MonoGame.TP
             // Aca es donde deberiamos cargar todos los contenido necesarios antes de iniciar el juego.
             SpriteBatch = new SpriteBatch(GraphicsDevice);
 
+            //TODO: use this.Content to load your game content here
+            //Gizmos.LoadContent(GraphicsDevice, this.Content);
+            Gizmos.LoadContent(GraphicsDevice, Content);
+
             // Cargo el modelos /// ISLA ///
             ModelIsland = Content.Load<Model>(ContentFolder3D + "Island/isla_volcan1");
             VolcanEffect1 = Content.Load<Effect>(ContentFolderEffects + "islasShader");
@@ -262,13 +272,10 @@ namespace TGC.MonoGame.TP
             VolcanEffect1.Parameters["KSpecular"].SetValue(0.2f);
             VolcanEffect1.Parameters["shininess"].SetValue(5.0f);
 
-
             IslandEffect = Content.Load<Effect>(ContentFolderEffects + "BasicShader");
             IslandTexture = Content.Load<Texture2D>(ContentFolderTextures + "Island/TropicalIsland02Diffuse");
             ModelIsland2 = Content.Load<Model>(ContentFolder3D + "Island/Isla2Geo");
             ModelIsland3 = Content.Load<Model>(ContentFolder3D + "Island/Isla3Geo");
-
-
 
             IslandMiscEffect = Content.Load<Effect>(ContentFolderEffects + "BasicShader");
             IslandMiscTexture = Content.Load<Texture2D>(ContentFolderTextures + "Island/TropicalIsland01Diffuse");
@@ -484,6 +491,13 @@ namespace TGC.MonoGame.TP
         {
             time += Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds);
 
+           
+            //Gizmos.DrawSphere(collider.Center, collider.Radius * 10 * Vector3.One, Color.Yellow);
+            //Gizmos.DrawCube(Matrix.Identity * 300f, Color.Green);
+
+            //foreach (BoundingSphere collider in IslandColliders)
+            //    Gizmos.DrawSphere(collider.Center, collider.Radius * 10 * Vector3.One, Color.Yellow);
+
             #region Pass 1-6
 
             GraphicsDevice.DepthStencilState = DepthStencilState.Default;
@@ -549,6 +563,7 @@ namespace TGC.MonoGame.TP
                 Skydome.Draw(CubeMapCamera.View, CubeMapCamera.Projection, CubeMapCamera.Position);
                 SkyDomeEffect.Parameters["Time"].SetValue(time);
 
+
             }
 
             #endregion
@@ -560,11 +575,6 @@ namespace TGC.MonoGame.TP
             GraphicsDevice.SetRenderTarget(SceneRenderTarget);
             GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.CornflowerBlue, 1f, 0);
 
-
-
-            // Draw our scene with the default effect and default camera
-
-
             // Para dibujar le modelo necesitamos pasarle informacion que el efecto esta esperando.
             IslandEffect.Parameters["ModelTexture"].SetValue(IslandTexture);
             LightEffect.Parameters["baseTexture"].SetValue(IslandTexture);
@@ -573,6 +583,7 @@ namespace TGC.MonoGame.TP
             VolcanEffect1.Parameters["normalTexture"].SetValue(volcanNormalTexture);
 
             DrawModelLight(ModelIsland, MatrixIsland1, VolcanEffect1, shotCam);
+            
             DrawModelLight(ModelIsland, MatrixIsland2, VolcanEffect1, shotCam);
             DrawModelLight(ModelIsland, MatrixIsland3, VolcanEffect1, shotCam);
             DrawModelLight(ModelCasa, MatrixCasa, LightEffect, shotCam);
@@ -596,6 +607,7 @@ namespace TGC.MonoGame.TP
             DrawModelLight(ModelPalm5, Matrix.CreateScale(0.09f) * Matrix.CreateTranslation(580, 0, -150), LightEffect, shotCam);
             DrawModelLight(ModelPalm5, Matrix.CreateScale(0.09f) * Matrix.CreateRotationY(4f) * Matrix.CreateTranslation(-650, 30, -100), LightEffect, shotCam);
 
+
             SM.Draw(shotCam);
             Patrol.Draw(shotCam);
             Cruiser.Draw(shotCam);
@@ -612,9 +624,7 @@ namespace TGC.MonoGame.TP
             SkyDomeEffect.Parameters["Time"].SetValue(time);
 
 
-            #region Draw Water
-
-            // Set up our Effect to draw the robot
+            // Set up our Effect to draw the water
             WaterEffect.Parameters["baseTexture"]?.SetValue(WaterTexture);
             WaterEffect.Parameters["foamTexture"]?.SetValue(WaterFoamTexture);
             WaterEffect.Parameters["normalTexture"]?.SetValue(WaterNormalTexture);
@@ -635,7 +645,18 @@ namespace TGC.MonoGame.TP
                     DrawModel(ModelWater, MatrixWater, WaterEffect, shotCam);
                 }
 
-            #endregion
+
+            //Gizmos.DrawSphere(collider.Center, collider.Radius * 10 * Vector3.One, Color.Yellow);
+            Gizmos.DrawFrustum(shotCam.Projection);
+            Gizmos.DrawCube(Matrix.Identity * 100000f, Color.Green);
+
+            foreach (BoundingSphere collider in IslandColliders)
+                Gizmos.DrawSphere(collider.Center, collider.Radius * Vector3.One);
+
+            for (int i = 0; i < Bullets.Count; i++)
+            {
+                Bullets[i].Draw(gameTime);
+            }
 
             #endregion
 
@@ -670,12 +691,10 @@ namespace TGC.MonoGame.TP
 
 
 
-                #endregion
+            #endregion
 
-                for (int i = 0; i < Bullets.Count; i++)
-            {
-                Bullets[i].Draw(gameTime);
-            }
+
+
 
             _ui.Draw();
 
@@ -774,6 +793,7 @@ namespace TGC.MonoGame.TP
         protected override void UnloadContent()
         {
             // Libero los recursos.
+            Gizmos.Dispose();
             Content.Unload();
             base.UnloadContent();
         }

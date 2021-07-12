@@ -32,8 +32,7 @@ namespace TGC.MonoGame.TP.Gizmos
         private CylinderGizmoGeometry Cylinder { get; set; }
         private DiskGizmoGeometry Disk { get; set; }
 
-        private Dictionary<GizmoGeometry, Dictionary<Color, List<Matrix>>> DrawInstances { get; } =
-            new Dictionary<GizmoGeometry, Dictionary<Color, List<Matrix>>>();
+        private Dictionary<GizmoGeometry, Dictionary<Color, List<Matrix>>> DrawInstances { get; } = new Dictionary<GizmoGeometry, Dictionary<Color, List<Matrix>>>();
 
         private Effect Effect { get; set; }
         private EffectPass ForegroundPass { get; set; }
