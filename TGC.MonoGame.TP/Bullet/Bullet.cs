@@ -65,7 +65,7 @@ namespace TGC.MonoGame.TP.Bullet
 
                 for (var index = 0; index < _game.Ships.Length && !willCollide; index++)
                 {
-                    if (FuturePosition.Intersects(_game.Ships[index].BoatBox))
+                    if (FuturePosition.Intersects(_game.Ships[index].BoatSphere))
                     {
                         willCollide = true;
                     }

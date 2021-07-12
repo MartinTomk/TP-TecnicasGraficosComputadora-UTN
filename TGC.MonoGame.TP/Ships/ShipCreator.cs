@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using TGC.MonoGame.TP.Geometries;
 using TGC.MonoGame.TP.Cameras;
+using TGC.MonoGame.TP.Collisions;
 
 namespace TGC.MonoGame.TP.Ships
 {
@@ -53,9 +54,10 @@ namespace TGC.MonoGame.TP.Ships
 
         //private Matrix[] BoneMatrix;
 
-        public BoundingSphere BoatBox { get; set; }
+        public BoundingSphere BoatSphere { get; set; }
+        public OrientedBoundingBox BoatBox { get; set; }
         //public BoundingBox BoatBox { get; set; }
-
+        public Matrix BoatOBBWorld { get; set; }
         public SpherePrimitive DebugSphere;
         public Vector3 ProaPos { get; set; }
         public Vector3 PopaPos { get; set; }
@@ -97,10 +99,22 @@ namespace TGC.MonoGame.TP.Ships
             ShipEffect.Parameters["KSpecular"]?.SetValue(.3f);
             ShipEffect.Parameters["shininess"]?.SetValue(5f);
 
-            //BoatBox = new BoundingBox(Vector3.Transform(-Vector3.One * 0.5f, BoatMatrix), Vector3.Transform(Vector3.One * 0.5f, BoatMatrix));
-            BoatBox = new BoundingSphere(Position, 50);
+            BoatSphere = new BoundingSphere(Position, 50);
 
-            DebugSphere = new SpherePrimitive(Game.GraphicsDevice, 1);
+            //Create an OBB for a model
+            // First, get an AABB from the model
+            var temporaryCubeAABB = BoundingVolumesExtensions.CreateAABBFrom(ShipModel);
+            // Scale it to match the model's transform
+            temporaryCubeAABB = BoundingVolumesExtensions.Scale(temporaryCubeAABB, 0.5f);
+            // Create an Oriented Bounding Box from the AABB
+            BoatBox = OrientedBoundingBox.FromAABB(temporaryCubeAABB);
+            // Move the center
+            BoatBox.Center = Position;
+            // Then set its orientation!
+            BoatBox.Orientation = Matrix.CreateRotationY(RotationRadians);
+
+
+            //DebugSphere = new SpherePrimitive(Game.GraphicsDevice, 1);
         }
 
 
@@ -110,6 +124,8 @@ namespace TGC.MonoGame.TP.Ships
             ShipEffect.Parameters["aoTexture"]?.SetValue(ShipAoTexture);
             ShipEffect.Parameters["normalTexture"]?.SetValue(ShipNormalTexture);
             DrawModel(ShipModel, BoatMatrix, ShipEffect, cam);
+            //Game.Gizmos.DrawCube(BoatOBBWorld, Color.Green);
+            Game.Gizmos.DrawSphere(Position, Vector3.One * 50.0f, Color.Red);
             //DebugSphere.Draw(Matrix.Identity * Matrix.CreateScale(50f) * Matrix.CreateTranslation(BoatBox.Center), Game.CurrentCamera.View, Game.CurrentCamera.Projection);
             //DebugSphere.Draw(Matrix.Identity * Matrix.CreateTranslation(ProaPos), Game.CurrentCamera.View, Game.CurrentCamera.Projection);
             //DebugSphere.Draw(Matrix.Identity * Matrix.CreateTranslation(PopaPos), Game.CurrentCamera.View, Game.CurrentCamera.Projection);
@@ -147,10 +163,12 @@ namespace TGC.MonoGame.TP.Ships
             Vector3 InclinationAxis = Vector3.Cross(Vector3.Up, FrontDirection);
             Position = new Vector3(Position.X, WavePosY, Position.Z);
             BoatMatrix = Matrix.CreateScale(Scale) * Matrix.CreateRotationY(ModelRotation.Y) * Matrix.CreateRotationY(RotationRadians) * Matrix.CreateFromAxisAngle(InclinationAxis, InclinationRadians) * Matrix.CreateTranslation(Position);
-
             FrontDirection = new Vector3((float)Math.Cos(-RotationRadians), 0.0f, (float)Math.Sin(-RotationRadians));
-            //BoatBox = new BoundingBox(Vector3.Transform(-Vector3.One * 0.5f, BoatMatrix), Vector3.Transform(Vector3.One * 0.5f, BoatMatrix));
-            BoatBox = new BoundingSphere(Position, 50);
+
+            BoatSphere = new BoundingSphere(Position, 50);
+            BoatBox.Orientation = Matrix.CreateRotationY(RotationRadians);
+            // Create an OBB World-matrix so we can draw a cube representing it
+            BoatOBBWorld = Matrix.CreateScale(BoatBox.Extents * 2f) * BoatBox.Orientation * Matrix.CreateTranslation(Position);
 
             ShipEffect.Parameters["lightPosition"]?.SetValue(light);
             ShipEffect.Parameters["eyePosition"]?.SetValue(cam.Position);
@@ -223,10 +241,12 @@ namespace TGC.MonoGame.TP.Ships
         {
             bIsMoving = true;
             BoundingSphere FuturePosition = new BoundingSphere(Position + FrontDirection * amount, 50);
+            //OrientedBoundingBox FuturePosition = new OrientedBoundingBox(BoatBox.Center, BoatBox.Center + FrontDirection * amount);
+            //Game.Gizmos.DrawCube()
             bool willCollide = false;
             for (var index = 0; index < OtherShips.Length && !willCollide; index++)
             {
-                if (FuturePosition.Intersects(OtherShips[index].BoatBox))
+                if (FuturePosition.Intersects(OtherShips[index].BoatSphere))
                 {
                     willCollide = true;
                     BoatVelocity = 0.0f;
@@ -294,7 +314,8 @@ namespace TGC.MonoGame.TP.Ships
             Vector3 DirectionToPlayer = Game.PlayerControlledShip.Position - Position;
             DirectionToPlayer.Normalize();
             float RotateAngle = Vector3.Cross(FrontDirection, DirectionToPlayer).Y;
-            RotateRight(RotateAngle);
+            if(Math.Abs(RotateAngle) > 0.01) // para evitar el jitter
+                RotateRight(Math.Sign(RotateAngle) * elapsedTime);
             MoveForward(elapsedTime);
         }
     }

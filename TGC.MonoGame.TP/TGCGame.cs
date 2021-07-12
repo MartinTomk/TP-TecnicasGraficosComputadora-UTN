@@ -703,7 +703,7 @@ namespace TGC.MonoGame.TP
             #endregion
 
             _ui.Draw();
-
+            Gizmos.Draw();
             base.Draw(gameTime);
         }
 
