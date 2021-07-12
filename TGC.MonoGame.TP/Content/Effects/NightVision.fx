@@ -140,17 +140,19 @@ float4 MergePS(VertexShaderOutput input) : COLOR
     
     float aspectRatio = 1.77778;
 
+
     float2 circleCenter = float2(0.5 * aspectRatio, 0.5);
     float distanceToCircle = distance(float2(uv.x * aspectRatio, uv.y), circleCenter);
-    float circle = (step(distanceToCircle, 0.15) - step(distanceToCircle, 0.148)) * 0.4;
-    circle += (step(distanceToCircle, 0.3) - step(distanceToCircle, 0.297)) * 0.3;
-    float boxMask = step(sdBox(coords, float2(.8, sin(time * 2) * 0.1 + 0.4)), 0.4);
-    circle += (step(distanceToCircle, 0.6) - step(distanceToCircle, 0.596)) * 0.2 * boxMask;
+    float boxMask = step(sdBox(coords, float2(.04, .002)), 0.001);
+    float target = (step(distanceToCircle, 0.15) - step(distanceToCircle, 0.148)) * 0.4;
+    target += (step(distanceToCircle, 0.3) - step(distanceToCircle, 0.297)) * 0.3;
+    float boxMask2 = step(sdBox(coords, float2(.8, sin(time * 2) * 0.1 + 0.4)), 0.4);
+    target += (step(distanceToCircle, 0.6) - step(distanceToCircle, 0.596)) * 0.2 * boxMask2;
 
     
     //circle *= boxMask;
 
-    finalColor.rgb += float3(circle * 0.5, circle * 0.5, circle * 0.5);
+    finalColor.rgb += float3(target * 0.5, target * 0.5, target * 0.5);
 
     //finalColor.rgb += float3(boxMask, boxMask, boxMask);
     //float4 finalColor = float4(color * (1 - mask),1);

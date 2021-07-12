@@ -8,6 +8,7 @@ using TGC.MonoGame.TP.Skydome;
 using TGC.MonoGame.TP.Geometries;
 using TGC.MonoGame.TP.Ships;
 using TGC.MonoGame.TP.UI;
+using TGC.MonoGame.TP.Gizmos;
 using System.Collections.Generic;
 
 namespace TGC.MonoGame.TP
@@ -42,8 +43,12 @@ namespace TGC.MonoGame.TP
             Content.RootDirectory = "Content";
             // Hace que el mouse sea visible.
             IsMouseVisible = true;
+
+            Gizmos = new Gizmos.Gizmos();
         }
 
+        public Gizmos.Gizmos Gizmos { get; }
+        public SpherePrimitive DebugSphere;
         /// <summary>
         /// Isla
         /// </summary>
@@ -59,7 +64,7 @@ namespace TGC.MonoGame.TP
 
         private Model ModelIsland2 { get; set; }
         private Model ModelIsland3 { get; set; }
-        
+
         private Model ModelCasa { get; set; }
         private Effect IslandEffect { get; set; }
         private Model ModelWater { get; set; }
@@ -120,10 +125,10 @@ namespace TGC.MonoGame.TP
         private Matrix Projection { get; set; }
 
         private float CameraArm;
-        
+
         public Camera shotCam;
         public Camera CurrentCamera => shotCam;
-      
+
         /// <summary>
         /// Skydome
         /// </summary>
@@ -137,11 +142,12 @@ namespace TGC.MonoGame.TP
         BoundingSphere IslandSphere;
 
         public BoundingSphere[] IslandColliders;
+        public BoundingBox[] WaterColliders;
 
         //BoundingBox TestBox;
 
         // Iluminacion
-        private Effect LightEffect{ get; set; }
+        private Effect LightEffect { get; set; }
         private Matrix LightBoxWorld { get; set; } = Matrix.Identity;
         private Matrix LightBoxWorld2 { get; set; } = Matrix.Identity;
 
@@ -183,9 +189,13 @@ namespace TGC.MonoGame.TP
         private SoundEffect ShipShoot { get; set; }
         private SoundEffectInstance Instance { get; set; }
         private SoundEffectInstance ShootInstance { get; set; }
+
+        public BoundingFrustum boundingFrustum = new BoundingFrustum(Matrix.Identity);
         // pal debuggin
         //SpriteBatch spriteBatch;
         //SpriteFont font;
+
+
 
         /// <summary>
         ///     Se llama una sola vez, al principio cuando se ejecuta el ejemplo.
@@ -249,6 +259,11 @@ namespace TGC.MonoGame.TP
             // Aca es donde deberiamos cargar todos los contenido necesarios antes de iniciar el juego.
             SpriteBatch = new SpriteBatch(GraphicsDevice);
 
+            //TODO: use this.Content to load your game content here
+            //Gizmos.LoadContent(GraphicsDevice, this.Content);
+            Gizmos.LoadContent(GraphicsDevice, Content);
+            DebugSphere = new SpherePrimitive(GraphicsDevice, 1);
+
             // Cargo el modelos /// ISLA ///
             ModelIsland = Content.Load<Model>(ContentFolder3D + "Island/isla_volcan1");
             VolcanEffect1 = Content.Load<Effect>(ContentFolderEffects + "islasShader");
@@ -262,13 +277,10 @@ namespace TGC.MonoGame.TP
             VolcanEffect1.Parameters["KSpecular"].SetValue(0.2f);
             VolcanEffect1.Parameters["shininess"].SetValue(5.0f);
 
-
             IslandEffect = Content.Load<Effect>(ContentFolderEffects + "BasicShader");
             IslandTexture = Content.Load<Texture2D>(ContentFolderTextures + "Island/TropicalIsland02Diffuse");
             ModelIsland2 = Content.Load<Model>(ContentFolder3D + "Island/Isla2Geo");
             ModelIsland3 = Content.Load<Model>(ContentFolder3D + "Island/Isla3Geo");
-
-
 
             IslandMiscEffect = Content.Load<Effect>(ContentFolderEffects + "BasicShader");
             IslandMiscTexture = Content.Load<Texture2D>(ContentFolderTextures + "Island/TropicalIsland01Diffuse");
@@ -321,19 +333,22 @@ namespace TGC.MonoGame.TP
 
             //// BOTES ////
 
-            SM = new Ship(this, new Vector3(-100f, 0.01f, 400f), new Vector3(0f, 0f, 0f), new Vector3(0.04f, 0.04f, 0.04f), 100.0f, 30.0f, "Botes/SMGeo", "ShipsShader", "Botes/SM_T_Boat_M_Boat_BaseColor", "Botes/SM_T_Boat_M_Boat_OcclusionRoughnessMetallic", "Botes/SM_T_Boat_M_Boat_Normal");
+            SM = new Ship(this, new Vector3(-1000f, 0.01f, 400f), new Vector3(0f, 0f, 0f), new Vector3(0.04f, 0.04f, 0.04f), 50.0f, 30.0f, "Botes/SMGeo", "ShipsShader", "Botes/SM_T_Boat_M_Boat_BaseColor", "Botes/SM_T_Boat_M_Boat_OcclusionRoughnessMetallic", "Botes/SM_T_Boat_M_Boat_Normal");
             SM.LoadContent();
 
-            Patrol = new Ship(this, new Vector3(-300f, 0.01f, 500f), new Vector3(0f, 0f, 0f), new Vector3(0.07f, 0.07f, 0.07f), 100.0f, 350.0f, "Botes/PatrolGeo", "ShipsShader", "Botes/T_Patrol_Ship_1K_BaseColor", "Botes/T_Patrol_Ship_1K_OcclusionRoughnessMetallic", "Botes/T_Patrol_Ship_1K_Normal");
+            Patrol = new Ship(this, new Vector3(-600f, 0.01f, 500f), new Vector3(0f, 0f, 0f), new Vector3(0.07f, 0.07f, 0.07f), 50.0f, 350.0f, "Botes/PatrolGeo", "ShipsShader", "Botes/T_Patrol_Ship_1K_BaseColor", "Botes/T_Patrol_Ship_1K_OcclusionRoughnessMetallic", "Botes/T_Patrol_Ship_1K_Normal");
             Patrol.LoadContent();
 
-            Cruiser = new Ship(this, new Vector3(-100f, 0.01f, 900f), new Vector3(0f, 0.0f, 0f), new Vector3(0.03f, 0.03f, 0.03f), 100.0f, 350.0f, "Botes/CruiserGeo", "ShipsShader", "Botes/T_Cruiser_M_Cruiser_BaseColor", "Botes/T_Cruiser_M_Cruiser_OcclusionRoughnessMetallic", "Botes/T_Cruiser_M_Cruiser_Normal");
+            Cruiser = new Ship(this, new Vector3(-1000f, 0.01f, 900f), new Vector3(0f, 0.0f, 0f), new Vector3(0.03f, 0.03f, 0.03f), 50.0f, 350.0f, "Botes/CruiserGeo", "ShipsShader", "Botes/T_Cruiser_M_Cruiser_BaseColor", "Botes/T_Cruiser_M_Cruiser_OcclusionRoughnessMetallic", "Botes/T_Cruiser_M_Cruiser_Normal");
             Cruiser.LoadContent();
 
-            Barquito = new Ship(this, new Vector3(-400f, 0.01f, 1000f), new Vector3(0f, 0f, 0f), new Vector3(0.05f, 0.05f, 0.05f), 300.0f, 20.0f, "Botes/BarquitoGeo", "ShipsShader", "Botes/Barquito_BaseColor", "Botes/blanco", "Island/normalAgua");
+            Barquito = new Ship(this, new Vector3(-800f, 0.01f, 1000f), new Vector3(0f, 0f, 0f), new Vector3(0.05f, 0.05f, 0.05f), 50.0f, 20.0f, "Botes/BarquitoGeo", "ShipsShader", "Botes/Barquito_BaseColor", "Botes/blanco", "Island/normalAgua");
             Barquito.LoadContent();
 
-            PlayerBoat = new Ship(this, new Vector3(0f, 0.01f, 600f), new Vector3(0f, MathHelper.PiOver2, 0f), new Vector3(0.1f, 0.1f, 0.1f), 100.0f, 200.0f, "ShipB/Source/Ship", "ShipsShader", "Botes/Battleship_lambert1_AlbedoTransparency.tga", "Botes/Battleship_lambert1_SpecularSmoothness.tga", "Island/normalAgua");
+
+            PlayerBoat = new Ship(this, new Vector3(0f, 0.01f, 600f), new Vector3(0f, 0f, 0f), new Vector3(0.02f, 0.02f, 0.02f), 100.0f, 350.0f, "Botes/CruiserGeo", "ShipsShader", "Botes/T_Cruiser_M_Cruiser_BaseColor", "Botes/T_Cruiser_M_Cruiser_OcclusionRoughnessMetallic", "Botes/T_Cruiser_M_Cruiser_Normal");
+            //PlayerBoat = new Ship(this, new Vector3(0f, 0.01f, 600f), new Vector3(0f, MathHelper.PiOver2, 0f), new Vector3(0.07f, 0.07f, 0.07f), 100.0f, 350.0f, "Botes/PatrolGeo", "ShipsShader", "Botes/T_Patrol_Ship_1K_BaseColor", "Botes/T_Patrol_Ship_1K_OcclusionRoughnessMetallic", "Botes/T_Patrol_Ship_1K_Normal");
+            //PlayerBoat = new Ship(this, new Vector3(0f, 0.01f, 600f), new Vector3(0f, MathHelper.PiOver2, 0f), new Vector3(0.1f, 0.1f, 0.1f), 100.0f, 200.0f, "ShipB/Source/Ship", "ShipsShader", "Botes/Battleship_lambert1_AlbedoTransparency.tga", "Botes/Battleship_lambert1_SpecularSmoothness.tga", "Island/normalAgua");
             PlayerBoat.playerMode = true;
             PlayerBoat.LoadContent();
 
@@ -349,17 +364,24 @@ namespace TGC.MonoGame.TP
             foreach (Ship ship in Ships)
                 ship.AddShips();
 
-            float radius = 50f;
+            float radius = 40f;
             IslandColliders = new BoundingSphere[]
             {
                 new BoundingSphere(MatrixIsland1.Translation, 100), new BoundingSphere(MatrixIsland2.Translation, 300), new BoundingSphere(MatrixIsland3.Translation, radius),
-                new BoundingSphere(MatrixIsland4.Translation, radius), new BoundingSphere(MatrixIsland5.Translation, radius), 
-                new BoundingSphere(MatrixCasa.Translation, radius), 
-                new BoundingSphere(MatrixRock1.Translation, radius), new BoundingSphere(MatrixRock2.Translation, radius), new BoundingSphere(MatrixRock3.Translation, radius), 
-                new BoundingSphere(MatrixRock4.Translation, radius), new BoundingSphere(MatrixRock5.Translation, radius), new BoundingSphere(MatrixRock6.Translation, radius), 
-                new BoundingSphere(MatrixRock7.Translation, radius), 
+                new BoundingSphere(MatrixIsland4.Translation, radius), new BoundingSphere(MatrixIsland5.Translation, radius),
+                new BoundingSphere(MatrixCasa.Translation, radius),
+                new BoundingSphere(MatrixRock1.Translation, radius), new BoundingSphere(MatrixRock2.Translation, radius), new BoundingSphere(MatrixRock3.Translation, radius),
+                new BoundingSphere(MatrixRock4.Translation, radius), new BoundingSphere(MatrixRock5.Translation, radius), new BoundingSphere(MatrixRock6.Translation, radius),
+                new BoundingSphere(MatrixRock7.Translation, radius),
             };
 
+            /*
+            WaterColliders = new BoundingBox[1601];
+            int offset = 20;
+            for (int i = -offset; i < offset; i++)
+                for (int j = -offset; j < offset; j++)
+                    WaterColliders[i+j + (2 * offset)] = new BoundingBox(new Vector3(i * 200, 0, j * 200), new Vector3(10f, 10f, 10f));
+            */
 
             SkyDomeModel = Content.Load<Model>(ContentFolder3D + "Skydome/SkyDome");
             SkyDomeTexture = Content.Load<Texture2D>(ContentFolder3D + "Skydome/Sky");
@@ -367,7 +389,7 @@ namespace TGC.MonoGame.TP
             Skydome = new SkyDome(SkyDomeModel, SkyDomeTexture, SkyDomeEffect, 200);
 
             //Valores de Iluminacion 
-            LightEffect = Content.Load<Effect>(ContentFolderEffects + "BlinnPhong"); 
+            LightEffect = Content.Load<Effect>(ContentFolderEffects + "BlinnPhong");
 
             LightEffect.Parameters["ambientColor"].SetValue(new Vector3(1f, 1f, 0.0f));
             LightEffect.Parameters["diffuseColor"].SetValue(new Vector3(1f, 1f, 0.0f));
@@ -392,7 +414,7 @@ namespace TGC.MonoGame.TP
             font = Content.Load<SpriteFont>("Fonts/Font");
 
             // OVERLAY GOTAS //
-            
+
             dropsTexture = Content.Load<Texture2D>(ContentFolderTextures + "Dirty");
             dropsTexture2 = Content.Load<Texture2D>(ContentFolderTextures + "Smudgy");
             dropsEffect = Content.Load<Effect>(ContentFolderEffects + "TextureMerge");
@@ -431,6 +453,9 @@ namespace TGC.MonoGame.TP
             var elapsedTime = Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds);
             ProcessKeyboard(elapsedTime);
 
+            boundingFrustum.Matrix = shotCam.View * shotCam.Projection;
+
+            Gizmos.UpdateViewProjection(shotCam.View, shotCam.Projection);
 
             //Iluminacion 
             var posicionY = (float)MathF.Cos(Timer / 5) * 1500f;
@@ -549,6 +574,7 @@ namespace TGC.MonoGame.TP
                 Skydome.Draw(CubeMapCamera.View, CubeMapCamera.Projection, CubeMapCamera.Position);
                 SkyDomeEffect.Parameters["Time"].SetValue(time);
 
+
             }
 
             #endregion
@@ -560,11 +586,6 @@ namespace TGC.MonoGame.TP
             GraphicsDevice.SetRenderTarget(SceneRenderTarget);
             GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.CornflowerBlue, 1f, 0);
 
-
-
-            // Draw our scene with the default effect and default camera
-
-
             // Para dibujar le modelo necesitamos pasarle informacion que el efecto esta esperando.
             IslandEffect.Parameters["ModelTexture"].SetValue(IslandTexture);
             LightEffect.Parameters["baseTexture"].SetValue(IslandTexture);
@@ -573,6 +594,7 @@ namespace TGC.MonoGame.TP
             VolcanEffect1.Parameters["normalTexture"].SetValue(volcanNormalTexture);
 
             DrawModelLight(ModelIsland, MatrixIsland1, VolcanEffect1, shotCam);
+            
             DrawModelLight(ModelIsland, MatrixIsland2, VolcanEffect1, shotCam);
             DrawModelLight(ModelIsland, MatrixIsland3, VolcanEffect1, shotCam);
             DrawModelLight(ModelCasa, MatrixCasa, LightEffect, shotCam);
@@ -596,46 +618,56 @@ namespace TGC.MonoGame.TP
             DrawModelLight(ModelPalm5, Matrix.CreateScale(0.09f) * Matrix.CreateTranslation(580, 0, -150), LightEffect, shotCam);
             DrawModelLight(ModelPalm5, Matrix.CreateScale(0.09f) * Matrix.CreateRotationY(4f) * Matrix.CreateTranslation(-650, 30, -100), LightEffect, shotCam);
 
+
             SM.Draw(shotCam);
             Patrol.Draw(shotCam);
             Cruiser.Draw(shotCam);
             Barquito.Draw(shotCam);
             PlayerBoat.Draw(shotCam);
 
-            //Iluminacion
-            lightBox.Draw(LightBoxWorld, shotCam.View, shotCam.Projection);
-            lightBox2.Draw(LightBoxWorld2, shotCam.View, shotCam.Projection);
-            //DrawModel(PlayerBoatModel, Matrix.CreateRotationY((float)PlayerRotation)* PlayerBoatMatrix  , PlayerBoatEffect);
 
             /// Skydome
             Skydome.Draw(shotCam.View, shotCam.Projection, shotCam.Position);
             SkyDomeEffect.Parameters["Time"].SetValue(time);
 
 
-            #region Draw Water
-
-            // Set up our Effect to draw the robot
+            // Set up our Effect to draw the water
             WaterEffect.Parameters["baseTexture"]?.SetValue(WaterTexture);
             WaterEffect.Parameters["foamTexture"]?.SetValue(WaterFoamTexture);
             WaterEffect.Parameters["normalTexture"]?.SetValue(WaterNormalTexture);
             WaterEffect.Parameters["Time"]?.SetValue(time);
             WaterEffect.Parameters["environmentMap"]?.SetValue(EnvironmentMapRenderTarget);
             WaterEffect.Parameters["eyePosition"]?.SetValue(shotCam.Position);
+            WaterEffect.Parameters["eyePosition"]?.SetValue(shotCam.Position);
 
+            int offset = 40;
 
-            for (int i = -8; i < 8; i++)
-                for (int j = -8; j < 8; j++)
+            for (int i = -offset; i < offset; i++)
+                for (int j = -offset; j < offset; j++)
                 {
                     Matrix MatrixWater = Matrix.Identity * Matrix.CreateScale(10f, 0f, 10f) * Matrix.CreateTranslation(i * 200, 0, j * 200);
                     WaterEffect.Parameters["World"].SetValue(MatrixWater);
                     WaterEffect.Parameters["View"].SetValue(shotCam.View);
                     WaterEffect.Parameters["Projection"].SetValue(shotCam.Projection);
                     WaterEffect.Parameters["InverseTransposeWorld"]?.SetValue(Matrix.Transpose(Matrix.Invert(MatrixWater)));
-                  
+
                     DrawModel(ModelWater, MatrixWater, WaterEffect, shotCam);
                 }
 
-            #endregion
+
+            //Gizmos.DrawSphere(collider.Center, collider.Radius * 10 * Vector3.One, Color.Yellow);
+            //Gizmos.DrawFrustum(shotCam.Projection);
+            //Gizmos.DrawCube(Matrix.Identity * 100000f, Color.Green);
+            //DebugSphere.Draw(Matrix.Identity * Matrix.CreateTranslation(ProaPos), Game.CurrentCamera.View, Game.CurrentCamera.Projection);
+
+            //foreach (BoundingSphere collider in IslandColliders)
+                //DebugSphere.Draw(Matrix.Identity * Matrix.CreateScale(collider.Radius) * Matrix.CreateTranslation(collider.Center), shotCam.View, shotCam.Projection);
+                //Gizmos.DrawSphere(collider.Center, collider.Radius * Vector3.One);
+
+            for (int i = 0; i < Bullets.Count; i++)
+            {
+                Bullets[i].Draw(gameTime);
+            }
 
             #endregion
 
@@ -665,17 +697,10 @@ namespace TGC.MonoGame.TP
                 dropsEffect.Parameters["time"]?.SetValue(time);
                 dropsEffect.Parameters["baseTexture"]?.SetValue(SceneRenderTarget);
                 FullScreenQuad.Draw(dropsEffect);
+                Gizmos.DrawFrustum(shotCam.View * shotCam.Projection);
             }
 
-
-
-
-                #endregion
-
-                for (int i = 0; i < Bullets.Count; i++)
-            {
-                Bullets[i].Draw(gameTime);
-            }
+            #endregion
 
             _ui.Draw();
 
@@ -684,39 +709,58 @@ namespace TGC.MonoGame.TP
 
         private void DrawModel(Model geometry, Matrix transform, Effect effect, Camera cam)
         {
-            foreach (var mesh in geometry.Meshes)
-            {
-                //effect.Parameters["World"].SetValue(transform);
-                //effect.Parameters["View"].SetValue(cam.View);
-                //effect.Parameters["Projection"].SetValue(cam.Projection);
-                foreach (var meshPart in mesh.MeshParts)
-                {
-                    meshPart.Effect = effect;
+            //BoundingBox FuturePosition = new BoundingBox(transform.Translation,new Vector3(100f, 0f, 100f));
+            BoundingSphere FuturePosition = new BoundingSphere(transform.Translation, 200);
+            bool willCollide = false;
+            if (boundingFrustum.Intersects(FuturePosition))
+                willCollide = true;
 
+            if (willCollide)
+            {
+                foreach (var mesh in geometry.Meshes)
+                {
+                    //effect.Parameters["World"].SetValue(transform);
+                    //effect.Parameters["View"].SetValue(cam.View);
+                    //effect.Parameters["Projection"].SetValue(cam.Projection);
+                    foreach (var meshPart in mesh.MeshParts)
+                    {
+                        meshPart.Effect = effect;
+
+                    }
+                    mesh.Draw();
                 }
-                mesh.Draw();
             }
+
         }
 
 
         private void DrawModelLight(Model geometry, Matrix transform, Effect light, Camera cam)
         {
-            var modelMeshesBaseTransforms = new Matrix[geometry.Bones.Count];
-            geometry.CopyAbsoluteBoneTransformsTo(modelMeshesBaseTransforms);
-            foreach (var modelMesh in geometry.Meshes)
+            BoundingSphere FuturePosition = new BoundingSphere(transform.Translation, 200);
+            bool willCollide = false;
+            if (boundingFrustum.Intersects(FuturePosition))
+                willCollide = true;
+
+            if (willCollide)
             {
-                // We set the main matrices for each mesh to draw
-                // World is used to transform from model space to world space
-                light.Parameters["World"].SetValue(transform);
-                // InverseTransposeWorld is used to rotate normals
-                light.Parameters["InverseTransposeWorld"].SetValue(Matrix.Transpose(Matrix.Invert(transform)));
-                // WorldViewProjection is used to transform from model space to clip space
-                light.Parameters["WorldViewProjection"].SetValue(transform * cam.View * cam.Projection);
-                    foreach (var meshPart in modelMesh.MeshParts) {
+                var modelMeshesBaseTransforms = new Matrix[geometry.Bones.Count];
+                geometry.CopyAbsoluteBoneTransformsTo(modelMeshesBaseTransforms);
+                foreach (var modelMesh in geometry.Meshes)
+                {
+                    // We set the main matrices for each mesh to draw
+                    // World is used to transform from model space to world space
+                    light.Parameters["World"].SetValue(transform);
+                    // InverseTransposeWorld is used to rotate normals
+                    light.Parameters["InverseTransposeWorld"].SetValue(Matrix.Transpose(Matrix.Invert(transform)));
+                    // WorldViewProjection is used to transform from model space to clip space
+                    light.Parameters["WorldViewProjection"].SetValue(transform * cam.View * cam.Projection);
+                    foreach (var meshPart in modelMesh.MeshParts)
+                    {
                         meshPart.Effect = light;
+                    }
+                    // Once we set these matrices we draw
+                    modelMesh.Draw();
                 }
-                // Once we set these matrices we draw
-                modelMesh.Draw();
             }
         }
 
@@ -773,6 +817,7 @@ namespace TGC.MonoGame.TP
         protected override void UnloadContent()
         {
             // Libero los recursos.
+            Gizmos.Dispose();
             Content.Unload();
             base.UnloadContent();
         }
