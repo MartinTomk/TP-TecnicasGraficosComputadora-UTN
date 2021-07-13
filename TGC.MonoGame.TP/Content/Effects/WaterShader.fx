@@ -7,41 +7,90 @@
 #define PS_SHADERMODEL ps_4_0_level_9_1
 #endif
 
-float4x4 World;
+
 float4x4 View;
 float4x4 Projection;
-float Time = 0;
-float WaterPositionY = 0.0f;
+float4x4 World;
+float4x4 InverseTransposeWorld;
+float3 eyePosition; // Camera position
+float3 lightPosition;
 
-uniform float2 u_resolution;
-uniform float2 u_mouse;
-uniform float u_time;
+float KAmbient;
+float3 ambientColor; // Light's Ambient Color
+
+float KDiffuse;
+float3 diffuseColor; // Light's Diffuse Color
+
+float KSpecular;
+float3 specularColor; // Light's Specular Color
+float shininess;
+
+float KReflection;
+float KFoam;
+
+float Time = 0;
 
 
 struct VertexShaderInput
 {
     float4 Position : POSITION0;
     float4 Color : COLOR0;
-    float2 TextureCoordinate : TEXCOORD0;
+    float4 Normal : NORMAL;
+    float2 TextureCoordinates : TEXCOORD0;
 };
 
 struct VertexShaderOutput
 {
     float4 Position : SV_POSITION;
     float4 Color : COLOR0;
-    float2 TextureCoordinate : TEXCOORD1;
-    float4 WorldPosition : TEXCOORD2;
+    float2 TextureCoordinates : TEXCOORD0;
+    float4 WorldPosition : TEXCOORD1;
+    float4 Normal : TEXCOORD2;
+    //float4 ReflNormal : TEXCOORD3;
 };
 
-texture ModelTexture;
+texture baseTexture;
 sampler2D textureSampler = sampler_state
 {
-    Texture = (ModelTexture);
+    Texture = (baseTexture);
     MagFilter = Linear;
     MinFilter = Linear;
     AddressU = Mirror;
     AddressV = Mirror;
 };
+
+texture foamTexture;
+sampler2D foamSampler = sampler_state
+{
+    Texture = (foamTexture);
+    MagFilter = Linear;
+    MinFilter = Linear;
+    AddressU = Mirror;
+    AddressV = Mirror;
+};
+
+//Textura para Normals
+texture normalTexture;
+sampler2D normalSampler = sampler_state
+{
+    Texture = (normalTexture);
+    ADDRESSU = WRAP;
+    ADDRESSV = WRAP;
+    MINFILTER = LINEAR;
+    MAGFILTER = LINEAR;
+    MIPFILTER = LINEAR;
+};
+
+texture environmentMap;
+samplerCUBE environmentMapSampler = sampler_state
+{
+    Texture = (environmentMap);
+    MagFilter = Linear;
+    MinFilter = Linear;
+    AddressU = Clamp;
+    AddressV = Clamp;
+};
+
 
 // 2D Random
 float random(in float2 st) {
@@ -68,86 +117,161 @@ float noise(in float2 st) {
     return lerp(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
 }
 
+float3 createWave(float steepness, float numWaves, float2 waveDir, float waveAmplitude, float waveLength, float peak, float speed, float4 position) {
+    float3 wave = float3(0,0,0);
+
+    float spaceMult = 2 * 3.14159265359 / waveLength;
+    float timeMult = speed * 2 * 3.14159265359 / waveLength;
+
+    wave.x = waveAmplitude * steepness * waveDir.x * cos(dot(position.xz, waveDir) * spaceMult + Time * timeMult);
+    wave.y = 2 * waveAmplitude * pow(((sin(dot(position.xz, waveDir) * spaceMult + Time * timeMult) + 1) / 2), peak);
+    wave.z = waveAmplitude * steepness * waveDir.y * cos(dot(position.xz, waveDir) * spaceMult + Time * timeMult);
+    return wave;
+}
+
+float3 getNormalFromMap(float2 textureCoordinates, float3 worldPosition, float3 worldNormal)
+{
+    float3 tangentNormal = tex2D(normalSampler, textureCoordinates).xyz * 2.0 - 1.0;
+
+    float3 Q1 = ddx(worldPosition);
+    float3 Q2 = ddy(worldPosition);
+    float2 st1 = ddx(textureCoordinates);
+    float2 st2 = ddy(textureCoordinates);
+
+    worldNormal = normalize(worldNormal.xyz);
+    float3 T = normalize(Q1 * st2.y - Q2 * st1.y);
+    float3 B = -normalize(cross(worldNormal, T));
+    float3x3 TBN = float3x3(T, B, worldNormal);
+
+    return normalize(mul(tangentNormal, TBN));
+}
+
+
+
+
 VertexShaderOutput MainVS(in VertexShaderInput input)
 {
     // Clear the output
     VertexShaderOutput output = (VertexShaderOutput)0;
 
-    //float WaveHeight = 5;
-    //float y = input.Position.y;
-    //input.Position.y += sin(Time) * WaveHeight;
-
     // Model space to World space
     float4 worldPosition = mul(input.Position, World);
 
-    //float WaveHeight = 5;
-    //worldPosition.x += sin(Time + 14 * worldPosition.x * .1) * WaveHeight;
-    //worldPosition.y += cos(Time + 15 * worldPosition.x * 0.01) * WaveHeight;
+    //createWave(float steepness, float numWaves, float2 waveDir, float waveAmplitude, float waveLength, float peak, float speed, float4 position) {
 
-    
-    float speed = .05;
-    float offset = 10;
-    float radius = 3;
-    float3 rotateOffset = float3(0, 0, 0);
+    float3 wave1 = createWave(4, 5, float2(0.5, 0.3), 40, 160, 3, 10, worldPosition);
+    float3 wave2 = createWave(8, 5, float2(0.8, -0.4), 12, 120, 1.2, 20, worldPosition);
+    float3 wave3 = createWave(4, 5, float2(0.3, 0.2), 2, 90, 5, 25, worldPosition);
+    float3 wave4 = createWave(2, 5, float2(0.4, 0.25), 2, 60, 15, 15, worldPosition);
+    float3 wave5 = createWave(6, 5, float2(0.1, 0.8), 20, 250, 2, 40, worldPosition);
+ 
+    float3 wave6 = createWave(4, 5, float2(-0.5, -0.3), 0.5, 8, 0.2, 4, worldPosition);
+    float3 wave7 = createWave(8, 5, float2(-0.8, 0.4), 0.3, 5, 0.3, 6, worldPosition);
 
-    rotateOffset.x = sin((worldPosition.x  + Time * speed ) * offset) * radius * noise(worldPosition.z * 0.02) ;
-    rotateOffset.z = sin((worldPosition.z + Time * speed) * offset) * radius;
-    
-    float multiplyTime = (1 - frac(Time * 0.01)) * frac(Time * 0.01);
-    rotateOffset.y = 0.4 * cos((worldPosition.x * .5 + Time * speed) * offset) * radius * 0.5;
-    rotateOffset.y += (1 - frac(Time * 0.1)) * frac(Time * 0.1) * 0.1 * cos((-worldPosition.z  + Time * speed * 1.3) * offset) * radius;
+    // NORMALES //
+    float EPSILON = 0.001;
+    float3 dxWave1 = createWave(4, 5, float2(0.5, 0.3), 40, 160, 3, 10, float4(worldPosition.x + EPSILON, worldPosition.yz, 1));
+    float3 dzWave1 = createWave(4, 5, float2(0.5, 0.3), 40, 160, 3, 10, float4(worldPosition.xy, worldPosition.z + EPSILON, 1));
+    float3 dxWave2 = createWave(8, 5, float2(0.8, -0.4), 12, 120, 1.2, 20, float4(worldPosition.x + EPSILON, worldPosition.yz, 1));
+    float3 dzWave2 = createWave(8, 5, float2(0.8, -0.4), 12, 120, 1.2, 20, float4(worldPosition.xy, worldPosition.z + EPSILON, 1));
+    float3 dxWave3 = createWave(4, 5, float2(0.3, 0.2), 2, 90, 5, 25, float4(worldPosition.x + EPSILON, worldPosition.yz, 1));
+    float3 dzWave3 = createWave(4, 5, float2(0.3, 0.2), 2, 90, 5, 25, float4(worldPosition.xy, worldPosition.z + EPSILON, 1));
+    float3 dxWave4 = createWave(2, 5, float2(0.4, 0.25), 2, 60, 15, 15, float4(worldPosition.x + EPSILON, worldPosition.yz, 1));
+    float3 dzWave4 = createWave(2, 5, float2(0.4, 0.25), 2, 60, 15, 15, float4(worldPosition.xy, worldPosition.z + EPSILON, 1));
+    float3 dxWave5 = createWave(6, 5, float2(0.1, 0.8), 20, 250, 2, 40, float4(worldPosition.x + EPSILON, worldPosition.yz, 1));
+    float3 dzWave5 = createWave(6, 5, float2(0.1, 0.8), 20, 250, 2, 40, float4(worldPosition.xy, worldPosition.z + EPSILON, 1));
+    float3 dxWave6 = createWave(4, 5, float2(-0.5, -0.3), 0.5, 8, 0.2, 4, float4(worldPosition.x + EPSILON, worldPosition.yz, 1));
+    float3 dzWave6 = createWave(4, 5, float2(-0.5, -0.3), 0.5, 8, 0.2, 4, float4(worldPosition.xy, worldPosition.z + EPSILON, 1));
+    float3 dxWave7 = createWave(8, 5, float2(-0.8, 0.4), 0.3, 5, 0.3, 6, float4(worldPosition.x + EPSILON, worldPosition.yz, 1));
+    float3 dzWave7 = createWave(8, 5, float2(-0.8, 0.4), 0.3, 5, 0.3, 6, float4(worldPosition.xy, worldPosition.z + EPSILON, 1));
 
-    //rotateOffset.y *= (noise(worldPosition.z * 1000) * 0.5 + .2) * (noise(worldPosition.x +1000) * 0.5 + .2);
-    rotateOffset.y += noise(worldPosition.x * 10) * 0.05 + noise(worldPosition.z  * 1000) * 0.01;
-    //rotateOffset.y += (noise(worldPosition.z * 0.001) * 0.5);
+    worldPosition.xyz += (wave1 + wave2 + wave3 + wave4 + wave5 + wave6  + wave7 ) / 7;
 
+    float3 normalVector = float3(0,0,0);
+    normalVector.x = (dxWave1.x + dxWave2.x + dxWave3.x + dxWave4.x + dxWave5.x + dxWave6.x  + dxWave7.x ) / 7;
+    normalVector.z = (dxWave1.z + dxWave2.z + dxWave3.z + dxWave4.z + dxWave5.z + dxWave6.z  + dxWave7.z ) / 7;
 
-    //rotateOffset.x = sin((worldPosition.x + Time * speed) * offset + 5) * radius;
-    //rotateOffset.z = sin((worldPosition.x + Time * speed) * offset) * radius;
-    //rotateOffset.y = cos((worldPosition.x + Time * speed) * offset) * radius;
-    //if (worldPosition.x > -100 && worldPosition.x < 100)
-    //    rotateOffset.y += cos((worldPosition.z + Time * speed) * offset) * radius;
+    float3 waterTangent1 = normalize(float3(1, normalVector.x, 0));
+    float3 waterTangent2 = normalize(float3(0, normalVector.z, 1));
+    input.Normal.xyz = normalize(cross(waterTangent2, waterTangent1));
 
-    //worldPosition.xyz += mul(worldPosition.xyz, rotateOffset.xyz) * 0.01;
-
-    worldPosition.xyz += rotateOffset.xyz;
-    worldPosition.xyz *= float3(1, 7, 1);
+    //output.ReflNormal = mul(float4(normalize(input.Normal.xyz), 1.0), InverseTransposeWorld);
 
     output.WorldPosition = worldPosition;
+    output.Normal = input.Normal;
 
-    // World space to View space
     float4 viewPosition = mul(worldPosition, View);
-    // View space to Projection space
     output.Position = mul(viewPosition, Projection);
-    // Propagate texture coordinates
-    output.TextureCoordinate = input.TextureCoordinate;
-    // Propagate color by vertex
+    output.TextureCoordinates = input.TextureCoordinates;
     output.Color = input.Color;
+
     return output;
 }
 
+
 float4 MainPS(VertexShaderOutput input) : COLOR
 {
-    // Get the texture texel textureSampler is the sampler, Texcoord is the interpolated coordinates
-    float4 textureColor = tex2D(textureSampler, input.TextureCoordinate);
-    textureColor.a = 1;
+    float alturaY = clamp(lightPosition.y / 1500, 0.5, 1);
 
-    float4 color = float4(0, 0.2, 0.4, 1);
+    float3 normal = getNormalFromMap(input.TextureCoordinates, input.WorldPosition.xyz, input.Normal.xyz);
+
+    //float3 worldNormal = input.Normal.xyz * normal;
+    float3 worldNormal = input.Normal.xyz + normal;
+    float3 reflNormal = input.Normal.xyz * normal;
+
+
+
+    // Base vectors
+    float3 lightDirection = normalize(lightPosition - input.WorldPosition.xyz);
+    float3 viewDirection = normalize(eyePosition - input.WorldPosition.xyz);
+    float3 halfVector = normalize(lightDirection + viewDirection);
+
+    // Get the texture texel textureSampler is the sampler, Texcoord is the interpolated coordinates
+    float4 texelColor = tex2D(textureSampler, input.TextureCoordinates);
+    float4 foamColor = tex2D(foamSampler, input.TextureCoordinates);
+
+
+    // Get the texel from the texture
+    float3 reflColor = tex2D(textureSampler, input.TextureCoordinates).rgb;
+
+    // Not part of the mapping, just adjusting color
+    reflColor = lerp(reflColor, float3(1, 1, 1), step(length(reflColor), 0.01));
+
+    //Obtener texel de CubeMap
+    float3 view = normalize(eyePosition.xyz - input.WorldPosition.xyz);
+    float3 reflection = reflect(view, reflNormal);
+    float3 reflectionColor = texCUBE(environmentMapSampler, reflection).rgb;
+
+    float3 ambientLight = KAmbient * ambientColor + KFoam * foamColor.rgb;
+
+    // Calculate the diffuse light
+    float NdotL = saturate(dot(worldNormal, lightDirection));
+    float3 diffuseLight = KDiffuse * diffuseColor * NdotL;
+
+    float3 baseColor = saturate(ambientLight + diffuseLight);
 
     float crestaBase = saturate(input.WorldPosition.y * 0.008) + 0.22;
-    color += float4(1, 1, 1, 1) * float4(crestaBase, crestaBase, crestaBase, 1);
+    baseColor += saturate(float3(1, 1, 1) * float3(crestaBase, crestaBase, crestaBase));
     
     if (input.WorldPosition.y * 0.1 > -1) {
-        float n = input.WorldPosition.y * 0.1 * noise(input.WorldPosition.x * 0.01) * noise(input.WorldPosition.z * 0.01);
-        color += float4(1, 1, 1, 1) * float4(n, n, n, 1);
+        float n = input.WorldPosition.y * 0.5 * noise(input.WorldPosition.x * 0.01) * noise(input.WorldPosition.z * 0.01) * texelColor.r;
+        baseColor += float3(.1, .1, .1) * float3(n * saturate(foamColor.r * 2), n * saturate(foamColor.r * 2), n * saturate(foamColor.r * 2));
     }
-        
 
-    //color += float4(1, 1, 1, 1) * noise(input.WorldPosition) * 0.5;
-    //if (input.WorldPosition.y * 0.01 > - 1)
-    //    color += float4(1,1,1,1) * float4(0, (1 - frac(Time * 0.1)) * frac(Time * 0.1)  *saturate(input.WorldPosition.y + 10) * noise(input.WorldPosition.z * 0.1) * noise(input.WorldPosition.x), 0,1) ;
-    // Color and texture are combined in this example, 80% the color of the texture and 20% that of the vertex
-    return color;
+    float3 specColor = specularColor * texelColor.r;
+    //specularColor *= float3(texelColor.r, texelColor.r, texelColor.r);
+    // Calculate the specular light
+    float NdotH = dot(worldNormal, halfVector);
+    float3 specularLight = sign(NdotL) * KSpecular * specColor * pow(saturate(NdotH), shininess);
+
+    // Final calculation
+    //return float4(lerp(baseColor, reflectionColor, 0.5), 1);
+    float4 finalColor = float4(lerp(baseColor, reflectionColor * KReflection, 0.5) + specularLight, 1) * alturaY;
+    //float4 finalColor = float4(baseColor + reflectionColor * KReflection + specularLight, 1) * alturaY;
+
+    //float4 finalColor = float4(reflectionColor, 1);
+    
+    return finalColor;
 }
 
 technique BasicColorDrawing
