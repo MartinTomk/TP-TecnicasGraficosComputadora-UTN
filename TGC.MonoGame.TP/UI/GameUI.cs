@@ -37,7 +37,8 @@ namespace TGC.MonoGame.TP.UI
             //var rotation = $"Angle rotation: {_game.PlayerControlledShip.RotationRadians}";
             //var textLife = $"Health:  {_game.PlayerControlledShip._currentLife}";
 
-            //var angle1 = $"AngleToPlayer: {_game.Barquito.TempBoatBox.Min.X}";
+            //var angle1 = $"AngleToPlayer: {_game.Ships[2].AngleToPlayer}";
+            //var angle2 = $"FrontDirAngle: {_game.Ships[2].FrontDirectionAngle}";
 
             var viewportHeight = _game.GraphicsDevice.Viewport.Height;
 
@@ -61,7 +62,6 @@ namespace TGC.MonoGame.TP.UI
 
             
             _game.spriteBatch.DrawString(_font, textSpeed, new Vector2(30, 650), Color.White, 0f, Vector2.Zero, 0.6f, SpriteEffects.None, 0f);
-            //_game.spriteBatch.DrawString(_font, angle1, new Vector2(30, 550), Color.White, 0f, Vector2.Zero, 0.6f, SpriteEffects.None, 0f);
 
             textPos = new Vector2(50, 30);
 
