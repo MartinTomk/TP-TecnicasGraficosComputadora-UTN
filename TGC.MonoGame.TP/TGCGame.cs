@@ -108,11 +108,11 @@ namespace TGC.MonoGame.TP
         /// <summary>
         /// Barcos
         /// </summary>
-        private Ship SM { get; set; }
+        public Ship SM { get; set; }
         public Ship Patrol { get; set; }
-        private Ship Cruiser { get; set; }
-        private Ship Barquito { get; set; }
-        private Ship PlayerBoat { get; set; }
+        public Ship Cruiser { get; set; }
+        public Ship Barquito { get; set; }
+        public Ship PlayerBoat { get; set; }
 
         public Ship PlayerControlledShip { get; set; }
 
@@ -660,9 +660,9 @@ namespace TGC.MonoGame.TP
             //Gizmos.DrawCube(Matrix.Identity * 100000f, Color.Green);
             //DebugSphere.Draw(Matrix.Identity * Matrix.CreateTranslation(ProaPos), Game.CurrentCamera.View, Game.CurrentCamera.Projection);
 
-            //foreach (BoundingSphere collider in IslandColliders)
-                //DebugSphere.Draw(Matrix.Identity * Matrix.CreateScale(collider.Radius) * Matrix.CreateTranslation(collider.Center), shotCam.View, shotCam.Projection);
-                //Gizmos.DrawSphere(collider.Center, collider.Radius * Vector3.One);
+            foreach (BoundingSphere collider in IslandColliders)
+                Gizmos.DrawSphere(collider.Center, collider.Radius * Vector3.One);
+            //DebugSphere.Draw(Matrix.Identity * Matrix.CreateScale(collider.Radius) * Matrix.CreateTranslation(collider.Center), shotCam.View, shotCam.Projection);
 
             for (int i = 0; i < Bullets.Count; i++)
             {
@@ -834,18 +834,20 @@ namespace TGC.MonoGame.TP
 
             if (keyboardState.IsKeyDown(Keys.W))
             {
+                PlayerControlledShip.bIsApplyingMovement = true;
                 PlayerControlledShip.MoveForward(elapsedTime);
             }
 
             if (keyboardState.IsKeyDown(Keys.S))
             {
+                PlayerControlledShip.bIsApplyingMovement = true;
                 PlayerControlledShip.MoveBackwards(elapsedTime);
             }
 
             // Setteo bIsMoving a false para que el barco desacelere
             if (!keyboardState.IsKeyDown(Keys.W) && !keyboardState.IsKeyDown(Keys.S))
             {
-                PlayerControlledShip.bIsMoving = false;
+                PlayerControlledShip.bIsApplyingMovement = false;
             }
 
             if (keyboardState.IsKeyDown(Keys.A))
