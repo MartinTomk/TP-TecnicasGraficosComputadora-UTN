@@ -81,7 +81,9 @@ namespace TGC.MonoGame.TP
         private Model ModelRock5 { get; set; }
         private Effect IslandMiscEffect { get; set; }
 
-
+        private Model ModelPiso { get; set; }
+        private Effect PisoEffect { get; set; }
+        public Texture2D PisoTexture;
 
         public Texture2D IslandTexture;
         public Texture2D IslandMiscTexture;
@@ -103,6 +105,7 @@ namespace TGC.MonoGame.TP
         Matrix MatrixRock5;
         Matrix MatrixRock6;
         Matrix MatrixRock7;
+        Matrix MatrixPiso;
 
 
         /// <summary>
@@ -260,9 +263,7 @@ namespace TGC.MonoGame.TP
             SpriteBatch = new SpriteBatch(GraphicsDevice);
 
             //TODO: use this.Content to load your game content here
-            //Gizmos.LoadContent(GraphicsDevice, this.Content);
             Gizmos.LoadContent(GraphicsDevice, Content);
-            DebugSphere = new SpherePrimitive(GraphicsDevice, 1);
 
             // Cargo el modelos /// ISLA ///
             ModelIsland = Content.Load<Model>(ContentFolder3D + "Island/isla_volcan1");
@@ -285,6 +286,10 @@ namespace TGC.MonoGame.TP
             IslandMiscEffect = Content.Load<Effect>(ContentFolderEffects + "BasicShader");
             IslandMiscTexture = Content.Load<Texture2D>(ContentFolderTextures + "Island/TropicalIsland01Diffuse");
 
+            PisoEffect = Content.Load<Effect>(ContentFolderEffects + "BasicShader");
+            PisoTexture = Content.Load<Texture2D>(ContentFolderTextures + "Island/TexturesCom_SandPebbles0067_1_seamless_S");
+            ModelPiso = Content.Load<Model>(ContentFolder3D + "Island/plano_baja");
+            
             ModelWater = Content.Load<Model>(ContentFolder3D + "Island/waterAltaGeo");
             WaterEffect = Content.Load<Effect>(ContentFolderEffects + "WaterShader");
             WaterTexture = Content.Load<Texture2D>(ContentFolderTextures + "Island/TexturesCom_WaterPlain0012_1_seamless_S");
@@ -329,6 +334,7 @@ namespace TGC.MonoGame.TP
             MatrixRock5 = Matrix.CreateScale(0.2f) * Matrix.CreateTranslation(100, -10, -780);
             MatrixRock6 = Matrix.CreateScale(0.18f) * Matrix.CreateRotationY(2.5f) * Matrix.CreateTranslation(530, -10, 780);
             MatrixRock7 = Matrix.CreateScale(0.2f) * Matrix.CreateRotationY(4f) * Matrix.CreateTranslation(1050, -10, 300);
+            MatrixPiso = Matrix.CreateScale(100f) * Matrix.CreateTranslation(0, -200, 0);
 
 
             //// BOTES ////
@@ -586,6 +592,7 @@ namespace TGC.MonoGame.TP
             GraphicsDevice.SetRenderTarget(SceneRenderTarget);
             GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.CornflowerBlue, 1f, 0);
 
+
             // Para dibujar le modelo necesitamos pasarle informacion que el efecto esta esperando.
             IslandEffect.Parameters["ModelTexture"].SetValue(IslandTexture);
             LightEffect.Parameters["baseTexture"].SetValue(IslandTexture);
@@ -630,7 +637,21 @@ namespace TGC.MonoGame.TP
             Skydome.Draw(shotCam.View, shotCam.Projection, shotCam.Position);
             SkyDomeEffect.Parameters["Time"].SetValue(time);
 
+            PisoEffect.Parameters["ModelTexture"]?.SetValue(PisoTexture);
+            PisoEffect.Parameters["World"].SetValue(MatrixPiso);
+            PisoEffect.Parameters["View"].SetValue(shotCam.View);
+            PisoEffect.Parameters["Projection"].SetValue(shotCam.Projection);
 
+            foreach (var mesh in ModelPiso.Meshes)
+            {
+                foreach (var meshPart in mesh.MeshParts)
+                {
+                    meshPart.Effect = PisoEffect;
+                }
+                mesh.Draw();
+            }
+
+            spriteBatch.GraphicsDevice.BlendState = BlendState.AlphaBlend;
             // Set up our Effect to draw the water
             WaterEffect.Parameters["baseTexture"]?.SetValue(WaterTexture);
             WaterEffect.Parameters["foamTexture"]?.SetValue(WaterFoamTexture);
@@ -654,15 +675,7 @@ namespace TGC.MonoGame.TP
                     DrawModel(ModelWater, MatrixWater, WaterEffect, shotCam);
                 }
 
-
-            //Gizmos.DrawSphere(collider.Center, collider.Radius * 10 * Vector3.One, Color.Yellow);
-            //Gizmos.DrawFrustum(shotCam.Projection);
-            //Gizmos.DrawCube(Matrix.Identity * 100000f, Color.Green);
-            //DebugSphere.Draw(Matrix.Identity * Matrix.CreateTranslation(ProaPos), Game.CurrentCamera.View, Game.CurrentCamera.Projection);
-
-            //foreach (BoundingSphere collider in IslandColliders)
-                //DebugSphere.Draw(Matrix.Identity * Matrix.CreateScale(collider.Radius) * Matrix.CreateTranslation(collider.Center), shotCam.View, shotCam.Projection);
-                //Gizmos.DrawSphere(collider.Center, collider.Radius * Vector3.One);
+            spriteBatch.GraphicsDevice.BlendState = BlendState.Opaque;
 
             for (int i = 0; i < Bullets.Count; i++)
             {
@@ -703,7 +716,7 @@ namespace TGC.MonoGame.TP
             #endregion
 
             _ui.Draw();
-            Gizmos.Draw();
+            //Gizmos.Draw();
             base.Draw(gameTime);
         }
 

@@ -219,8 +219,6 @@ float4 MainPS(VertexShaderOutput input) : COLOR
     float3 worldNormal = input.Normal.xyz + normal;
     float3 reflNormal = input.Normal.xyz * normal;
 
-
-
     // Base vectors
     float3 lightDirection = normalize(lightPosition - input.WorldPosition.xyz);
     float3 viewDirection = normalize(eyePosition - input.WorldPosition.xyz);
@@ -229,7 +227,6 @@ float4 MainPS(VertexShaderOutput input) : COLOR
     // Get the texture texel textureSampler is the sampler, Texcoord is the interpolated coordinates
     float4 texelColor = tex2D(textureSampler, input.TextureCoordinates);
     float4 foamColor = tex2D(foamSampler, input.TextureCoordinates);
-
 
     // Get the texel from the texture
     float3 reflColor = tex2D(textureSampler, input.TextureCoordinates).rgb;
@@ -271,7 +268,7 @@ float4 MainPS(VertexShaderOutput input) : COLOR
 
     //float4 finalColor = float4(reflectionColor, 1);
     
-    return finalColor;
+    return float4(finalColor.rgb, clamp((1 - foamColor.r), 0.95, 1));
 }
 
 technique BasicColorDrawing
