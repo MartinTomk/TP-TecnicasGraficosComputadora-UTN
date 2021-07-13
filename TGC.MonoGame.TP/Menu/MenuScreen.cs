@@ -103,10 +103,9 @@ namespace TGC.MonoGame.TP.Menu
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            //GraphicsDevice.Clear(Color.CornflowerBlue);
-            //spriteBatch.Begin(samplerState: spriteBatch.GraphicsDevice.SamplerStates[0], rasterizerState: spriteBatch.GraphicsDevice.RasterizerState);
+
             _currentState.Draw(gameTime, spriteBatch);
-            //spriteBatch.End();
+
 
             base.Draw(gameTime);
         }

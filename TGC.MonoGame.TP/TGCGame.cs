@@ -82,6 +82,10 @@ namespace TGC.MonoGame.TP
         private Effect IslandMiscEffect { get; set; }
 
 
+        private Model ModelPiso { get; set; }
+        private Effect PisoEffect { get; set; }
+        public Texture2D PisoTexture;
+
 
         public Texture2D IslandTexture;
         public Texture2D IslandMiscTexture;
@@ -103,6 +107,9 @@ namespace TGC.MonoGame.TP
         Matrix MatrixRock5;
         Matrix MatrixRock6;
         Matrix MatrixRock7;
+
+        Matrix MatrixPiso;
+
 
 
         /// <summary>
@@ -140,6 +147,13 @@ namespace TGC.MonoGame.TP
         public Ship[] Ships { get; set; }
 
         BoundingSphere IslandSphere;
+
+
+        public BoundingSphere[] IslandColliders;
+        public BoundingBox[] WaterColliders;
+
+        //BoundingBox TestBox;
+
 
         public BoundingSphere[] IslandColliders;
         public BoundingBox[] WaterColliders;
@@ -187,10 +201,12 @@ namespace TGC.MonoGame.TP
         //Sonido 
         private SoundEffect Waves { get; set; }
         private SoundEffect ShipShoot { get; set; }
+
         public SoundEffect Explosion { get; set; }
         private SoundEffectInstance Instance { get; set; }
         private SoundEffectInstance ShootInstance { get; set; }
         public SoundEffectInstance ExplosionInstance { get; set; }
+
 
         public BoundingFrustum boundingFrustum = new BoundingFrustum(Matrix.Identity);
         // pal debuggin
@@ -262,9 +278,12 @@ namespace TGC.MonoGame.TP
             SpriteBatch = new SpriteBatch(GraphicsDevice);
 
             //TODO: use this.Content to load your game content here
+
             //Gizmos.LoadContent(GraphicsDevice, this.Content);
             Gizmos.LoadContent(GraphicsDevice, Content);
             DebugSphere = new SpherePrimitive(GraphicsDevice, 1);
+
+
 
             // Cargo el modelos /// ISLA ///
             ModelIsland = Content.Load<Model>(ContentFolder3D + "Island/isla_volcan1");
@@ -287,6 +306,10 @@ namespace TGC.MonoGame.TP
             IslandMiscEffect = Content.Load<Effect>(ContentFolderEffects + "BasicShader");
             IslandMiscTexture = Content.Load<Texture2D>(ContentFolderTextures + "Island/TropicalIsland01Diffuse");
 
+            PisoEffect = Content.Load<Effect>(ContentFolderEffects + "BasicShader");
+            PisoTexture = Content.Load<Texture2D>(ContentFolderTextures + "Island/TexturesCom_SandPebbles0067_1_seamless_S");
+            ModelPiso = Content.Load<Model>(ContentFolder3D + "Island/plano_baja");
+            
             ModelWater = Content.Load<Model>(ContentFolder3D + "Island/waterAltaGeo");
             WaterEffect = Content.Load<Effect>(ContentFolderEffects + "WaterShader");
             WaterTexture = Content.Load<Texture2D>(ContentFolderTextures + "Island/TexturesCom_WaterPlain0012_1_seamless_S");
@@ -332,6 +355,9 @@ namespace TGC.MonoGame.TP
             MatrixRock5 = Matrix.CreateScale(0.2f) * Matrix.CreateTranslation(100, -10, -780);
             MatrixRock6 = Matrix.CreateScale(0.18f) * Matrix.CreateRotationY(2.5f) * Matrix.CreateTranslation(530, -10, 780);
             MatrixRock7 = Matrix.CreateScale(0.2f) * Matrix.CreateRotationY(4f) * Matrix.CreateTranslation(1050, -10, 300);
+
+            MatrixPiso = Matrix.CreateScale(100f) * Matrix.CreateTranslation(0, -200, 0);
+
 
 
             //// BOTES ////
@@ -411,13 +437,16 @@ namespace TGC.MonoGame.TP
             ShipShoot = Content.Load<SoundEffect>(ContentFolderSounds + "CannonShot");
             ShootInstance = ShipShoot.CreateInstance();
             Instance = Waves.CreateInstance();
+
             Explosion = Content.Load<SoundEffect>(ContentFolderSounds + "Explosion");
             ExplosionInstance = Explosion.CreateInstance();
+
             BulletModel = Content.Load<Model>(ContentFolder3D + "Bullets/Bullet");
 
             font = Content.Load<SpriteFont>("Fonts/Font");
 
             // OVERLAY GOTAS //
+
 
             dropsTexture = Content.Load<Texture2D>(ContentFolderTextures + "Dirty");
             dropsTexture2 = Content.Load<Texture2D>(ContentFolderTextures + "Smudgy");
@@ -434,6 +463,7 @@ namespace TGC.MonoGame.TP
             SceneRenderTarget = new RenderTarget2D(GraphicsDevice, GraphicsDevice.Viewport.Width,
                 GraphicsDevice.Viewport.Height, false, SurfaceFormat.Color, DepthFormat.Depth24, 0,
                 RenderTargetUsage.DiscardContents);
+
 
             ScreenRenderTarget = new RenderTarget2D(GraphicsDevice, GraphicsDevice.Viewport.Width,
                 GraphicsDevice.Viewport.Height, false, SurfaceFormat.Color, DepthFormat.None, 0,
@@ -457,6 +487,7 @@ namespace TGC.MonoGame.TP
             var elapsedTime = Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds);
             ProcessKeyboard(elapsedTime);
             TiempoEntreDisparos++;
+
             boundingFrustum.Matrix = shotCam.View * shotCam.Projection;
 
             Gizmos.UpdateViewProjection(shotCam.View, shotCam.Projection);
@@ -571,6 +602,7 @@ namespace TGC.MonoGame.TP
                     Cruiser.Life = 100;
                 }
             }
+
             PlayerBoat.Update(gameTime, shotCam, lightPosition);
             shotCam.Update(gameTime);
             shotCam.Position = PlayerBoat.Position + new Vector3(0, CameraArm, 0) - shotCam.FrontDirection *175f;
@@ -702,6 +734,7 @@ namespace TGC.MonoGame.TP
             DrawModelLight(ModelIsland3, MatrixIsland5, LightEffect, shotCam);
 
 
+
             DrawModelLight(ModelPalm1, Matrix.CreateScale(0.08f) * Matrix.CreateTranslation(60, 10, 280), LightEffect, shotCam);
             DrawModelLight(ModelPalm2, Matrix.CreateScale(0.08f) * Matrix.CreateTranslation(110, 0, 300), LightEffect, shotCam);
             DrawModelLight(ModelPalm3, Matrix.CreateScale(0.08f) * Matrix.CreateTranslation(-50, 48, 150), LightEffect, shotCam);
@@ -721,6 +754,21 @@ namespace TGC.MonoGame.TP
             Skydome.Draw(shotCam.View, shotCam.Projection, shotCam.Position);
             SkyDomeEffect.Parameters["Time"].SetValue(time);
 
+            PisoEffect.Parameters["ModelTexture"]?.SetValue(PisoTexture);
+            PisoEffect.Parameters["World"].SetValue(MatrixPiso);
+            PisoEffect.Parameters["View"].SetValue(shotCam.View);
+            PisoEffect.Parameters["Projection"].SetValue(shotCam.Projection);
+
+            foreach (var mesh in ModelPiso.Meshes)
+            {
+                foreach (var meshPart in mesh.MeshParts)
+                {
+                    meshPart.Effect = PisoEffect;
+                }
+                mesh.Draw();
+            }
+
+            spriteBatch.GraphicsDevice.BlendState = BlendState.AlphaBlend;
 
             // Set up our Effect to draw the water
             WaterEffect.Parameters["baseTexture"]?.SetValue(WaterTexture);
@@ -746,6 +794,9 @@ namespace TGC.MonoGame.TP
                 }
 
 
+            spriteBatch.GraphicsDevice.BlendState = BlendState.Opaque;
+
+
             //Gizmos.DrawSphere(collider.Center, collider.Radius * 10 * Vector3.One, Color.Yellow);
             //Gizmos.DrawFrustum(shotCam.Projection);
             //Gizmos.DrawCube(Matrix.Identity * 100000f, Color.Green);
@@ -768,6 +819,7 @@ namespace TGC.MonoGame.TP
             // No depth needed
             GraphicsDevice.DepthStencilState = DepthStencilState.None;
             // Set the render target to null, we are drawing to the screen
+
 
             var keyboardState = Keyboard.GetState();
             if (keyboardState.IsKeyDown(Keys.R))
@@ -960,11 +1012,13 @@ namespace TGC.MonoGame.TP
 
                 if (bullet != null)
                 {
+
                     Vector3 offset = PlayerBoat.Position;
                     offset.Y += 20f;
                     Vector3 correccionPitch = shotCam.FrontDirection;
                     correccionPitch.Y += 0.2f;
                     bullet.Init(this, offset, correccionPitch, PlayerBoat);
+
 
                     bullet._available = false;
 
@@ -988,6 +1042,7 @@ namespace TGC.MonoGame.TP
                 Instance.Volume -= (float)0.02;
             }
         }
+
         public void dispararAlJugador(Ship barcoOrigen,Bullet.Bullet bullet)
         {
             Vector3 offset = barcoOrigen.Position;
@@ -1004,6 +1059,7 @@ namespace TGC.MonoGame.TP
 
             ShootInstance.Play();
         }
+
     }
 
 }

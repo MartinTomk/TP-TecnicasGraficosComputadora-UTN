@@ -15,6 +15,7 @@ float4x4 InverseTransposeWorld;
 float3 eyePosition; // Camera position
 float3 lightPosition;
 
+
 float KAmbient;
 float3 ambientColor; // Light's Ambient Color
 
@@ -220,7 +221,6 @@ float4 MainPS(VertexShaderOutput input) : COLOR
     float3 reflNormal = input.Normal.xyz * normal;
 
 
-
     // Base vectors
     float3 lightDirection = normalize(lightPosition - input.WorldPosition.xyz);
     float3 viewDirection = normalize(eyePosition - input.WorldPosition.xyz);
@@ -271,7 +271,9 @@ float4 MainPS(VertexShaderOutput input) : COLOR
 
     //float4 finalColor = float4(reflectionColor, 1);
     
-    return finalColor;
+
+    return float4(finalColor.rgb, clamp((1 - foamColor.r), 0.95, 1));
+
 }
 
 technique BasicColorDrawing

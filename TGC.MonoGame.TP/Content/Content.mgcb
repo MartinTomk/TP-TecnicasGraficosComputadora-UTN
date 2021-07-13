@@ -1863,11 +1863,13 @@
 /processorParam:Quality=Best
 /build:Sounds/CannonShot.wav
 
+
 #begin Sounds/Explosion.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor
 /processorParam:Quality=Best
 /build:Sounds/Explosion.wav
+
 
 #begin Sounds/Waves.wav
 /importer:WavImporter
@@ -2175,6 +2177,19 @@
 /processorParam:TextureFormat=Color
 /build:Textures/Island/normalAgua.jpeg
 
+
+#begin Textures/Island/TexturesCom_SandPebbles0067_1_seamless_S.jpg
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Textures/Island/TexturesCom_SandPebbles0067_1_seamless_S.jpg
+
 #begin Textures/Island/TexturesCom_WaterPlain0008_1_seamless_S.jpg
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -2342,6 +2357,19 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:Textures/Menu/Presentacion_IM.jpeg
+
+
+#begin Textures/Menu/score.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Textures/Menu/score.png
 
 #begin Textures/Smudgy.png
 /importer:TextureImporter

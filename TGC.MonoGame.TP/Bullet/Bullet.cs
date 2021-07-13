@@ -6,10 +6,12 @@ using TGC.MonoGame.TP.Cameras;
 using TGC.MonoGame.TP.Ships;
 using Microsoft.Xna.Framework.Audio;
 
+
 namespace TGC.MonoGame.TP.Bullet
 {
     public class Bullet
     {
+
         private float _bulletSpeed = 25f;
         private float _timeElapsed;
         private Vector3 _destinationPosition;
@@ -27,6 +29,7 @@ namespace TGC.MonoGame.TP.Bullet
             _available = true;
         }
 
+
         public void Init(TGCGame tgcGame, Vector3 origin, Vector3 direction, Ship barco)
         {
             _game = tgcGame;
@@ -37,6 +40,7 @@ namespace TGC.MonoGame.TP.Bullet
             _searchImpact = false;
             _active = true;
             _barcoOrigen = barco;
+
         }
 
         public void Update()
@@ -47,6 +51,7 @@ namespace TGC.MonoGame.TP.Bullet
                 _searchImpact = false;
                 _active = false;
                 _available = true;
+
             }
         }
 
@@ -57,7 +62,6 @@ namespace TGC.MonoGame.TP.Bullet
             _destinationPosition.Y -= _timeElapsed / 90;
             _timeElapsed += 1;
             _searchImpact = true;
-
 
         }
 
@@ -70,6 +74,7 @@ namespace TGC.MonoGame.TP.Bullet
 
                 for (var index = 0; index < _game.Ships.Length && !willCollide; index++)
                 {
+
                     if (FuturePosition.Intersects(_game.Ships[index].BoatSphere) && _game.Ships[index] != _barcoOrigen)
                     {
                         _game.ExplosionInstance.Stop();
@@ -83,6 +88,5 @@ namespace TGC.MonoGame.TP.Bullet
 
             return willCollide;
         }
-
     }
 }
