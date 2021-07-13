@@ -12,7 +12,9 @@ namespace TGC.MonoGame.TP.UI
         private TGCGame _game;
         private SpriteFont _font;
         private Texture2D hudBG;
+
         private Texture2D hudScore;
+
         private Texture2D barritaVida;
         private Texture2D bote;
         private Texture2D mira;
@@ -25,7 +27,9 @@ namespace TGC.MonoGame.TP.UI
         {
             _game = game;
             hudBG = _game.Content.Load<Texture2D>("Textures/Menu/hud");
+
             hudScore = _game.Content.Load<Texture2D>("Textures/Menu/score");
+
             barritaVida = _game.Content.Load<Texture2D>("Textures/Menu/barrita");
             bote = _game.Content.Load<Texture2D>("Textures/Menu/bote");
             mira = _game.Content.Load<Texture2D>("Textures/Menu/mira");
@@ -36,6 +40,7 @@ namespace TGC.MonoGame.TP.UI
         {
             var bullets = $"{_game.availableBullets}";
             var textSpeed = $"Speed: {_game.PlayerControlledShip.BoatVelocity}";
+
             var textScore = $"Score: {_game.PlayerControlledShip._score}";
 
 
@@ -46,7 +51,9 @@ namespace TGC.MonoGame.TP.UI
 
             //_game.spriteBatch.Draw(hudBG, new Vector2(10, 10), Color.White);
             _game.spriteBatch.Draw(hudBG, new Vector2(10, 10), null, Color.White, 0f, Vector2.Zero, 0.8f, SpriteEffects.None, 0f);
+
             _game.spriteBatch.Draw(hudScore, new Vector2(950, 10), null, Color.White, 0f, Vector2.Zero, 0.8f, SpriteEffects.None, 0f);
+
 
             for (int i = 0; i < _game.PlayerControlledShip._currentLife; i++)
             {
@@ -60,7 +67,9 @@ namespace TGC.MonoGame.TP.UI
             _game.spriteBatch.Draw(mira, new Vector2(178, 545), null, Color.White, _game.PlayerControlledShip.RotationRadians, spriteOrigin, 0.8f, SpriteEffects.None, 0f);
             _game.spriteBatch.Draw(bote, new Vector2(122, 430), null, Color.White, 0f, Vector2.Zero, 0.8f, SpriteEffects.None, 0f);
 
+
             _game.spriteBatch.DrawString(_font, textScore, new Vector2(972, 48), Color.LightBlue, 0f, Vector2.Zero, 0.6f, SpriteEffects.None, 0f);
+
             _game.spriteBatch.DrawString(_font, textSpeed, new Vector2(30, 650), Color.White, 0f, Vector2.Zero, 0.6f, SpriteEffects.None, 0f);
 
             textPos = new Vector2(50, 30);

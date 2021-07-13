@@ -1863,6 +1863,14 @@
 /processorParam:Quality=Best
 /build:Sounds/CannonShot.wav
 
+
+#begin Sounds/Explosion.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/Explosion.wav
+
+
 #begin Sounds/Waves.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor
@@ -2169,6 +2177,7 @@
 /processorParam:TextureFormat=Color
 /build:Textures/Island/normalAgua.jpeg
 
+
 #begin Textures/Island/TexturesCom_SandPebbles0067_1_seamless_S.jpg
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -2348,6 +2357,7 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:Textures/Menu/Presentacion_IM.jpeg
+
 
 #begin Textures/Menu/score.png
 /importer:TextureImporter

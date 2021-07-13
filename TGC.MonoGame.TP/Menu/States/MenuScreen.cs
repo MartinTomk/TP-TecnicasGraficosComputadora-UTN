@@ -199,6 +199,7 @@ namespace TGC.MonoGame.TP.Menu.States
                 effect.Parameters["InverseTransposeWorld"]?.SetValue(Matrix.Transpose(Matrix.Invert(transform)));
                 effect.Parameters["WorldViewProjection"]?.SetValue(transform * cam.View * cam.Projection);
 
+
                 foreach (var meshPart in mesh.MeshParts)
                     meshPart.Effect = effect;
                 mesh.Draw();
@@ -211,6 +212,7 @@ namespace TGC.MonoGame.TP.Menu.States
             spriteBatch.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
             spriteBatch.GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.CornflowerBlue, 1f, 0);
             spriteBatch.Begin();
+
 
             switch (status)
             {
@@ -317,6 +319,7 @@ namespace TGC.MonoGame.TP.Menu.States
 
         //private void GodGameButton_Click(object sender, EventArgs e)
         //{
+
         //    using (var game = new TGCGame(true))
         //        game.Run();
         //}
@@ -324,6 +327,7 @@ namespace TGC.MonoGame.TP.Menu.States
 
         public override void Update(GameTime gameTime)
         {
+
             time += Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds);
 
             shipMatrix *= Matrix.CreateTranslation(0, MathF.Sin(time) * 0.2f , 0); 
