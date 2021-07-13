@@ -105,7 +105,7 @@ namespace TGC.MonoGame.TP.Ships
             // First, get an AABB from the model
             var temporaryCubeAABB = BoundingVolumesExtensions.CreateAABBFrom(ShipModel);
             // Scale it to match the model's transform
-            temporaryCubeAABB = BoundingVolumesExtensions.Scale(temporaryCubeAABB, 0.5f);
+            temporaryCubeAABB = BoundingVolumesExtensions.Scale(temporaryCubeAABB, 0.02f);
             // Create an Oriented Bounding Box from the AABB
             BoatBox = OrientedBoundingBox.FromAABB(temporaryCubeAABB);
             // Move the center
@@ -124,8 +124,8 @@ namespace TGC.MonoGame.TP.Ships
             ShipEffect.Parameters["aoTexture"]?.SetValue(ShipAoTexture);
             ShipEffect.Parameters["normalTexture"]?.SetValue(ShipNormalTexture);
             DrawModel(ShipModel, BoatMatrix, ShipEffect, cam);
-            //Game.Gizmos.DrawCube(BoatOBBWorld, Color.Green);
-            Game.Gizmos.DrawSphere(Position, Vector3.One * 50.0f, Color.Red);
+            Game.Gizmos.DrawCube(BoatOBBWorld, Color.Green);
+            //Game.Gizmos.DrawSphere(Position, Vector3.One * 50.0f, Color.Red);
             //DebugSphere.Draw(Matrix.Identity * Matrix.CreateScale(50f) * Matrix.CreateTranslation(BoatBox.Center), Game.CurrentCamera.View, Game.CurrentCamera.Projection);
             //DebugSphere.Draw(Matrix.Identity * Matrix.CreateTranslation(ProaPos), Game.CurrentCamera.View, Game.CurrentCamera.Projection);
             //DebugSphere.Draw(Matrix.Identity * Matrix.CreateTranslation(PopaPos), Game.CurrentCamera.View, Game.CurrentCamera.Projection);
@@ -167,6 +167,7 @@ namespace TGC.MonoGame.TP.Ships
 
             BoatSphere = new BoundingSphere(Position, 50);
             BoatBox.Orientation = Matrix.CreateRotationY(RotationRadians);
+            BoatBox.Center = Position;
             // Create an OBB World-matrix so we can draw a cube representing it
             BoatOBBWorld = Matrix.CreateScale(BoatBox.Extents * 2f) * BoatBox.Orientation * Matrix.CreateTranslation(Position);
 
@@ -240,13 +241,14 @@ namespace TGC.MonoGame.TP.Ships
         public void Move(float amount)
         {
             bIsMoving = true;
-            BoundingSphere FuturePosition = new BoundingSphere(Position + FrontDirection * amount, 50);
-            //OrientedBoundingBox FuturePosition = new OrientedBoundingBox(BoatBox.Center, BoatBox.Center + FrontDirection * amount);
-            //Game.Gizmos.DrawCube()
+            //BoundingSphere FuturePosition = new BoundingSphere(Position + FrontDirection * amount, 50);
+            OrientedBoundingBox FuturePosition = new OrientedBoundingBox(BoatBox.Center + FrontDirection * amount, BoatBox.Extents);
+            //Game.Gizmos.DrawCube(BoatOBBWorld, Color.Red);
             bool willCollide = false;
             for (var index = 0; index < OtherShips.Length && !willCollide; index++)
             {
-                if (FuturePosition.Intersects(OtherShips[index].BoatSphere))
+                //if (FuturePosition.Intersects(OtherShips[index].BoatSphere))
+                if (FuturePosition.Intersects(OtherShips[index].BoatBox))
                 {
                     willCollide = true;
                     BoatVelocity = 0.0f;
@@ -265,6 +267,31 @@ namespace TGC.MonoGame.TP.Ships
             if (!willCollide)
                 Position += FrontDirection * amount;
         }
+        public void Rotate(float amount)
+        {
+            OrientedBoundingBox FuturePosition = new OrientedBoundingBox(BoatBox.Center, BoatBox.Extents);
+            FuturePosition.Orientation = Matrix.CreateRotationY(RotationRadians + amount);
+            Game.Gizmos.DrawCube(BoatOBBWorld, Color.Red);
+            bool willCollide = false;
+            for (var index = 0; index < OtherShips.Length && !willCollide; index++)
+            {
+                if (FuturePosition.Intersects(OtherShips[index].BoatBox))
+                {
+                    willCollide = true;
+                }
+            }
+
+            for (var index = 0; index < Game.IslandColliders.Length && !willCollide; index++)
+            {
+                if (FuturePosition.Intersects(Game.IslandColliders[index]))
+                {
+                    willCollide = true;
+                }
+            }
+
+            if (!willCollide)
+                RotationRadians += amount;
+        }
         public void MoveForward(float amount)
         {
             BoatVelocity = Math.Clamp(BoatVelocity + BoatAcceleration, -MovementSpeed, MovementSpeed);
@@ -277,7 +304,7 @@ namespace TGC.MonoGame.TP.Ships
         }
         public void RotateRight(float amount)
         {
-            RotationRadians += RotationSpeed * amount;
+            Rotate(RotationSpeed * amount);
         }
         public void RotateLeft(float amount)
         {
@@ -313,7 +340,10 @@ namespace TGC.MonoGame.TP.Ships
         {
             Vector3 DirectionToPlayer = Game.PlayerControlledShip.Position - Position;
             DirectionToPlayer.Normalize();
+            
             float RotateAngle = Vector3.Cross(FrontDirection, DirectionToPlayer).Y;
+            if (Vector3.Distance(Game.PlayerControlledShip.Position, Position) < 400.0f)
+                RotateAngle += MathHelper.Pi;
             if(Math.Abs(RotateAngle) > 0.01) // para evitar el jitter
                 RotateRight(Math.Sign(RotateAngle) * elapsedTime);
             MoveForward(elapsedTime);
