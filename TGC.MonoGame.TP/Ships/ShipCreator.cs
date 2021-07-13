@@ -174,16 +174,16 @@ namespace TGC.MonoGame.TP.Ships
 
 
             // TempBoatBox es una BoundingBox que se modifica en las funciones de movimiento
-            BoatBox = new OrientedBoundingBox(BoundingVolumesExtensions.GetCenter(TempBoatBox), BoundingVolumesExtensions.GetExtents(TempBoatBox));
-            BoatBox.Rotate(Matrix.CreateRotationY(RotationRadians));
+            //BoatBox = new OrientedBoundingBox(BoundingVolumesExtensions.GetCenter(TempBoatBox), BoundingVolumesExtensions.GetExtents(TempBoatBox));
+            //BoatBox.Rotate(Matrix.CreateRotationY(RotationRadians));
             // Create an OBB World-matrix so we can draw a cube representing it
-            BoatOBBWorld = Matrix.CreateScale(BoatBox.Extents * 2f) * BoatBox.Orientation * Matrix.CreateTranslation(Position);
+            //BoatOBBWorld = Matrix.CreateScale(BoatBox.Extents * 2f) * BoatBox.Orientation * Matrix.CreateTranslation(Position);
 
 
-            //ManageCollisions(elapsedTime);
+            ManageCollisions(elapsedTime);
 
             // Muevo el bote en base a la BoundingBox
-            Position = new Vector3(BoatBox.Center.X, WavePosY, BoatBox.Center.Z);
+            Position = new Vector3(BoundingVolumesExtensions.GetCenter(TempBoatBox).X, WavePosY, BoundingVolumesExtensions.GetCenter(TempBoatBox).Z);
 
             ShipEffect.Parameters["lightPosition"]?.SetValue(light);
             ShipEffect.Parameters["eyePosition"]?.SetValue(cam.Position);
@@ -282,11 +282,17 @@ namespace TGC.MonoGame.TP.Ships
 
         public void ManageCollisions(float elapsedTime)
         {
-            //Has horizontal movement ?
-            if (BoatVelocity == 0)
-                return;
-
             bool bIsCollidingWithAnything = false;
+
+            // Check intersection for every boat collider
+            for (var index = 0; index < OtherShips.Length; index++)
+            {
+                if (TempBoatBox.Intersects(OtherShips[index].TempBoatBox))
+                { 
+                    bIsCollidingWithAnything = true;
+                    BoatVelocity = 0.0f;
+                }
+            }
 
             //// Check intersection for every island collider
             //for (var index = 0; index < Game.IslandColliders.Length; index++)
@@ -298,47 +304,7 @@ namespace TGC.MonoGame.TP.Ships
             //    }
             //}
 
-            // Check intersection for every boat collider
-            for (var index = 0; index < OtherShips.Length; index++)
-            {
-                if (TempBoatBox.Intersects(OtherShips[index].TempBoatBox))
-                { 
-                    bIsCollidingWithAnything = true;
-                    BoatVelocity = 0.0f;
-                }
-
-                // Get the intersected collider and its center
-                //var collider = OtherShips[index].BoatBox;
-                //var colliderCenter = OtherShips[index].BoatBox.Center;
-
-
-                //Vector3 DirectionToMove = BoatBox.Center - OtherShips[index].BoatBox.Center;
-                //DirectionToMove.Normalize();
-
-                //Position += DirectionToMove * elapsedTime;
-
-
-                //// Get the cylinder center at the same Y-level as the box
-                //var sameLevelCenter = BoatBox.Center;
-                //sameLevelCenter.Y = colliderCenter.Y;
-
-                //// Find the closest horizontal point from the box
-                //var closestPoint = BoundingVolumesExtensions.ClosestPoint(collider, sameLevelCenter);
-
-                //// Calculate our normal vector from the "Same Level Center" of the cylinder to the closest point
-                //// This happens in a 2D fashion as we are on the same Y-Plane
-                //var normalVector = sameLevelCenter - closestPoint;
-                //var normalVectorLength = normalVector.Length();
-
-                //// Our penetration is the difference between the radius of the Cylinder and the Normal Vector
-                //// For precission problems, we push the cylinder with a small increment to prevent re-colliding into the geometry
-                //var penetration = Length / 2 - normalVector.Length() + 0.00001f;
-
-                //// Push the center out of the box
-                //// Normalize our Normal Vector using its length first
-                //Position += (normalVector / normalVectorLength * penetration);
-            }
-
+            // Si esta colisionando con al menos uno, setteo a true
             bIsColliding = bIsCollidingWithAnything;
         }
         public void Move(float amount)
