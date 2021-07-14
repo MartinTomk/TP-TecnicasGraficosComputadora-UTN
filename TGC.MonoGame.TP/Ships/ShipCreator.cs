@@ -261,37 +261,37 @@ namespace TGC.MonoGame.TP.Ships
             if (WavePosYProa > WavePosYPopa) InclinationRadians *= -1;
             return InclinationRadians;
 
-        //public void Move(float amount)
-        //{
-        //    bIsMoving = true;
-        //    //BoundingSphere FuturePosition = new BoundingSphere(Position + FrontDirection * amount, 50);
-        //    OrientedBoundingBox FuturePosition = new OrientedBoundingBox(BoatBox.Center + FrontDirection * amount, BoatBox.Extents);
-        //    //Game.Gizmos.DrawCube(BoatOBBWorld, Color.Red);
-        //    bool willCollide = false;
-        //    for (var index = 0; index < OtherShips.Length && !willCollide; index++)
-        //    {
-        //        //if (FuturePosition.Intersects(OtherShips[index].BoatSphere))
-        //        if (FuturePosition.Intersects(OtherShips[index].BoatBox))
-        //        {
-        //            willCollide = true;
-        //            BoatVelocity = 0.0f;
-        //        }
-        //    }
+            //public void Move(float amount)
+            //{
+            //    bIsMoving = true;
+            //    //BoundingSphere FuturePosition = new BoundingSphere(Position + FrontDirection * amount, 50);
+            //    OrientedBoundingBox FuturePosition = new OrientedBoundingBox(BoatBox.Center + FrontDirection * amount, BoatBox.Extents);
+            //    //Game.Gizmos.DrawCube(BoatOBBWorld, Color.Red);
+            //    bool willCollide = false;
+            //    for (var index = 0; index < OtherShips.Length && !willCollide; index++)
+            //    {
+            //        //if (FuturePosition.Intersects(OtherShips[index].BoatSphere))
+            //        if (FuturePosition.Intersects(OtherShips[index].BoatBox))
+            //        {
+            //            willCollide = true;
+            //            BoatVelocity = 0.0f;
+            //        }
+            //    }
 
-        //    for (var index = 0; index < Game.IslandColliders.Length && !willCollide; index++)
-        //    {
-        //        if (FuturePosition.Intersects(Game.IslandColliders[index]))
-        //        {
-        //            willCollide = true;
-        //            BoatVelocity = 0.0f;
-        //        }
-        //    }
+            //    for (var index = 0; index < Game.IslandColliders.Length && !willCollide; index++)
+            //    {
+            //        if (FuturePosition.Intersects(Game.IslandColliders[index]))
+            //        {
+            //            willCollide = true;
+            //            BoatVelocity = 0.0f;
+            //        }
+            //    }
 
-        //    if (!willCollide)
-        //        Position += FrontDirection * amount;
-        //}
+            //    if (!willCollide)
+            //        Position += FrontDirection * amount;
+            //}
 
-
+        }
         public void ManageCollisions(float elapsedTime)
         {
             // Check intersection for every boat collider

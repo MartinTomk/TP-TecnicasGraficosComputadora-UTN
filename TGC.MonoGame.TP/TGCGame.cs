@@ -155,8 +155,6 @@ namespace TGC.MonoGame.TP
         //BoundingBox TestBox;
 
 
-        public BoundingSphere[] IslandColliders;
-        public BoundingBox[] WaterColliders;
 
         //BoundingBox TestBox;
         public int TiempoEntreDisparos = 0;
