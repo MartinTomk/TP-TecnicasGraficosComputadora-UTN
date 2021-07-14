@@ -616,7 +616,19 @@ namespace TGC.MonoGame.TP
                 }
             }
 
-            PlayerBoat.Update(gameTime, shotCam, lightPosition);
+            if (PlayerBoat._currentLife > 0)
+            {
+                PlayerBoat.Update(gameTime, shotCam, lightPosition);
+            }
+            else
+            {
+                Vector3 hundimiento;
+                hundimiento.X = 0;
+                hundimiento.Y = 0.2f;
+                hundimiento.Z = 0;
+                PlayerBoat.Position -= hundimiento;
+                PlayerBoat.BoatMatrix = Matrix.CreateScale(PlayerBoat.Scale) * Matrix.CreateRotationX(PlayerBoat.FrontDirection.X * (time / 10)) * Matrix.CreateRotationZ(PlayerBoat.FrontDirection.Z * (time / 10)) * Matrix.CreateTranslation(PlayerBoat.Position);
+            }
             shotCam.Update(gameTime);
             shotCam.Position = PlayerBoat.Position + new Vector3(0, CameraArm, 0) - shotCam.FrontDirection *175f;
             CubeMapCamera.Position = shotCam.Position + new Vector3(0, -30, 0);
