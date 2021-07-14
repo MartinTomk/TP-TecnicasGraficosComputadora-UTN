@@ -46,7 +46,6 @@ namespace TGC.MonoGame.TP
 
             Gizmos = new Gizmos.Gizmos();
         }
-
         public Gizmos.Gizmos Gizmos { get; }
         public SpherePrimitive DebugSphere;
         /// <summary>
@@ -199,12 +198,13 @@ namespace TGC.MonoGame.TP
         //Sonido 
         private SoundEffect Waves { get; set; }
         private SoundEffect ShipShoot { get; set; }
-
+        private SoundEffect InvencibleSound { get; set; }
         public SoundEffect Explosion { get; set; }
         private SoundEffectInstance Instance { get; set; }
         private SoundEffectInstance ShootInstance { get; set; }
         public SoundEffectInstance ExplosionInstance { get; set; }
 
+        public SoundEffectInstance InvencibleInstance { get; set; }
 
         public BoundingFrustum boundingFrustum = new BoundingFrustum(Matrix.Identity);
         // pal debuggin
@@ -439,6 +439,8 @@ namespace TGC.MonoGame.TP
             Explosion = Content.Load<SoundEffect>(ContentFolderSounds + "Explosion");
             ExplosionInstance = Explosion.CreateInstance();
 
+            InvencibleSound = Content.Load<SoundEffect>(ContentFolderSounds + "Invencible");
+            InvencibleInstance = InvencibleSound.CreateInstance();
             BulletModel = Content.Load<Model>(ContentFolder3D + "Bullets/Bullet");
 
             font = Content.Load<SpriteFont>("Fonts/Font");
@@ -509,7 +511,6 @@ namespace TGC.MonoGame.TP
             WaterEffect.Parameters["eyePosition"]?.SetValue(shotCam.Position);
 
             // Aca deberiamos poner toda la logica de actualizacion del juego.
-
             if (SM.Life > 0)
             {
                 SM.Update(gameTime, shotCam, lightPosition);
@@ -978,7 +979,7 @@ namespace TGC.MonoGame.TP
                 PlayerControlledShip.bIsApplyingMovement = true;
                 PlayerControlledShip.MoveForward(elapsedTime);
             }
-
+            
             if (keyboardState.IsKeyDown(Keys.S))
             {
                 PlayerControlledShip.bIsApplyingMovement = true;
@@ -1025,6 +1026,7 @@ namespace TGC.MonoGame.TP
                         ShootInstance.Stop();
 
                     ShootInstance.Play();
+                    ShootInstance.Volume = 0.2f;
                 }
             }
 
@@ -1037,14 +1039,22 @@ namespace TGC.MonoGame.TP
             if (keyboardState.IsKeyDown(Keys.N) && Instance.State == SoundState.Playing && Instance.Volume >= 0.03)
             {
                 Instance.Volume -= (float)0.02;
+                
             }
             if (keyboardState.IsKeyDown(Keys.G) && !godModeEnabled && !lastState.IsKeyDown(Keys.G))
             {
                 godModeEnabled = true;
+                InvencibleInstance.Play();
+                InvencibleInstance.IsLooped = true;
+                InvencibleInstance.Volume = 0.25f;
+                
+                
             }
             if (keyboardState.IsKeyDown(Keys.L) && godModeEnabled && !lastState.IsKeyDown(Keys.L))
             {
                 godModeEnabled = false;
+                InvencibleInstance.Stop();
+
             }
             lastState = keyboardState;
         }

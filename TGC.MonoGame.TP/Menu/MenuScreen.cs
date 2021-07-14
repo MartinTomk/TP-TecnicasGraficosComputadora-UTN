@@ -9,7 +9,7 @@ using Microsoft.Xna.Framework.Media;
 
 namespace TGC.MonoGame.TP.Menu
 {
-    class MenuScreen : Game
+    public class MenuScreen : Game
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
@@ -27,10 +27,11 @@ namespace TGC.MonoGame.TP.Menu
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
+            
         }
 
 
-        private Song menuMusic;
+        public Song menuMusic;
 
         /// <summary>
         /// Allows the game to perform any initialization it needs to before starting to run.
@@ -109,5 +110,6 @@ namespace TGC.MonoGame.TP.Menu
 
             base.Draw(gameTime);
         }
+
     }
-}
+    }
