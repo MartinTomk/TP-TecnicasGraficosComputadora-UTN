@@ -52,4 +52,4 @@ TGC, Tgcito  |  Coto, Matias
 
 
 ## Game Play
-[![Watch the video](https://github.com/Farabute/2021-1C-K3051-11ANCLAS/tree/master/Gameplay)
+[![Watch the video](https://youtu.be/YoLym-3A-u4)
