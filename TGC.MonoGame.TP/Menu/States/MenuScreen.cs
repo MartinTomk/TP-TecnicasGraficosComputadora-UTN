@@ -76,7 +76,6 @@ namespace TGC.MonoGame.TP.Menu.States
 
         public MenuScreen(Game game, GraphicsDeviceManager graphics, ContentManager content): base(game, graphics, content)
         {
-            
 
             menuCam = new StaticCamera(graphics.GraphicsDevice.Viewport.AspectRatio, new Vector3(0,100,0), new Vector3(0, 0, 1), new Vector3(0, 1, 0));
             menuCam.FarPlane = 50000;
@@ -88,12 +87,11 @@ namespace TGC.MonoGame.TP.Menu.States
             ShipNormalTexture = game.Content.Load<Texture2D>(TGCGame.ContentFolderTextures + "Botes/T_Patrol_Ship_1K_Normal");
 
             ShipEffect.Parameters["ambientColor"]?.SetValue(new Vector3(0.6f, 0.6f, 0.6f));
-            //ShipEffect.Parameters["diffuseColor"]?.SetValue(new Vector3(0f, 0.25f, 0.48f));
             ShipEffect.Parameters["specularColor"]?.SetValue(new Vector3(0.98f, 0.98f, 0.98f));
             ShipEffect.Parameters["KAmbient"]?.SetValue(0.6f);
             ShipEffect.Parameters["KDiffuse"]?.SetValue(5f);
             ShipEffect.Parameters["KSpecular"]?.SetValue(.3f);
-            ShipEffect.Parameters["shininess"]?.SetValue(5f);
+            ShipEffect.Parameters["shininess"]?.SetValue(10f);
 
             shipMatrix = Matrix.Identity * Matrix.CreateRotationY(4.1f) * Matrix.CreateTranslation(-1200, -200, 2800);
 
@@ -126,7 +124,6 @@ namespace TGC.MonoGame.TP.Menu.States
             WaterEffect.Parameters["eyePosition"]?.SetValue(menuCam.Position);
 
             background = _content.Load<Texture2D>("Textures/Menu/Presentacion_IM");
-            //Title = _content.Load<Texture2D>("Background/Titulo");
             BGInstructions = _content.Load<Texture2D>("Textures/Menu/MenuBG");
             BGControls = _content.Load<Texture2D>("Textures/Menu/controlesBG");
 
@@ -134,7 +131,7 @@ namespace TGC.MonoGame.TP.Menu.States
             buttonFont = _content.Load<SpriteFont>("Fonts/Font");
             montserratFont = _content.Load<SpriteFont>("Fonts/monserrat22");
 
-            MenuPos = new Vector2((graphics.GraphicsDevice.Viewport.Width / 2) - buttonWidth / 2, graphics.GraphicsDevice.Viewport.Height - 150);
+            MenuPos = new Vector2((_game.GraphicsDevice.Viewport.Width / 2) - buttonWidth / 2, _game.GraphicsDevice.Viewport.Height - 150);
 
             menuButton = new Button(buttonTexture, montserratFont, true)
             {
@@ -144,34 +141,33 @@ namespace TGC.MonoGame.TP.Menu.States
 
             menuButton.Click += MenuButton_Click;
 
-            
-
-            //private Vector2 JugarPos;
-            //private Vector2 VolverPos;
-            //private Vector2 ControlesPos;
-            //private Vector2 SalirPos;
+            JugarPos = new Vector2(50, 50);
 
             newGameButton = new Button(buttonTexture, montserratFont, true)
             {
-                Position = new Vector2(120, 80),
+                Position = JugarPos,
                 Text = "Jugar",
             };
 
             newGameButton.Click += NewGameButton_Click;
             newGameButton.visible = false;
 
+            ControlesPos = new Vector2(50 + buttonWidth + 50, 50);
+
             controlsButton = new Button(buttonTexture, montserratFont, true)
             {
-                Position = new Vector2(320, 80),
+                Position = ControlesPos,
                 Text = "Controles",
             };
 
             controlsButton.Click += controlsButton_Click;
             controlsButton.visible = false;
 
+            VolverPos = new Vector2(_game.GraphicsDevice.Viewport.Width - 2 * buttonWidth - 100, _game.GraphicsDevice.Viewport.Height - buttonHeight - 50);
+
             goBackButton = new Button(buttonTexture, montserratFont, false)
             {
-                Position = new Vector2(800, 600),
+                Position = VolverPos,
                 Text = "Volver",
             };
             
@@ -228,6 +224,7 @@ namespace TGC.MonoGame.TP.Menu.States
 
                 case ST_PRESENTACION:
                     spriteBatch.Draw(background, new Rectangle(0,0,_game.GraphicsDevice.Viewport.Width, _game.GraphicsDevice.Viewport.Height), Color.White);
+                    menuButton.Position = new Vector2((_game.GraphicsDevice.Viewport.Width / 2) - buttonWidth / 2, _game.GraphicsDevice.Viewport.Height - 150);
                     break;
                 case ST_MENU:
                     spriteBatch.GraphicsDevice.BlendState = BlendState.Opaque;
@@ -262,19 +259,27 @@ namespace TGC.MonoGame.TP.Menu.States
                     newGameButton.visible = true;
                     quitGameButton.visible = true;
                     controlsButton.visible = true;
+                    quitGameButton.Position = new Vector2(_game.GraphicsDevice.Viewport.Width - buttonWidth - 50, _game.GraphicsDevice.Viewport.Height - buttonHeight - 50);
                     break;
                 case ST_CONTROLS:
-                    spriteBatch.Draw(BGControls, Vector2.Zero, Color.White);
+                    spriteBatch.Draw(BGControls, new Rectangle(0, 0, _game.GraphicsDevice.Viewport.Width, _game.GraphicsDevice.Viewport.Height), Color.White);
                     goBackButton.visible = true;
                     quitGameButton.visible = true;
+                    quitGameButton.Position = new Vector2(_game.GraphicsDevice.Viewport.Width - buttonWidth - 50, _game.GraphicsDevice.Viewport.Height - buttonHeight - 50);
+                    goBackButton.Position = new Vector2(_game.GraphicsDevice.Viewport.Width - 2 * buttonWidth - 100, _game.GraphicsDevice.Viewport.Height - buttonHeight - 50);
+
 
                     spriteBatch.DrawString(montserratFont, $"Movimiento del barco:\n" +
                                 $"\n" +
                                 $"      W: Mover hacia adelante\n" +
                                 $"      A: Rotar hacia la izquierda\n" +
                                 $"      S: Mover hacia atras\n" +
-                                $"      D: Rotar hacia la derecha\n" +
-                                $"\n", new Vector2(400, 100), Color.White);
+                                $"      D: Rotar hacia la derecha\n\n\n" +
+                                $"Extras:\n" +
+                                $"\n" +
+                                $"      R: Night Vision\n" +
+                                $"      G: God Mode\n" +
+                                $"\n", new Vector2(_game.GraphicsDevice.Viewport.Width / 3, 100), Color.White);
 
                     spriteBatch.DrawString(montserratFont, $"Movilidad de la mira:\n" +
                                 $"\n" +
@@ -285,13 +290,12 @@ namespace TGC.MonoGame.TP.Menu.States
                                 $"\n" +
                                 $"      N: Bajar el volumen\n" +
                                 $"      M: Subir el volumen\n" +
-                                $"\n", new Vector2(760, 100), Color.White);
+                                $"\n", new Vector2(3 * _game.GraphicsDevice.Viewport.Width / 5, 100), Color.White);
 
                     break;
             }
 
-            menuButton.Position = new Vector2((_game.GraphicsDevice.Viewport.Width / 2) - buttonWidth / 2, _game.GraphicsDevice.Viewport.Height - 150);
-            quitGameButton.Position = new Vector2(_game.GraphicsDevice.Viewport.Width - buttonWidth - 50, _game.GraphicsDevice.Viewport.Height - buttonHeight - 50);
+
 
             foreach (Button button in _ButtonsMainMenu)
                 button.Draw(gameTime, spriteBatch);

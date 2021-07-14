@@ -48,6 +48,7 @@ namespace TGC.MonoGame.TP.Menu
             Window.AllowUserResizing = true;
             graphics.PreferredBackBufferWidth = 1280;
             graphics.PreferredBackBufferHeight = 720;
+            //graphics.IsFullScreen = true;
             graphics.ApplyChanges();
             base.Initialize();
         }
@@ -77,6 +78,7 @@ namespace TGC.MonoGame.TP.Menu
         /// </summary>
         protected override void UnloadContent()
         {
+            base.UnloadContent();
             // TODO: Unload any non ContentManager content here
         }
 

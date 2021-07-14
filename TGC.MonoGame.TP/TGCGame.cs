@@ -207,6 +207,8 @@ namespace TGC.MonoGame.TP
         public SoundEffectInstance InvencibleInstance { get; set; }
 
         public BoundingFrustum boundingFrustum = new BoundingFrustum(Matrix.Identity);
+
+
         // pal debuggin
         //SpriteBatch spriteBatch;
         //SpriteFont font;
@@ -240,6 +242,9 @@ namespace TGC.MonoGame.TP
             CameraArm = 40.0f;
             shotCam = new BoatCamera(GraphicsDevice.Viewport.AspectRatio, new Vector3(0, CameraArm, 440), screenSize);
 
+            Window.AllowUserResizing = true;
+
+            //Graphics.IsFullScreen = true;
             Graphics.PreferredBackBufferWidth = 1280;
             Graphics.PreferredBackBufferHeight = 720;
             Graphics.ApplyChanges();
@@ -275,13 +280,12 @@ namespace TGC.MonoGame.TP
             // Aca es donde deberiamos cargar todos los contenido necesarios antes de iniciar el juego.
             SpriteBatch = new SpriteBatch(GraphicsDevice);
 
+
             //TODO: use this.Content to load your game content here
 
             //Gizmos.LoadContent(GraphicsDevice, this.Content);
             Gizmos.LoadContent(GraphicsDevice, Content);
-            DebugSphere = new SpherePrimitive(GraphicsDevice, 1);
-
-
+            //DebugSphere = new SpherePrimitive(GraphicsDevice, 1);
 
             // Cargo el modelos /// ISLA ///
             ModelIsland = Content.Load<Model>(ContentFolder3D + "Island/isla_volcan1");
@@ -401,14 +405,6 @@ namespace TGC.MonoGame.TP
                 new BoundingSphere(MatrixRock4.Translation, radius), new BoundingSphere(MatrixRock5.Translation, radius), new BoundingSphere(MatrixRock6.Translation, radius),
                 new BoundingSphere(MatrixRock7.Translation, radius),
             };
-
-            /*
-            WaterColliders = new BoundingBox[1601];
-            int offset = 20;
-            for (int i = -offset; i < offset; i++)
-                for (int j = -offset; j < offset; j++)
-                    WaterColliders[i+j + (2 * offset)] = new BoundingBox(new Vector3(i * 200, 0, j * 200), new Vector3(10f, 10f, 10f));
-            */
 
             SkyDomeModel = Content.Load<Model>(ContentFolder3D + "Skydome/SkyDome");
             SkyDomeTexture = Content.Load<Texture2D>(ContentFolder3D + "Skydome/Sky");
@@ -619,6 +615,12 @@ namespace TGC.MonoGame.TP
                 Instance.Play();
                 Instance.Volume = (float)0.45;
             }
+
+            //if (PlayerControlledShip._currentLife < 1)
+            //{
+            //    Dispose();
+            //}
+
             base.Update(gameTime);
 
         }
@@ -839,12 +841,15 @@ namespace TGC.MonoGame.TP
                 dropsEffect.Parameters["baseTexture"]?.SetValue(SceneRenderTarget);
                 FullScreenQuad.Draw(dropsEffect);
                 Gizmos.DrawFrustum(shotCam.View * shotCam.Projection);
+
             }
 
             #endregion
 
             _ui.Draw();
-            Gizmos.Draw();
+
+
+            //wGizmos.Draw();
             base.Draw(gameTime);
         }
 

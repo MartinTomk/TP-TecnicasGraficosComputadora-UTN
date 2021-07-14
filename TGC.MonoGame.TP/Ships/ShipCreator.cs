@@ -124,18 +124,6 @@ namespace TGC.MonoGame.TP.Ships
             ShipEffect.Parameters["normalTexture"]?.SetValue(ShipNormalTexture);
             DrawModel(ShipModel, BoatMatrix, ShipEffect, cam);
             Game.Gizmos.DrawSphere(BoatSphere.Center, Vector3.One * BoatSphere.Radius, bIsColliding ? Color.Red : Color.Green);
-            //Game.Gizmos.DrawCube(BoatOBBWorld, bIsColliding ? Color.Red : Color.Green);
-            //Game.Gizmos.DrawCube((TempBoatBox.Max + TempBoatBox.Min) / 2f, TempBoatBox.Max - TempBoatBox.Min, bIsColliding ? Color.Red : Color.Green);
-
-            //var box = BoatBox2;
-            //var center = BoatBox.Center;
-            //var extents = BoundingVolumesExtensions.GetExtents(box);
-            //Game.Gizmos.DrawCube(center, extents * 2f, Color.Red);
-
-            //Game.Gizmos.DrawSphere(Position, Vector3.One * 50.0f, Color.Red);
-            //DebugSphere.Draw(Matrix.Identity * Matrix.CreateScale(50f) * Matrix.CreateTranslation(BoatBox.Center), Game.CurrentCamera.View, Game.CurrentCamera.Projection);
-            //DebugSphere.Draw(Matrix.Identity * Matrix.CreateTranslation(ProaPos), Game.CurrentCamera.View, Game.CurrentCamera.Projection);
-            //DebugSphere.Draw(Matrix.Identity * Matrix.CreateTranslation(PopaPos), Game.CurrentCamera.View, Game.CurrentCamera.Projection);
         }
 
         private void DrawModel(Model geometry, Matrix transform, Effect effect, Camera cam)
@@ -146,8 +134,6 @@ namespace TGC.MonoGame.TP.Ships
                 effect.Parameters["InverseTransposeWorld"]?.SetValue(Matrix.Transpose(Matrix.Invert(transform)));
                 effect.Parameters["WorldViewProjection"]?.SetValue(transform * cam.View * cam.Projection);
 
-                //effect.Parameters["View"].SetValue(cam.View);
-                //effect.Parameters["Projection"].SetValue(cam.Projection);
                 foreach (var meshPart in mesh.MeshParts)
                     meshPart.Effect = effect;
                 mesh.Draw();
@@ -173,12 +159,6 @@ namespace TGC.MonoGame.TP.Ships
             float WavePosY = (ProaPos.Y + PopaPos.Y) / 2;
             Vector3 InclinationAxis = Vector3.Cross(Vector3.Up, FrontDirection);
 
-
-            // TempBoatBox es una BoundingBox que se modifica en las funciones de movimiento
-            //BoatBox = new OrientedBoundingBox(BoundingVolumesExtensions.GetCenter(TempBoatBox), BoundingVolumesExtensions.GetExtents(TempBoatBox));
-            //BoatBox.Rotate(Matrix.CreateRotationY(RotationRadians));
-            // Create an OBB World-matrix so we can draw a cube representing it
-            //BoatOBBWorld = Matrix.CreateScale(BoatBox.Extents * 2f) * BoatBox.Orientation * Matrix.CreateTranslation(Position);
 
             ManageCollisions(elapsedTime);
 
@@ -248,36 +228,6 @@ namespace TGC.MonoGame.TP.Ships
             float InclinationRadians = (float)Math.Acos(DotProductInclinationRotation);
             if (WavePosYProa > WavePosYPopa) InclinationRadians *= -1;
             return InclinationRadians;
-
-            //public void Move(float amount)
-            //{
-            //    bIsMoving = true;
-            //    //BoundingSphere FuturePosition = new BoundingSphere(Position + FrontDirection * amount, 50);
-            //    OrientedBoundingBox FuturePosition = new OrientedBoundingBox(BoatBox.Center + FrontDirection * amount, BoatBox.Extents);
-            //    //Game.Gizmos.DrawCube(BoatOBBWorld, Color.Red);
-            //    bool willCollide = false;
-            //    for (var index = 0; index < OtherShips.Length && !willCollide; index++)
-            //    {
-            //        //if (FuturePosition.Intersects(OtherShips[index].BoatSphere))
-            //        if (FuturePosition.Intersects(OtherShips[index].BoatBox))
-            //        {
-            //            willCollide = true;
-            //            BoatVelocity = 0.0f;
-            //        }
-            //    }
-
-            //    for (var index = 0; index < Game.IslandColliders.Length && !willCollide; index++)
-            //    {
-            //        if (FuturePosition.Intersects(Game.IslandColliders[index]))
-            //        {
-            //            willCollide = true;
-            //            BoatVelocity = 0.0f;
-            //        }
-            //    }
-
-            //    if (!willCollide)
-            //        Position += FrontDirection * amount;
-            //}
 
         }
         public void ManageCollisions(float elapsedTime)

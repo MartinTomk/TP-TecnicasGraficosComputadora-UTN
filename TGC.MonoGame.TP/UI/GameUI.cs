@@ -21,6 +21,7 @@ namespace TGC.MonoGame.TP.UI
         private Rectangle spriteRectangle;
         private Vector2 spriteOrigin;
         private Vector2 textPos;
+        private Texture2D gameOver;
 
 
         public GameUI(TGCGame game)
@@ -34,7 +35,10 @@ namespace TGC.MonoGame.TP.UI
             bote = _game.Content.Load<Texture2D>("Textures/Menu/bote");
             mira = _game.Content.Load<Texture2D>("Textures/Menu/mira");
             _font = _game.Content.Load<SpriteFont>("Fonts/bebas");
+
+            gameOver = _game.Content.Load<Texture2D>("Textures/gameover_0000");
         }
+
 
         public void Draw()
         {
@@ -52,7 +56,7 @@ namespace TGC.MonoGame.TP.UI
             //_game.spriteBatch.Draw(hudBG, new Vector2(10, 10), Color.White);
             _game.spriteBatch.Draw(hudBG, new Vector2(10, 10), null, Color.White, 0f, Vector2.Zero, 0.8f, SpriteEffects.None, 0f);
 
-            _game.spriteBatch.Draw(hudScore, new Vector2(950, 10), null, Color.White, 0f, Vector2.Zero, 0.8f, SpriteEffects.None, 0f);
+            _game.spriteBatch.Draw(hudScore, new Vector2(_game.GraphicsDevice.Viewport.Width - 408 * 0.8f, 10), null, Color.White, 0f, Vector2.Zero, 0.8f, SpriteEffects.None, 0f);
 
 
             for (int i = 0; i < _game.PlayerControlledShip._currentLife; i++)
@@ -64,13 +68,13 @@ namespace TGC.MonoGame.TP.UI
             spriteRectangle = new Rectangle(10, 380, mira.Width, mira.Height);
             spriteOrigin = new Vector2(mira.Width / 2, mira.Height / 2);
 
-            _game.spriteBatch.Draw(mira, new Vector2(178, 545), null, Color.White, _game.PlayerControlledShip.RotationRadians, spriteOrigin, 0.8f, SpriteEffects.None, 0f);
-            _game.spriteBatch.Draw(bote, new Vector2(122, 430), null, Color.White, 0f, Vector2.Zero, 0.8f, SpriteEffects.None, 0f);
+            _game.spriteBatch.Draw(mira, new Vector2(178, _game.GraphicsDevice.Viewport.Height - 180), null, Color.White, _game.PlayerControlledShip.RotationRadians, spriteOrigin, 0.8f, SpriteEffects.None, 0f);
+            _game.spriteBatch.Draw(bote, new Vector2(122, _game.GraphicsDevice.Viewport.Height - 295), null, Color.White, 0f, Vector2.Zero, 0.8f, SpriteEffects.None, 0f);
 
 
-            _game.spriteBatch.DrawString(_font, textScore, new Vector2(972, 48), Color.LightBlue, 0f, Vector2.Zero, 0.6f, SpriteEffects.None, 0f);
+            _game.spriteBatch.DrawString(_font, textScore, new Vector2(_game.GraphicsDevice.Viewport.Width - 300, 48), Color.LightBlue, 0f, Vector2.Zero, 0.6f, SpriteEffects.None, 0f);
 
-            _game.spriteBatch.DrawString(_font, textSpeed, new Vector2(30, 650), Color.White, 0f, Vector2.Zero, 0.6f, SpriteEffects.None, 0f);
+            _game.spriteBatch.DrawString(_font, textSpeed, new Vector2(30, _game.GraphicsDevice.Viewport.Height - 80), Color.White, 0f, Vector2.Zero, 0.6f, SpriteEffects.None, 0f);
 
             textPos = new Vector2(50, 30);
 
@@ -78,6 +82,12 @@ namespace TGC.MonoGame.TP.UI
                 textPos.X = 65;
             
             _game.spriteBatch.DrawString(_font, bullets, textPos, Color.LightBlue);
+
+            if(_game.PlayerControlledShip._currentLife < 1)
+            {
+                _game.spriteBatch.Draw(gameOver, new Vector2(_game.GraphicsDevice.Viewport.Width / 2 - 1752 / 2 * 0.6f, _game.GraphicsDevice.Viewport.Height / 2 - 378 / 2 * 0.6f), null, Color.White, 0f, Vector2.Zero, 0.6f, SpriteEffects.None, 0f);
+                _game.PlayerControlledShip.playerMode = false;
+            }
 
             _game.spriteBatch.End();
         }
