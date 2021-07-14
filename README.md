@@ -43,4 +43,4 @@ TGC, Tgcito  |  Apellido, Nombre
 ![screenshot5](https://github.com/tgc-utn/tgc-monogame-tp/blob/master/TGC.MonoGame.TP/Icon.bmp)
 
 ## Game Play
-[![Watch the video](https://img.youtube.com/vi/pgEwUC0jvH4/0.jpg)](https://www.youtube.com/playlist?list=PLRM4L32DjvnazuMl8wZlbpEYL5Qh63ulG)
+[![Watch the video](https://drive.google.com/file/d/1vsHkdqCxdsoaaHrROyc_lOKCEzhh1ibq/view?usp=sharingjpg)](https://drive.google.com/file/d/1BOASnM5jx78OqS4d3hYwECk0QM84frFS/view?usp=sharing)
