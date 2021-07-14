@@ -31,7 +31,15 @@ Afuera del mundo Windows, vas a necesitar la ayudar de [Wine](https://www.winehq
 Los recursos usados se almacenan utilizando [Git LFS](https://git-lfs.github.com), con lo cual antes de clonar el repositorio les conviene tenerlo instalado así es automático el pull o si ya lo tienen pueden hacer ```git lfs pull```.
 
 ## Integrantes
-TGC, Tgcito  |  Apellido, Nombre
+TGC, Tgcito  |  Antico, Mariano
+------------ | -------------
+<img src="https://github.com/tgc-utn/tgc-utn.github.io/blob/master/images/robotgc.png" height="500"> | <img src="https://github.com/tgc-utn/tgc-utn.github.io/blob/master/images/trofeotp.png" height="500">
+
+TGC, Tgcito  |  Tomkinson, Martin
+------------ | -------------
+<img src="https://github.com/tgc-utn/tgc-utn.github.io/blob/master/images/robotgc.png" height="500"> | <img src="https://github.com/tgc-utn/tgc-utn.github.io/blob/master/images/trofeotp.png" height="500">
+
+TGC, Tgcito  |  Coto, Matias
 ------------ | -------------
 <img src="https://github.com/tgc-utn/tgc-utn.github.io/blob/master/images/robotgc.png" height="500"> | <img src="https://github.com/tgc-utn/tgc-utn.github.io/blob/master/images/trofeotp.png" height="500">
 
@@ -44,4 +52,4 @@ TGC, Tgcito  |  Apellido, Nombre
 
 
 ## Game Play
-[![Watch the video]](https://youtu.be/YoLym-3A-u4)
+[![Watch the video](https://github.com/Farabute/2021-1C-K3051-11ANCLAS/tree/master/Gameplay)
