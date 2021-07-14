@@ -104,8 +104,8 @@ namespace TGC.MonoGame.TP.Ships
             ShipEffect.Parameters["specularColor"]?.SetValue(new Vector3(0.98f, 0.98f, 0.98f));
             ShipEffect.Parameters["KAmbient"]?.SetValue(0.6f);
             ShipEffect.Parameters["KDiffuse"]?.SetValue(1f);
-            ShipEffect.Parameters["KSpecular"]?.SetValue(.3f);
-            ShipEffect.Parameters["shininess"]?.SetValue(5f);
+            ShipEffect.Parameters["KSpecular"]?.SetValue(10f);
+            ShipEffect.Parameters["shininess"]?.SetValue(32f);
 
             BoatSphere = new BoundingSphere(Position, 50);
 
