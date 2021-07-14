@@ -81,9 +81,11 @@ namespace TGC.MonoGame.TP
         private Model ModelRock5 { get; set; }
         private Effect IslandMiscEffect { get; set; }
 
+
         private Model ModelPiso { get; set; }
         private Effect PisoEffect { get; set; }
         public Texture2D PisoTexture;
+
 
         public Texture2D IslandTexture;
         public Texture2D IslandMiscTexture;
@@ -105,7 +107,9 @@ namespace TGC.MonoGame.TP
         Matrix MatrixRock5;
         Matrix MatrixRock6;
         Matrix MatrixRock7;
+
         Matrix MatrixPiso;
+
 
 
         /// <summary>
@@ -144,11 +148,16 @@ namespace TGC.MonoGame.TP
 
         BoundingSphere IslandSphere;
 
+
         public BoundingSphere[] IslandColliders;
         public BoundingBox[] WaterColliders;
 
         //BoundingBox TestBox;
 
+        public bool godModeEnabled = false;
+
+        //BoundingBox TestBox;
+        public int TiempoEntreDisparos = 0;
         // Iluminacion
         private Effect LightEffect { get; set; }
         private Matrix LightBoxWorld { get; set; } = Matrix.Identity;
@@ -170,7 +179,7 @@ namespace TGC.MonoGame.TP
 
         public SpriteBatch spriteBatch;
         public SpriteFont font;
-
+        public KeyboardState lastState;
 
         // OVERLAY GOTAS //
         private Texture2D dropsTexture { get; set; }
@@ -190,8 +199,12 @@ namespace TGC.MonoGame.TP
         //Sonido 
         private SoundEffect Waves { get; set; }
         private SoundEffect ShipShoot { get; set; }
+
+        public SoundEffect Explosion { get; set; }
         private SoundEffectInstance Instance { get; set; }
         private SoundEffectInstance ShootInstance { get; set; }
+        public SoundEffectInstance ExplosionInstance { get; set; }
+
 
         public BoundingFrustum boundingFrustum = new BoundingFrustum(Matrix.Identity);
         // pal debuggin
@@ -263,7 +276,12 @@ namespace TGC.MonoGame.TP
             SpriteBatch = new SpriteBatch(GraphicsDevice);
 
             //TODO: use this.Content to load your game content here
+
+            //Gizmos.LoadContent(GraphicsDevice, this.Content);
             Gizmos.LoadContent(GraphicsDevice, Content);
+            DebugSphere = new SpherePrimitive(GraphicsDevice, 1);
+
+
 
             // Cargo el modelos /// ISLA ///
             ModelIsland = Content.Load<Model>(ContentFolder3D + "Island/isla_volcan1");
@@ -335,7 +353,9 @@ namespace TGC.MonoGame.TP
             MatrixRock5 = Matrix.CreateScale(0.2f) * Matrix.CreateTranslation(100, -10, -780);
             MatrixRock6 = Matrix.CreateScale(0.18f) * Matrix.CreateRotationY(2.5f) * Matrix.CreateTranslation(530, -10, 780);
             MatrixRock7 = Matrix.CreateScale(0.2f) * Matrix.CreateRotationY(4f) * Matrix.CreateTranslation(1050, -10, 300);
+
             MatrixPiso = Matrix.CreateScale(100f) * Matrix.CreateTranslation(0, -200, 0);
+
 
 
             //// BOTES ////
@@ -416,11 +436,15 @@ namespace TGC.MonoGame.TP
             ShootInstance = ShipShoot.CreateInstance();
             Instance = Waves.CreateInstance();
 
+            Explosion = Content.Load<SoundEffect>(ContentFolderSounds + "Explosion");
+            ExplosionInstance = Explosion.CreateInstance();
+
             BulletModel = Content.Load<Model>(ContentFolder3D + "Bullets/Bullet");
 
             font = Content.Load<SpriteFont>("Fonts/Font");
 
             // OVERLAY GOTAS //
+
 
             dropsTexture = Content.Load<Texture2D>(ContentFolderTextures + "Dirty");
             dropsTexture2 = Content.Load<Texture2D>(ContentFolderTextures + "Smudgy");
@@ -437,6 +461,7 @@ namespace TGC.MonoGame.TP
             SceneRenderTarget = new RenderTarget2D(GraphicsDevice, GraphicsDevice.Viewport.Width,
                 GraphicsDevice.Viewport.Height, false, SurfaceFormat.Color, DepthFormat.Depth24, 0,
                 RenderTargetUsage.DiscardContents);
+
 
             ScreenRenderTarget = new RenderTarget2D(GraphicsDevice, GraphicsDevice.Viewport.Width,
                 GraphicsDevice.Viewport.Height, false, SurfaceFormat.Color, DepthFormat.None, 0,
@@ -459,6 +484,7 @@ namespace TGC.MonoGame.TP
         {
             var elapsedTime = Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds);
             ProcessKeyboard(elapsedTime);
+            TiempoEntreDisparos++;
 
             boundingFrustum.Matrix = shotCam.View * shotCam.Projection;
 
@@ -483,10 +509,98 @@ namespace TGC.MonoGame.TP
             WaterEffect.Parameters["eyePosition"]?.SetValue(shotCam.Position);
 
             // Aca deberiamos poner toda la logica de actualizacion del juego.
-            SM.Update(gameTime, shotCam, lightPosition);
-            Patrol.Update(gameTime, shotCam, lightPosition);
-            Cruiser.Update(gameTime, shotCam, lightPosition);
-            Barquito.Update(gameTime, shotCam, lightPosition);
+
+            if (SM.Life > 0)
+            {
+                SM.Update(gameTime, shotCam, lightPosition);
+                Bullet.Bullet bullet = PoolBullets.Find(b => b._available);
+                if (bullet != null && (TiempoEntreDisparos % 500 == 0))
+                {
+
+                    dispararAlJugador(SM, bullet);
+                }
+            }
+            else
+            {
+                Vector3 hundimiento;
+                hundimiento.X = 0;
+                hundimiento.Y = 0.2f;
+                hundimiento.Z = 0;
+                SM.Position -= hundimiento;
+                SM.BoatMatrix = Matrix.CreateScale(SM.Scale) * Matrix.CreateRotationX(SM.FrontDirection.X * (time / 10)) * Matrix.CreateRotationZ(SM.FrontDirection.Z * (time / 10)) * Matrix.CreateTranslation(SM.Position);
+                if (SM.Position.Y <= -200)
+                {
+                    SM.BoatMatrix = Matrix.CreateTranslation(800f, 0.01f, 500f) * Matrix.CreateScale(SM.Scale);
+                    SM.Life = 100;
+                }
+            }
+            if (Patrol.Life > 0)
+            {
+                Patrol.Update(gameTime, shotCam, lightPosition);
+
+                Bullet.Bullet bullet = PoolBullets.Find(b => b._available);
+                if (bullet != null && (TiempoEntreDisparos % 275 == 0))
+                {
+                    dispararAlJugador(Patrol, bullet);
+                }
+            }
+            else
+            {
+                Vector3 hundimiento;
+                hundimiento.X = 0;
+                hundimiento.Y = 0.2f;
+                hundimiento.Z = 0;
+                Patrol.Position -= hundimiento;
+                Patrol.BoatMatrix = Matrix.CreateScale(Patrol.Scale) * Matrix.CreateRotationX(Patrol.FrontDirection.X * (time / 10)) * Matrix.CreateRotationZ(Patrol.FrontDirection.Z * (time / 10)) * Matrix.CreateTranslation(Patrol.Position);
+                if (Patrol.Position.Y <= -200)
+                {
+                    Patrol.BoatMatrix = Matrix.CreateTranslation(1000f, 0.01f, 400f) * Matrix.CreateScale(Patrol.Scale);
+                    Patrol.Life = 100;
+                }
+            }
+            if (Barquito.Life > 0)
+            {
+                Barquito.Update(gameTime, shotCam, lightPosition);
+            }
+            else
+            {
+                Vector3 hundimiento;
+                hundimiento.X = 0;
+                hundimiento.Y = 0.2f;
+                hundimiento.Z = 0;
+                Barquito.Position -= hundimiento;
+                Barquito.BoatMatrix = Matrix.CreateScale(Barquito.Scale) * Matrix.CreateRotationX(Barquito.FrontDirection.X * (time / 10)) * Matrix.CreateRotationZ(Barquito.FrontDirection.Z * (time / 10)) * Matrix.CreateTranslation(Barquito.Position);
+                if (Barquito.Position.Y <= -200)
+                {
+                    Barquito.BoatMatrix = Matrix.CreateTranslation(-800f, 0.01f, 1000f) * Matrix.CreateScale(Barquito.Scale);
+                    Barquito.Life = 100;
+                }
+            }
+            if (Cruiser.Life > 0)
+            {
+                Cruiser.Update(gameTime, shotCam, lightPosition);
+                Bullet.Bullet bullet = PoolBullets.Find(b => b._available);
+                if (bullet != null && (TiempoEntreDisparos % 600 == 0))
+                {
+                    dispararAlJugador(Cruiser, bullet);
+                }
+
+            }
+            else
+            {
+                Vector3 hundimiento;
+                hundimiento.X = 0;
+                hundimiento.Y = 0.2f;
+                hundimiento.Z = 0;
+                Cruiser.Position -= hundimiento;
+                Cruiser.BoatMatrix = Matrix.CreateScale(Cruiser.Scale) * Matrix.CreateRotationX(Cruiser.FrontDirection.X * (time / 10)) * Matrix.CreateRotationZ(Cruiser.FrontDirection.Z * (time / 10)) * Matrix.CreateTranslation(Cruiser.Position);
+                if (Cruiser.Position.Y <= -200)
+                {
+                    Cruiser.BoatMatrix = Matrix.CreateTranslation(1000f, 0.01f, 1000f) * Matrix.CreateScale(Cruiser.Scale);
+                    Cruiser.Life = 100;
+                }
+            }
+
             PlayerBoat.Update(gameTime, shotCam, lightPosition);
             shotCam.Update(gameTime);
             shotCam.Position = PlayerBoat.Position + new Vector3(0, CameraArm, 0) - shotCam.FrontDirection *175f;
@@ -593,7 +707,6 @@ namespace TGC.MonoGame.TP
             GraphicsDevice.SetRenderTarget(SceneRenderTarget);
             GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.CornflowerBlue, 1f, 0);
 
-
             // Para dibujar le modelo necesitamos pasarle informacion que el efecto esta esperando.
             IslandEffect.Parameters["ModelTexture"].SetValue(IslandTexture);
             LightEffect.Parameters["baseTexture"].SetValue(IslandTexture);
@@ -617,6 +730,7 @@ namespace TGC.MonoGame.TP
             LightEffect.Parameters["baseTexture"].SetValue(IslandMiscTexture);
             DrawModelLight(ModelIsland2, MatrixIsland4, LightEffect, shotCam);
             DrawModelLight(ModelIsland3, MatrixIsland5, LightEffect, shotCam);
+
 
 
             DrawModelLight(ModelPalm1, Matrix.CreateScale(0.08f) * Matrix.CreateTranslation(60, 10, 280), LightEffect, shotCam);
@@ -653,6 +767,7 @@ namespace TGC.MonoGame.TP
             }
 
             spriteBatch.GraphicsDevice.BlendState = BlendState.AlphaBlend;
+
             // Set up our Effect to draw the water
             WaterEffect.Parameters["baseTexture"]?.SetValue(WaterTexture);
             WaterEffect.Parameters["foamTexture"]?.SetValue(WaterFoamTexture);
@@ -676,7 +791,14 @@ namespace TGC.MonoGame.TP
                     DrawModel(ModelWater, MatrixWater, WaterEffect, shotCam);
                 }
 
+
             spriteBatch.GraphicsDevice.BlendState = BlendState.Opaque;
+
+
+            //Gizmos.DrawSphere(collider.Center, collider.Radius * 10 * Vector3.One, Color.Yellow);
+            //Gizmos.DrawFrustum(shotCam.Projection);
+            //Gizmos.DrawCube(Matrix.Identity * 100000f, Color.Green);
+            //DebugSphere.Draw(Matrix.Identity * Matrix.CreateTranslation(ProaPos), Game.CurrentCamera.View, Game.CurrentCamera.Projection);
 
             foreach (BoundingSphere collider in IslandColliders)
                 Gizmos.DrawSphere(collider.Center, collider.Radius * Vector3.One);
@@ -694,6 +816,7 @@ namespace TGC.MonoGame.TP
             // No depth needed
             GraphicsDevice.DepthStencilState = DepthStencilState.None;
             // Set the render target to null, we are drawing to the screen
+
 
             var keyboardState = Keyboard.GetState();
             if (keyboardState.IsKeyDown(Keys.R))
@@ -874,7 +997,6 @@ namespace TGC.MonoGame.TP
             }
 
             var mouseState = Mouse.GetState();
-
             if (mouseState.LeftButton.Equals(ButtonState.Pressed) &&
                 lastMouseState.LeftButton.Equals(ButtonState.Released))
             {
@@ -882,9 +1004,13 @@ namespace TGC.MonoGame.TP
 
                 if (bullet != null)
                 {
-                    Vector3 direccionProa = Vector3.Normalize(PlayerBoat.ProaPos);
 
-                    bullet.Init(this, direccionProa);
+                    Vector3 offset = PlayerBoat.Position;
+                    offset.Y += 20f;
+                    Vector3 correccionPitch = shotCam.FrontDirection;
+                    correccionPitch.Y += 0.2f;
+                    bullet.Init(this, offset, correccionPitch, PlayerBoat);
+
 
                     bullet._available = false;
 
@@ -892,7 +1018,7 @@ namespace TGC.MonoGame.TP
 
                     if (ShootInstance.State == SoundState.Playing)
                         ShootInstance.Stop();
-                    
+
                     ShootInstance.Play();
                 }
             }
@@ -907,6 +1033,34 @@ namespace TGC.MonoGame.TP
             {
                 Instance.Volume -= (float)0.02;
             }
+            if (keyboardState.IsKeyDown(Keys.G) && !godModeEnabled && !lastState.IsKeyDown(Keys.G))
+            {
+                godModeEnabled = true;
+            }
+            if (keyboardState.IsKeyDown(Keys.L) && godModeEnabled && !lastState.IsKeyDown(Keys.L))
+            {
+                godModeEnabled = false;
+            }
+            lastState = keyboardState;
         }
+
+        public void dispararAlJugador(Ship barcoOrigen,Bullet.Bullet bullet)
+        {
+            Vector3 offset = barcoOrigen.Position;
+            offset.Y += 20f;
+            Vector3 DirectionToPlayer = Vector3.Normalize(PlayerControlledShip.Position - barcoOrigen.Position);
+            bullet.Init(this, offset, DirectionToPlayer, barcoOrigen);
+
+            bullet._available = false;
+
+            availableBullets = PoolBullets.FindAll(b => b._available).Count;
+
+            if (ShootInstance.State == SoundState.Playing)
+                ShootInstance.Stop();
+
+            ShootInstance.Play();
+        }
+
     }
+
 }
