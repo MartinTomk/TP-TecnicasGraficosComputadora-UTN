@@ -678,14 +678,8 @@ namespace TGC.MonoGame.TP
 
             spriteBatch.GraphicsDevice.BlendState = BlendState.Opaque;
 
-            //Gizmos.DrawSphere(collider.Center, collider.Radius * 10 * Vector3.One, Color.Yellow);
-            //Gizmos.DrawFrustum(shotCam.Projection);
-            //Gizmos.DrawCube(Matrix.Identity * 100000f, Color.Green);
-            //DebugSphere.Draw(Matrix.Identity * Matrix.CreateTranslation(ProaPos), Game.CurrentCamera.View, Game.CurrentCamera.Projection);
-
             foreach (BoundingSphere collider in IslandColliders)
                 Gizmos.DrawSphere(collider.Center, collider.Radius * Vector3.One);
-            //DebugSphere.Draw(Matrix.Identity * Matrix.CreateScale(collider.Radius) * Matrix.CreateTranslation(collider.Center), shotCam.View, shotCam.Projection);
 
             for (int i = 0; i < Bullets.Count; i++)
             {
@@ -732,7 +726,6 @@ namespace TGC.MonoGame.TP
 
         private void DrawModel(Model geometry, Matrix transform, Effect effect, Camera cam)
         {
-            //BoundingBox FuturePosition = new BoundingBox(transform.Translation,new Vector3(100f, 0f, 100f));
             BoundingSphere FuturePosition = new BoundingSphere(transform.Translation, 200);
             bool willCollide = false;
             if (boundingFrustum.Intersects(FuturePosition))
@@ -742,9 +735,6 @@ namespace TGC.MonoGame.TP
             {
                 foreach (var mesh in geometry.Meshes)
                 {
-                    //effect.Parameters["World"].SetValue(transform);
-                    //effect.Parameters["View"].SetValue(cam.View);
-                    //effect.Parameters["Projection"].SetValue(cam.Projection);
                     foreach (var meshPart in mesh.MeshParts)
                     {
                         meshPart.Effect = effect;
@@ -759,7 +749,7 @@ namespace TGC.MonoGame.TP
 
         private void DrawModelLight(Model geometry, Matrix transform, Effect light, Camera cam)
         {
-            BoundingSphere FuturePosition = new BoundingSphere(transform.Translation, 200);
+            BoundingSphere FuturePosition = new BoundingSphere(transform.Translation, 250);
             bool willCollide = false;
             if (boundingFrustum.Intersects(FuturePosition))
                 willCollide = true;

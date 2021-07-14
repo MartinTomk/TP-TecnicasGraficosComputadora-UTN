@@ -95,7 +95,7 @@ namespace TGC.MonoGame.TP.Ships
             ShipNormalTexture = Game.Content.Load<Texture2D>(TGCGame.ContentFolderTextures + TextureNormalName);
 
             ShipEffect.Parameters["ambientColor"]?.SetValue(new Vector3(0.6f, 0.6f, 0.6f));
-            //ShipEffect.Parameters["diffuseColor"]?.SetValue(new Vector3(0f, 0.25f, 0.48f));
+            ShipEffect.Parameters["diffuseColor"]?.SetValue(new Vector3(1f, 1f, 1f));
             ShipEffect.Parameters["specularColor"]?.SetValue(new Vector3(0.98f, 0.98f, 0.98f));
             ShipEffect.Parameters["KAmbient"]?.SetValue(0.6f);
             ShipEffect.Parameters["KDiffuse"]?.SetValue(1f);
@@ -104,22 +104,11 @@ namespace TGC.MonoGame.TP.Ships
 
             BoatSphere = new BoundingSphere(Position, 50);
 
-            //Create an OBB for a model
-            // First, get an AABB from the model
-            //var temporaryCubeAABB = BoundingVolumesExtensions.CreateAABBFrom(ShipModel);
-            // Scale it to match the model's transform
-            //temporaryCubeAABB = BoundingVolumesExtensions.Scale(temporaryCubeAABB, 0.02f);
-            // Create an Oriented Bounding Box from the AABB
-            //BoatBox = OrientedBoundingBox.FromAABB(temporaryCubeAABB);
             float BoatRadius = this == Game.Barquito || this == Game.SM ? 30.0f : Length / 4;
             BoatSphere = new BoundingSphere(Position, BoatRadius);
             
-            //TempBoatBox = new BoundingBox(Position + new Vector3(Length / 2, 40.0f, 40.0f), Position + new Vector3(-Length / 2, -40.0f, -40.0f));
             BoatBox = OrientedBoundingBox.FromAABB(TempBoatBox);
             BoatBox.Orientation = Matrix.CreateRotationY(RotationRadians);
-
-
-            //DebugSphere = new SpherePrimitive(Game.GraphicsDevice, 1);
         }
 
 
