@@ -44,4 +44,4 @@ TGC, Tgcito  |  Apellido, Nombre
 
 
 ## Game Play
-[![Watch the video]()](https://youtu.be/YoLym-3A-u4)
+[![Watch the video]](https://youtu.be/YoLym-3A-u4)
