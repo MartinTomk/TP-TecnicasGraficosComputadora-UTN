@@ -44,4 +44,4 @@ TGC, Tgcito  |  Apellido, Nombre
 
 
 ## Game Play
-[![Watch the video](https://img.youtube.com/vi/pgEwUC0jvH4/0.jpg)](https://www.youtube.com/playlist?list=PLRM4L32DjvnazuMl8wZlbpEYL5Qh63ulG)
+[![Watch the video](https://github.com/Farabute/2021-1C-K3051-11ANCLAS/tree/master/Gameplay)
