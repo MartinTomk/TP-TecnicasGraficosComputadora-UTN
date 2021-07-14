@@ -95,7 +95,7 @@ namespace TGC.MonoGame.TP.Bullet
                             }
 
                         }
-                        if (_barcoOrigen == _game.PlayerBoat)
+                        /*if (_barcoOrigen == _game.PlayerBoat)
                         {
                             _barcoOrigen._score += 100;
                             if(_barcoOrigen._score % 1000 == 0)
@@ -107,7 +107,7 @@ namespace TGC.MonoGame.TP.Bullet
                                     _game.Ships[index].BoatAcceleration += 10f;
                                 }
                             }
-                        }
+                        }*/
                         _game.ExplosionInstance.Stop();
                         _game.ExplosionInstance.Play();
                         _game.ExplosionInstance.Volume = 0.12f;
