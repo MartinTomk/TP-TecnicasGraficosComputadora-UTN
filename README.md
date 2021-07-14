@@ -52,4 +52,5 @@ TGC, Tgcito  |  Coto, Matias
 
 
 ## Game Play
-[![Watch the video](https://youtu.be/YoLym-3A-u4)
+[![Watch the video]
+<iframe width="560" height="315" src="https://www.youtube.com/embed/YoLym-3A-u4" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
