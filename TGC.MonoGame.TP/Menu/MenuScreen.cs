@@ -5,6 +5,7 @@ using TGC.MonoGame.TP.Menu.States;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Media;
+using Microsoft.Xna.Framework.Input;
 
 
 namespace TGC.MonoGame.TP.Menu
@@ -97,10 +98,19 @@ namespace TGC.MonoGame.TP.Menu
                 _nextState = null;
             }
 
+
             _currentState.Update(gameTime);
+
+            var keyboardState = Keyboard.GetState();
+
+            if (keyboardState.IsKeyDown(Keys.Escape))
+            {
+                Exit();
+            }
 
             base.Update(gameTime);
         }
+
 
         /// <summary>
         /// This is called when the game should draw itself.
