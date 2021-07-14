@@ -154,7 +154,7 @@ namespace TGC.MonoGame.TP
 
         //BoundingBox TestBox;
 
-
+        public bool godModeEnabled = false;
 
         //BoundingBox TestBox;
         public int TiempoEntreDisparos = 0;
@@ -179,7 +179,7 @@ namespace TGC.MonoGame.TP
 
         public SpriteBatch spriteBatch;
         public SpriteFont font;
-
+        public KeyboardState lastState;
 
         // OVERLAY GOTAS //
         private Texture2D dropsTexture { get; set; }
@@ -1002,7 +1002,6 @@ namespace TGC.MonoGame.TP
             }
 
             var mouseState = Mouse.GetState();
-
             if (mouseState.LeftButton.Equals(ButtonState.Pressed) &&
                 lastMouseState.LeftButton.Equals(ButtonState.Released))
             {
@@ -1039,6 +1038,15 @@ namespace TGC.MonoGame.TP
             {
                 Instance.Volume -= (float)0.02;
             }
+            if (keyboardState.IsKeyDown(Keys.G) && !godModeEnabled && !lastState.IsKeyDown(Keys.G))
+            {
+                godModeEnabled = true;
+            }
+            if (keyboardState.IsKeyDown(Keys.L) && godModeEnabled && !lastState.IsKeyDown(Keys.L))
+            {
+                godModeEnabled = false;
+            }
+            lastState = keyboardState;
         }
 
         public void dispararAlJugador(Ship barcoOrigen,Bullet.Bullet bullet)

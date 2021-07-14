@@ -89,7 +89,11 @@ namespace TGC.MonoGame.TP.Bullet
                     {
                         if(_game.Ships[index] == _game.PlayerBoat)
                         {
-                            _game.PlayerControlledShip._currentLife -= 1;
+                            if(!_game.godModeEnabled)
+                            {
+                              _game.PlayerControlledShip._currentLife -= 1;
+                            }
+
                         }
                         if (_barcoOrigen == _game.PlayerBoat)
                         {
