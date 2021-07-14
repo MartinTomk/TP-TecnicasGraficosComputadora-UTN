@@ -45,6 +45,7 @@ namespace TGC.MonoGame.TP.Menu
                 "    _.~\"(_.~\"(_.~\"(_.~\"(_.~\"(_.~\"~._.~\"~._.~\"~._.~\"~.__.~\"~._.~\"~._.~\"~._.~\"~._";
 
             IsMouseVisible = true;
+            Window.AllowUserResizing = true;
             graphics.PreferredBackBufferWidth = 1280;
             graphics.PreferredBackBufferHeight = 720;
             graphics.ApplyChanges();

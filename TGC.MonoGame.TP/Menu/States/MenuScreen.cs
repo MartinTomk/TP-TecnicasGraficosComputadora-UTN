@@ -64,6 +64,15 @@ namespace TGC.MonoGame.TP.Menu.States
 
         private CubePrimitive lightBox;
 
+        private Vector2 MenuPos;
+        private Vector2 JugarPos;
+        private Vector2 VolverPos;
+        private Vector2 ControlesPos;
+        private Vector2 SalirPos;
+
+        public int buttonWidth = 160;
+        public int buttonHeight = 40;
+
 
         public MenuScreen(Game game, GraphicsDeviceManager graphics, ContentManager content): base(game, graphics, content)
         {
@@ -125,13 +134,22 @@ namespace TGC.MonoGame.TP.Menu.States
             buttonFont = _content.Load<SpriteFont>("Fonts/Font");
             montserratFont = _content.Load<SpriteFont>("Fonts/monserrat22");
 
+            MenuPos = new Vector2((graphics.GraphicsDevice.Viewport.Width / 2) - buttonWidth / 2, graphics.GraphicsDevice.Viewport.Height - 150);
+
             menuButton = new Button(buttonTexture, montserratFont, true)
             {
-                Position = new Vector2(560, 600),
+                Position = MenuPos,
                 Text = "Menu",
             };
 
             menuButton.Click += MenuButton_Click;
+
+            
+
+            //private Vector2 JugarPos;
+            //private Vector2 VolverPos;
+            //private Vector2 ControlesPos;
+            //private Vector2 SalirPos;
 
             newGameButton = new Button(buttonTexture, montserratFont, true)
             {
@@ -160,19 +178,12 @@ namespace TGC.MonoGame.TP.Menu.States
             goBackButton.Click += goBackButton_Click;
             goBackButton.visible = false;
 
-            //godGameButton = new Button(buttonTexture, buttonFont, true)
-            //{
-            //   Position = new Vector2(300, 300),
-            //    Text = "Modo Dios",
-            //};
 
-            //godGameButton.Click += GodGameButton_Click;
-
-
+            SalirPos = new Vector2(_game.GraphicsDevice.Viewport.Width - buttonWidth - 50, _game.GraphicsDevice.Viewport.Height - buttonHeight - 50);
 
             quitGameButton = new Button(buttonTexture, montserratFont, true)
             {
-                Position = new Vector2(1000, 600),
+                Position = SalirPos,
                 Text = "Salir",
             };
 
@@ -183,7 +194,6 @@ namespace TGC.MonoGame.TP.Menu.States
             _ButtonsMainMenu = new List<Button>()
             {
                 newGameButton,
-                //godGameButton,
                 controlsButton,
                 quitGameButton,
                 goBackButton,
@@ -208,7 +218,6 @@ namespace TGC.MonoGame.TP.Menu.States
 
         public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
-            //spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.Opaque);
             spriteBatch.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
             spriteBatch.GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.CornflowerBlue, 1f, 0);
             spriteBatch.Begin();
@@ -218,7 +227,7 @@ namespace TGC.MonoGame.TP.Menu.States
             {
 
                 case ST_PRESENTACION:
-                    spriteBatch.Draw(background, new Vector2(0, 0), Color.White);
+                    spriteBatch.Draw(background, new Rectangle(0,0,_game.GraphicsDevice.Viewport.Width, _game.GraphicsDevice.Viewport.Height), Color.White);
                     break;
                 case ST_MENU:
                     spriteBatch.GraphicsDevice.BlendState = BlendState.Opaque;
@@ -250,7 +259,6 @@ namespace TGC.MonoGame.TP.Menu.States
 
                     lightBox.Draw(LightBoxWorld, menuCam.View, menuCam.Projection);
 
-                    //Patrol.Draw(menuCam);
                     newGameButton.visible = true;
                     quitGameButton.visible = true;
                     controlsButton.visible = true;
@@ -281,6 +289,9 @@ namespace TGC.MonoGame.TP.Menu.States
 
                     break;
             }
+
+            menuButton.Position = new Vector2((_game.GraphicsDevice.Viewport.Width / 2) - buttonWidth / 2, _game.GraphicsDevice.Viewport.Height - 150);
+            quitGameButton.Position = new Vector2(_game.GraphicsDevice.Viewport.Width - buttonWidth - 50, _game.GraphicsDevice.Viewport.Height - buttonHeight - 50);
 
             foreach (Button button in _ButtonsMainMenu)
                 button.Draw(gameTime, spriteBatch);
@@ -316,14 +327,6 @@ namespace TGC.MonoGame.TP.Menu.States
             newGameButton.visible = false;
             status = ST_CONTROLS;
         }
-
-        //private void GodGameButton_Click(object sender, EventArgs e)
-        //{
-
-        //    using (var game = new TGCGame(true))
-        //        game.Run();
-        //}
-
 
         public override void Update(GameTime gameTime)
         {
