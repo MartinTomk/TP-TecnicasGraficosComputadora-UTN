@@ -221,8 +221,8 @@ namespace TGC.MonoGame.TP
         /// </summary>
         protected override void Initialize()
         {
-            Window.Title = "_.~\"~._.~\"~.__.~\"~._.~\"~._.~\"~._.~\"~.__.~\"~._.~\"~._.~\"~._.~\"~.__.~\"(_.~\"(_.~\"(_.~\"(_.~\"(    11 ANCLAS 11" +
-                            "    _.~\"(_.~\"(_.~\"(_.~\"(_.~\"(_.~\"~._.~\"~._.~\"~._.~\"~.__.~\"~._.~\"~._.~\"~._.~\"~._";
+            //Window.Title = "_.~\"~._.~\"~.__.~\"~._.~\"~._.~\"~._.~\"~.__.~\"~._.~\"~._.~\"~._.~\"~.__.~\"(_.~\"(_.~\"(_.~\"(_.~\"(    11 ANCLAS 11" +
+            //                "    _.~\"(_.~\"(_.~\"(_.~\"(_.~\"(_.~\"~._.~\"~._.~\"~._.~\"~.__.~\"~._.~\"~._.~\"~._.~\"~._";
             // La logica de inicializacion que no depende del contenido se recomienda poner en este metodo.
 
             // Apago el backface culling.
@@ -243,10 +243,11 @@ namespace TGC.MonoGame.TP
             shotCam = new BoatCamera(GraphicsDevice.Viewport.AspectRatio, new Vector3(0, CameraArm, 440), screenSize);
 
             Window.AllowUserResizing = true;
+            Window.IsBorderless = true;
 
-            Graphics.IsFullScreen = true;
-            Graphics.PreferredBackBufferWidth = 1280;
-            Graphics.PreferredBackBufferHeight = 720;
+            //Graphics.IsFullScreen = true;
+            Graphics.PreferredBackBufferWidth = 1920;
+            Graphics.PreferredBackBufferHeight = 1080;
             Graphics.ApplyChanges();
 
             spriteBatch = new SpriteBatch(Graphics.GraphicsDevice);
