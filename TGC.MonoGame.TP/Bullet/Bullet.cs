@@ -48,6 +48,10 @@ namespace TGC.MonoGame.TP.Bullet
 
             if (_timeElapsed > _lifeTime || Impact(_destinationPosition) || _destinationPosition.Y < -50f)
             {
+                if(_barcoOrigen == _game.PlayerBoat)
+                {
+                    _barcoOrigen._score += 100;
+                }
                 _searchImpact = false;
                 _active = false;
                 _available = true;
@@ -77,6 +81,10 @@ namespace TGC.MonoGame.TP.Bullet
 
                     if (FuturePosition.Intersects(_game.Ships[index].BoatSphere) && _game.Ships[index] != _barcoOrigen)
                     {
+                        if(_game.Ships[index] == _game.PlayerBoat)
+                        {
+                            _game.PlayerControlledShip._currentLife -= 1;
+                        }
                         _game.ExplosionInstance.Stop();
                         _game.ExplosionInstance.Play();
                         _game.ExplosionInstance.Volume = 0.12f;
