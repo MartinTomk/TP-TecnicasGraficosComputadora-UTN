@@ -48,10 +48,7 @@ namespace TGC.MonoGame.TP.Bullet
 
             if (_timeElapsed > _lifeTime || Impact(_destinationPosition) || _destinationPosition.Y < -50f)
             {
-                if(_barcoOrigen == _game.PlayerBoat)
-                {
-                    _barcoOrigen._score += 100;
-                }
+
                 _searchImpact = false;
                 _active = false;
                 _available = true;
@@ -72,7 +69,16 @@ namespace TGC.MonoGame.TP.Bullet
         private bool Impact(Vector3 destination)
         {
             bool willCollide = false;
-            if (_searchImpact)
+
+            for (var index = 0; index < _game.IslandColliders.Length && !willCollide; index++)
+            {
+                BoundingSphere FuturePosition = new BoundingSphere(destination, 1f);
+                if (FuturePosition.Intersects(_game.IslandColliders[index]))
+                {
+                    willCollide = true;
+                }
+            }
+                if (_searchImpact && !willCollide)
             {
                 BoundingSphere FuturePosition = new BoundingSphere(destination, 1f);
 
@@ -84,6 +90,10 @@ namespace TGC.MonoGame.TP.Bullet
                         if(_game.Ships[index] == _game.PlayerBoat)
                         {
                             _game.PlayerControlledShip._currentLife -= 1;
+                        }
+                        if (_barcoOrigen == _game.PlayerBoat)
+                        {
+                            _barcoOrigen._score += 100;
                         }
                         _game.ExplosionInstance.Stop();
                         _game.ExplosionInstance.Play();
