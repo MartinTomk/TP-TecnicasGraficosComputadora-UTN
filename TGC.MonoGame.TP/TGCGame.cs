@@ -208,7 +208,7 @@ namespace TGC.MonoGame.TP
 
         public BoundingFrustum boundingFrustum = new BoundingFrustum(Matrix.Identity);
 
-
+        public int dificultad = 0;
         // pal debuggin
         //SpriteBatch spriteBatch;
         //SpriteFont font;
@@ -512,7 +512,7 @@ namespace TGC.MonoGame.TP
             {
                 SM.Update(gameTime, shotCam, lightPosition);
                 Bullet.Bullet bullet = PoolBullets.Find(b => b._available);
-                if (bullet != null && (TiempoEntreDisparos % 500 == 0))
+                if (bullet != null && (TiempoEntreDisparos % (400-dificultad) == 0))
                 {
 
                     dispararAlJugador(SM, bullet);
@@ -530,6 +530,10 @@ namespace TGC.MonoGame.TP
                 {
                     SM.BoatMatrix = Matrix.CreateTranslation(800f, 0.01f, 500f) * Matrix.CreateScale(SM.Scale);
                     SM.Life = 100;
+                    if (dificultad < 254)
+                    {
+                        dificultad += 20;
+                    }
                 }
             }
             if (Patrol.Life > 0)
@@ -537,7 +541,7 @@ namespace TGC.MonoGame.TP
                 Patrol.Update(gameTime, shotCam, lightPosition);
 
                 Bullet.Bullet bullet = PoolBullets.Find(b => b._available);
-                if (bullet != null && (TiempoEntreDisparos % 275 == 0))
+                if (bullet != null && (TiempoEntreDisparos % (275-dificultad) == 0))
                 {
                     dispararAlJugador(Patrol, bullet);
                 }
@@ -554,6 +558,10 @@ namespace TGC.MonoGame.TP
                 {
                     Patrol.BoatMatrix = Matrix.CreateTranslation(1000f, 0.01f, 400f) * Matrix.CreateScale(Patrol.Scale);
                     Patrol.Life = 100;
+                    if (dificultad < 254)
+                    {
+                        dificultad += 20;
+                    }
                 }
             }
             if (Barquito.Life > 0)
@@ -572,13 +580,17 @@ namespace TGC.MonoGame.TP
                 {
                     Barquito.BoatMatrix = Matrix.CreateTranslation(-800f, 0.01f, 1000f) * Matrix.CreateScale(Barquito.Scale);
                     Barquito.Life = 100;
+                    if (dificultad < 254)
+                    {
+                        dificultad += 20;
+                    }
                 }
             }
             if (Cruiser.Life > 0)
             {
                 Cruiser.Update(gameTime, shotCam, lightPosition);
                 Bullet.Bullet bullet = PoolBullets.Find(b => b._available);
-                if (bullet != null && (TiempoEntreDisparos % 600 == 0))
+                if (bullet != null && (TiempoEntreDisparos % (600-dificultad) == 0))
                 {
                     dispararAlJugador(Cruiser, bullet);
                 }
@@ -596,6 +608,11 @@ namespace TGC.MonoGame.TP
                 {
                     Cruiser.BoatMatrix = Matrix.CreateTranslation(1000f, 0.01f, 1000f) * Matrix.CreateScale(Cruiser.Scale);
                     Cruiser.Life = 100;
+                    if(dificultad <  254)
+                    {
+                        dificultad += 20;
+                    }
+
                 }
             }
 
