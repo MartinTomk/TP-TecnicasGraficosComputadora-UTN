@@ -244,7 +244,7 @@ namespace TGC.MonoGame.TP
 
             Window.AllowUserResizing = true;
 
-            //Graphics.IsFullScreen = true;
+            Graphics.IsFullScreen = true;
             Graphics.PreferredBackBufferWidth = 1280;
             Graphics.PreferredBackBufferHeight = 720;
             Graphics.ApplyChanges();
